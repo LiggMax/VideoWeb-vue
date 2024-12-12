@@ -10,6 +10,7 @@
   "dependencies": {
     "@element-plus/icons-vue": "^2.0.0",
     "axios": "^1.7.9",
+    "bilibili-clone": "file:",
     "element-plus": "^2.0.0",
     "pinia": "^2.3.0",
     "pinia-persistedstate-plugin": "^0.1.0",

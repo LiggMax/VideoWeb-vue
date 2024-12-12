@@ -8,38 +8,28 @@
       <div class="user-info-card">
         <div class="user-basic">
           <div class="avatar-wrap">
-            <el-avatar :size="120" :src="userInfo.userPic || defaultAvatar" />
+            <el-avatar :size="120" :src="userInfo.userPic || defaultAvatar"/>
             <div class="level-tag">LV6</div>
           </div>
           <div class="user-detail">
             <div class="name-row">
-              <h1 class="username">{{ userInfo.nickname || userInfo.username }}</h1>
+              <h1 class="username">{{ userInfo.nickname }}</h1>
               <el-button size="small" class="edit-btn">
-                <el-icon><Edit /></el-icon>
+                <el-icon>
+                  <Edit/>
+                </el-icon>
                 编辑资料
               </el-button>
             </div>
-            <div class="user-id">UID: {{ userInfo.id || '123456789' }}</div>
+            <div class="user-id">UID: {{ userInfo.id }}</div>
             <div class="user-intro">这个人很懒，什么都没有写</div>
           </div>
         </div>
         <div class="user-stats">
           <div class="stat-group">
-            <div class="stat-item">
-              <div class="num">301</div>
-              <div class="label">关注</div>
-            </div>
-            <div class="stat-item">
-              <div class="num">4</div>
-              <div class="label">粉丝</div>
-            </div>
-            <div class="stat-item">
-              <div class="num">1</div>
-              <div class="label">获赞</div>
-            </div>
-            <div class="stat-item">
-              <div class="num">0</div>
-              <div class="label">播放量</div>
+            <div class="stat-item" v-for="stat in userStats" :key="stat.label">
+              <div class="num">{{ stat.num }}</div>
+              <div class="label">{{ stat.label }}</div>
             </div>
           </div>
         </div>
@@ -51,8 +41,8 @@
       <div class="content-main">
         <!-- 左侧导航 -->
         <div class="side-nav">
-          <div class="nav-item" 
-               v-for="item in navItems" 
+          <div class="nav-item"
+               v-for="item in navItems"
                :key="item.name"
                :class="{ active: currentNav === item.name }"
                @click="currentNav = item.name">
@@ -69,50 +59,105 @@
           <div class="empty-state" v-if="!hasContent">
             <el-empty :description="getEmptyText">
               <template #image>
-                <img src="@/assets/empty-state.png" class="empty-img">
               </template>
               <template #description>
                 <p class="empty-text">{{ getEmptyText }}</p>
               </template>
-              <el-button type="primary" @click="goToUpload" v-if="currentNav === 'videos'">
-                <el-icon><VideoCamera /></el-icon>
+              <el-button type="primary" @click="drawerVisible = true" v-if="currentNav === 'videos'">
+                <el-icon>
+                  <VideoCamera/>
+                </el-icon>
                 立即投稿
               </el-button>
             </el-empty>
           </div>
         </div>
+
+        <!-- 抽屉弹窗 -->
+        <el-drawer
+            title="发布视频"
+            v-model="drawerVisible"
+            direction="rtl"
+            size="40%">
+          <el-form :model="form" label-width="80px">
+            <el-form-item label="标题">
+              <el-input v-model="form.title" placeholder="请输入视频标题"></el-input>
+            </el-form-item>
+            <el-form-item label="封面">
+              <el-upload
+                  :auto-upload="true"
+                  action="/api/upload"
+                  list-type="picture-card"
+                  :on-preview="handlePictureCardPreview"
+                  :on-remove="handleRemove"
+                  :before-upload="beforeCoverUpload"
+                  :headers="{'Authorization':tokenStore.token}"
+                  name="file"
+              >
+                <i class="el-icon-plus"></i>
+              </el-upload>
+              <el-dialog :visible.sync="dialogVisible">
+                <img width="100%" :src="dialogImageUrl" alt="">
+              </el-dialog>
+            </el-form-item>
+            <el-form-item label="视频介绍">
+              <el-input
+                  type="textarea"
+                  :rows="4"
+                  placeholder="请输入视频介绍"
+                  v-model="form.content">
+              </el-input>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="submitForm">发布</el-button>
+              <el-button @click="resetForm">重置</el-button>
+            </el-form-item>
+          </el-form>
+        </el-drawer>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { 
-  VideoCamera, 
-  Collection, 
-  Star, 
+import {ref, computed, reactive} from 'vue'
+import {useRouter} from 'vue-router'
+import {
+  VideoCamera,
+  Collection,
+  Star,
   Edit,
   Document,
   ChatDotRound
 } from '@element-plus/icons-vue'
 import useUserInfoStore from '@/stores/userInfo'
+import {ElMessage} from "element-plus";
+import {useTokenStore} from "@/stores/token";
+import {publishVideoService} from "@/api/video";
 
 const router = useRouter()
 const userInfoStore = useUserInfoStore()
 const currentNav = ref('videos')
 const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
+// token
+const tokenStore = useTokenStore()
 
 const userInfo = computed(() => userInfoStore.info)
 const hasContent = ref(false)
 
 const navItems = [
-  { name: 'videos', label: '视频', icon: 'VideoCamera', count: 0 },
-  { name: 'favorites', label: '收藏', icon: 'Collection', count: 0 },
-  { name: 'likes', label: '点赞', icon: 'Star', count: 0 },
-  { name: 'articles', label: '专栏', icon: 'Document', count: 0 },
-  { name: 'comments', label: '评论', icon: 'ChatDotRound', count: 0 }
+  {name: 'videos', label: '视频', icon: 'VideoCamera', count: 0},
+  {name: 'favorites', label: '收藏', icon: 'Collection', count: 0},
+  {name: 'likes', label: '点赞', icon: 'Star', count: 0},
+  {name: 'articles', label: '专栏', icon: 'Document', count: 0},
+  {name: 'comments', label: '评论', icon: 'ChatDotRound', count: 0}
+]
+
+const userStats = [
+  {num: 301, label: '关注'},
+  {num: 4, label: '粉丝'},
+  {num: 1, label: '获赞'},
+  {num: 0, label: '播放量'}
 ]
 
 const getEmptyText = computed(() => {
@@ -125,6 +170,56 @@ const getEmptyText = computed(() => {
   }
   return texts[currentNav.value]
 })
+const drawerVisible = ref(false)
+const form = ref({
+  title: '',
+  cover: '',
+  content: ''
+})
+const dialogImageUrl = ref('')
+const dialogVisible = ref(false)
+
+const openDrawer = () => {
+  drawerVisible.value = true
+}
+
+const handleRemove = (file, fileList) => {
+  console.log(file, fileList)
+}
+
+const handlePictureCardPreview = (file) => {
+  dialogImageUrl.value = file.url
+  dialogVisible.value = true
+}
+
+const beforeCoverUpload = (file) => {
+  const isJPGorPNG = file.type === 'image/jpeg' || file.type === 'image/png'
+  const isLt2M = file.size / 1024 / 1024 < 2
+
+  if (!isJPGorPNG) {
+    ElMessage.error('上传封面图片只能是 JPG 或 PNG 格式!')
+  }
+  if (!isLt2M) {
+    ElMessage.error('上传封面图片大小不能超过 2MB!')
+  }
+  return isJPGorPNG && isLt2M
+}
+
+const submitForm = async () =>
+{
+  // 提交表单逻辑
+  console.log('提交表单:', form)
+  await publishVideoService(form.value);
+  ElMessage.success('发布成功')
+  drawerVisible.value = false
+}
+
+
+const resetForm = () => {
+  form.title = ''
+  form.cover = ''
+  form.description = ''
+}
 
 const goToUpload = () => {
   router.push('/upload')
@@ -139,7 +234,7 @@ const goToUpload = () => {
 
 .user-header {
   position: relative;
-  height: 240px;
+  height: 280px; /* 增加高度 */
   color: #18191c;
   margin-bottom: 20px;
   background: #fff;
@@ -165,6 +260,7 @@ const goToUpload = () => {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  min-height: 240px; /* 设置最小高度 */
 }
 
 .user-basic {
@@ -181,6 +277,8 @@ const goToUpload = () => {
   position: relative;
   flex-shrink: 0;
   margin-bottom: 0;
+  border-radius: 50%;
+  overflow: hidden;
 }
 
 .avatar-wrap :deep(.el-avatar) {
@@ -190,8 +288,9 @@ const goToUpload = () => {
 
 .level-tag {
   position: absolute;
-  bottom: -6px;
-  right: -6px;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
   background: #ff6699;
   color: #fff;
   padding: 2px 8px;
@@ -257,12 +356,14 @@ const goToUpload = () => {
   position: relative;
   z-index: 2;
   margin-top: 20px;
+  margin-bottom: 20px; /* 增加底部间距 */
+  text-align: center;
 }
 
 .stat-group {
   display: flex;
   gap: 60px;
-  justify-content: flex-start;
+  justify-content: center;
   padding-bottom: 16px;
 }
 
@@ -272,6 +373,7 @@ const goToUpload = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  animation: fadeIn 1s ease-in-out;
 }
 
 .stat-item .num {
@@ -346,35 +448,44 @@ const goToUpload = () => {
 .side-nav {
   width: 200px;
   flex-shrink: 0;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 16px;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   padding: 12px 16px;
   color: #666;
   cursor: pointer;
   border-radius: 4px;
   transition: all 0.3s;
+  background: #fff; /* 默认背景色设置为白色 */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* 添加轻微阴影 */
 }
 
 .nav-item:hover {
-  background: #f6f7f8;
-  color: #fb7299;
+  background: #f6f7f8; /* 悬停时背景色 */
+  color: #fb7299; /* 悬停时文字颜色 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 悬停时阴影 */
 }
 
 .nav-item.active {
-  background: #fff1f5;
-  color: #fb7299;
-  font-weight: 500;
+  background: #fff1f5; /* 激活时背景色 */
+  color: #fb7299; /* 激活时文字颜色 */
+  font-weight: 500; /* 激活时字体加粗 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 激活时阴影 */
 }
 
 .count {
   font-size: 12px;
-  color: #999;
+  color: #999; /* 调整计数颜色以便于阅读 */
   margin-left: 4px;
 }
+
 
 .main-content {
   flex: 1;
@@ -407,10 +518,78 @@ const goToUpload = () => {
 :deep(.el-button--primary) {
   background: #fb7299;
   border-color: #fb7299;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 :deep(.el-button--primary:hover) {
   background: #fc8bab;
   border-color: #fc8bab;
 }
-</style> 
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .user-header {
+    height: 200px;
+  }
+
+  .user-info-card {
+    padding: 10px 20px;
+  }
+
+  .user-basic {
+    gap: 16px;
+  }
+
+  .username {
+    font-size: 20px;
+  }
+
+  .user-stats {
+    padding-top: 12px;
+    margin-top: 15px;
+  }
+
+  .stat-group {
+    gap: 30px;
+  }
+
+  .stat-item .num {
+    font-size: 18px;
+  }
+
+  .content-wrap {
+    min-height: calc(100vh - 300px);
+  }
+
+  .content-main {
+    padding: 10px;
+  }
+
+  .side-nav {
+    width: 150px;
+  }
+
+  .nav-item {
+    padding: 8px 12px;
+  }
+
+  .main-content {
+    min-height: 300px;
+    padding: 16px;
+  }
+
+  .empty-img {
+    width: 150px;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+</style>
