@@ -29,7 +29,8 @@
           </el-button>
         </div>
         <div class="user-info">
-          <div class="user-avatar" @click="showLoginDialog">
+          <UserPopover v-if="isLogin" />
+          <div v-else class="user-avatar" @click="showLoginDialog">
             <el-avatar :size="32" src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" />
           </div>
           <div class="user-icons">
@@ -50,9 +51,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import SearchBar from '@/components/SearchBar.vue'
 import LoginDialog from '@/components/LoginDialog.vue'
+import UserPopover from '@/components/UserPopover.vue'
+import { useTokenStore } from '@/stores/token'
+import useUserInfoStore  from '@/stores/userInfo'
+import { getUserInfoService } from '@/api/user'
 import { 
   VideoCamera, 
   Message, 
@@ -67,6 +72,25 @@ const isScrolled = ref(false)
 
 // 登录对话框显示状态
 const loginDialogVisible = ref(false)
+
+const tokenStore = useTokenStore()
+const userInfoStore = useUserInfoStore()
+const isLogin = computed(() => !!tokenStore.token)
+
+// 获取用户信息
+const getUserInfo = async () => {
+  if (isLogin.value) {
+    const res = await getUserInfoService()
+    userInfoStore.setInfo(res.data)
+  }
+}
+
+// 监听登录状态变化
+watch(() => isLogin.value, (newVal) => {
+  if (newVal) {
+    getUserInfo()
+  }
+})
 
 // 监听滚动事件
 const handleScroll = () => {

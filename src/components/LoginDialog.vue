@@ -156,6 +156,7 @@ import {
 import {userLoginService, userRegisterService} from "@/api/user";
 import {ElMessage} from "element-plus";
 import router from "@/router";
+import {useTokenStore} from "@/stores/token";
 
 const props = defineProps({
   visible: {
@@ -168,6 +169,9 @@ const emit = defineEmits(['update:visible'])
 const dialogVisible = ref(props.visible)
 const currentView = ref('login')
 const countdown = ref(0)
+
+//引入tokenStore
+const tokenStore = useTokenStore();
 
 // 登录表单数据
 const loginForm = ref({
@@ -247,7 +251,7 @@ const closeDialog = () => {
 const handleSmsLogin = () => {
   console.log('短信登录:', smsForm.value)
 }
-// 处理登录
+// 处理账号登录
 const handleLogin = async () => {
   if (!loginForm.value.username || !loginForm.value.password)
     return ElMessage.warning('请输入账号和密码')
@@ -256,8 +260,10 @@ const handleLogin = async () => {
       loginForm.value.password.length < 5 || loginForm.value.password.length > 15) {
     return ElMessage.error('用户或密码长度在5-15个字符')
   }
-  await userLoginService(loginForm.value)
+  let result = await userLoginService(loginForm.value)
   ElMessage.success('登录成功')
+  //把得到的token存储到pinia中
+  tokenStore.setToken(result.data)
   //关闭弹窗
   closeDialog()
 }
