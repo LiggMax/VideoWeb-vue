@@ -23,15 +23,10 @@
 
       <!-- 右侧用户区域 -->
       <div class="right-section">
-        <div class="user-actions">
-          <el-button class="upload-btn" type="primary" plain>
-            <el-icon><VideoCamera /></el-icon>投稿
-          </el-button>
-        </div>
         <div class="user-info">
           <UserPopover v-if="isLogin" />
           <div v-else class="user-avatar" @click="showLoginDialog">
-            <el-avatar :size="32" src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" />
+            <el-avatar :size="42" src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" />
           </div>
           <div class="user-icons">
             <el-badge :value="3" class="message-badge">
@@ -41,6 +36,13 @@
             <el-icon><Collection /></el-icon>
             <el-icon><Clock /></el-icon>
           </div>
+        </div>
+        <!-- 将投稿按钮移到最后 -->
+        <div class="upload-section">
+          <el-button class="upload-btn" type="primary">
+            <el-icon class="camera-icon"><VideoCamera /></el-icon>
+            <span class="btn-text">投稿</span>
+          </el-button>
         </div>
       </div>
     </div>
@@ -236,41 +238,55 @@ const showLoginDialog = () => {
   flex-shrink: 0;
 }
 
-.user-actions {
+.user-info {
   display: flex;
-  gap: 12px;
+  align-items: center;
+  gap: 24px;
+  height: 64px;
+  padding: 0 4px;
 }
 
-.user-actions :deep(.el-button) {
-  backdrop-filter: blur(4px);
+.upload-section {
+  margin-left: 12px;
 }
 
 .upload-btn {
   display: flex;
   align-items: center;
   gap: 4px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: normal;
 }
 
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 20px;
+.camera-icon {
+  font-size: 16px;
+}
+
+.btn-text {
+  margin-left: 2px;
 }
 
 .user-icons {
   display: flex;
-  gap: 16px;
-  font-size: 20px;
+  gap: 20px;
+  font-size: 22px;
   color: #666;
+  padding: 0 8px;
 }
 
 .user-icons .el-icon {
   cursor: pointer;
   transition: all 0.3s ease;
+  padding: 4px;
+  border-radius: 4px;
 }
 
 .user-icons .el-icon:hover {
   color: #00aeec;
+  background-color: #f1f2f3;
 }
 
 .message-badge :deep(.el-badge__content) {
@@ -279,11 +295,19 @@ const showLoginDialog = () => {
 
 .user-avatar {
   cursor: pointer;
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
 }
 
 .user-avatar:hover {
-  transform: scale(1.1);
+  transform: scale(1.05);
+  background-color: #f1f2f3;
 }
 
 :deep(.el-menu--horizontal > .el-menu-item.is-active) {
@@ -295,6 +319,7 @@ const showLoginDialog = () => {
 :deep(.el-button--primary) {
   background-color: #fb7299;
   border-color: #fb7299;
+  color: #fff;
 }
 
 :deep(.el-button--primary:hover) {
@@ -302,15 +327,8 @@ const showLoginDialog = () => {
   border-color: #fc8bab;
 }
 
-:deep(.el-button--primary.is-plain) {
-  color: #fb7299;
-  background: #fff;
-  border-color: #fb7299;
-}
-
-:deep(.el-button--primary.is-plain:hover) {
-  background: #fb7299;
-  border-color: #fb7299;
-  color: #fff;
+:deep(.el-avatar) {
+  border: 2px solid #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 </style> 
