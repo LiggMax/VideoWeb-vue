@@ -1,0 +1,22 @@
+{
+  "name": "bilibili-clone",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.0.0",
+    "element-plus": "^2.0.0",
+    "pinia": "^2.3.0",
+    "vue": "^3.3.0",
+    "vue-router": "^4.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.0.0",
+    "path": "^0.12.7",
+    "vite": "^4.0.0"
+  }
+}
