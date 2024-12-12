@@ -153,7 +153,7 @@ import {
   Iphone,
   Message
 } from '@element-plus/icons-vue'
-import {userRegisterService} from "@/api/user";
+import {userLoginService, userRegisterService} from "@/api/user";
 import {ElMessage} from "element-plus";
 import router from "@/router";
 
@@ -242,14 +242,24 @@ const closeDialog = () => {
   currentView.value = 'login'
 }
 
-// 处理密码登录
-const handleLogin = () => {
-  console.log('密码登录:', loginForm.value)
-}
 
 // 处理短信登录
 const handleSmsLogin = () => {
   console.log('短信登录:', smsForm.value)
+}
+// 处理登录
+const handleLogin = async () => {
+  if (!loginForm.value.username || !loginForm.value.password)
+    return ElMessage.warning('请输入账号和密码')
+  //判断是否符合5~15字符
+  if (loginForm.value.username.length < 5 || loginForm.value.username.length > 15 ||
+      loginForm.value.password.length < 5 || loginForm.value.password.length > 15) {
+    return ElMessage.error('用户或密码长度在5-15个字符')
+  }
+  await userLoginService(loginForm.value)
+  ElMessage.success('登录成功')
+  //关闭弹窗
+  closeDialog()
 }
 
 // 处理注册
