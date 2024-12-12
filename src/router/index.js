@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '@/views/Home.vue'
 import Anime from '@/views/Anime.vue'
+import UserCenter from '@/views/UserCenter.vue'
+import { useTokenStore } from '@/stores/token'
 
 const routes = [
   {
@@ -12,12 +14,28 @@ const routes = [
     path: '/anime',
     name: 'Anime',
     component: Anime
+  },
+  {
+    path: '/user-center',
+    name: 'userCenter',
+    component: UserCenter,
+    meta: { requiresAuth: true }
   }
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes
+})
+
+// 路由守卫
+router.beforeEach((to, from, next) => {
+  const tokenStore = useTokenStore()
+  if (to.meta.requiresAuth && !tokenStore.token) {
+    next('/') // 未登录时重定向到首页
+  } else {
+    next()
+  }
 })
 
 export default router 

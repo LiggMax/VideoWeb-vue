@@ -17,7 +17,7 @@
       </div>
 
       <!-- 中间搜索框 -->
-      <div class="center-search">
+      <div class="center-section">
         <SearchBar />
       </div>
 
@@ -29,15 +29,12 @@
             <el-avatar :size="42" src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" />
           </div>
           <div class="user-icons">
-            <el-badge :value="3" class="message-badge">
-              <el-icon><Message /></el-icon>
-            </el-badge>
+            <el-icon><Message /></el-icon>
             <el-icon><Star /></el-icon>
             <el-icon><Collection /></el-icon>
             <el-icon><Clock /></el-icon>
           </div>
         </div>
-        <!-- 将投稿按钮移到最后 -->
         <div class="upload-section">
           <el-button class="upload-btn" type="primary">
             <el-icon class="camera-icon"><VideoCamera /></el-icon>
@@ -136,15 +133,111 @@ const showLoginDialog = () => {
   height: 64px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 0 24px;
+  justify-content: space-between;
   gap: 20px;
 }
 
+/* 左侧区域 */
 .left-section {
   display: flex;
   align-items: center;
   flex-shrink: 0;
+  min-width: fit-content;
+}
+
+/* 中间区域 */
+.center-section {
+  flex: 1;
+  min-width: 300px;
+  max-width: 500px;
+  margin: 0 auto;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* 右侧区域 */
+.right-section {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-shrink: 0;
+  min-width: fit-content;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  height: 64px;
+  flex-shrink: 0;
+}
+
+.user-avatar {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+}
+
+.user-icons {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 100%;
+  flex-shrink: 0;
+}
+
+.user-icons .el-icon {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-icons .el-icon:hover {
+  color: #00aeec;
+  background-color: #f1f2f3;
+}
+
+.upload-section {
+  display: flex;
+  align-items: center;
+  height: 64px;
+}
+
+.upload-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: normal;
+}
+
+.message-badge :deep(.el-badge__content) {
+  background-color: #fb7299;
+  border: none;
+  transform: translate(30%, -30%);
+}
+
+.camera-icon {
+  font-size: 16px;
+}
+
+.btn-text {
+  margin-left: 2px;
 }
 
 .logo {
@@ -225,86 +318,6 @@ const showLoginDialog = () => {
   background-color: #fb7299;
 }
 
-.center-search {
-  flex: 0 1 500px;
-  min-width: 300px;
-  margin: 0;
-}
-
-.right-section {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  flex-shrink: 0;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  height: 64px;
-  padding: 0 4px;
-}
-
-.upload-section {
-  margin-left: 12px;
-}
-
-.upload-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  height: 32px;
-  padding: 0 12px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: normal;
-}
-
-.camera-icon {
-  font-size: 16px;
-}
-
-.btn-text {
-  margin-left: 2px;
-}
-
-.user-icons {
-  display: flex;
-  gap: 20px;
-  font-size: 22px;
-  color: #666;
-  padding: 0 8px;
-}
-
-.user-icons .el-icon {
-  cursor: pointer;
-  transition: all 0.3s ease;
-  padding: 4px;
-  border-radius: 4px;
-}
-
-.user-icons .el-icon:hover {
-  color: #00aeec;
-  background-color: #f1f2f3;
-}
-
-.message-badge :deep(.el-badge__content) {
-  background-color: #fb7299;
-}
-
-.user-avatar {
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-}
-
 .user-avatar:hover {
   transform: scale(1.05);
   background-color: #f1f2f3;
@@ -330,5 +343,44 @@ const showLoginDialog = () => {
 :deep(.el-avatar) {
   border: 2px solid #fff;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* 添加响应式布局 */
+@media screen and (max-width: 1200px) {
+  .header-content {
+    padding: 0 16px;
+  }
+
+  .nav-links {
+    gap: 20px;
+  }
+
+  /* 在较窄屏幕下隐藏部分导航项 */
+  .nav-links .nav-item:nth-last-child(n+3) {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .logo-text {
+    display: none; /* 隐藏logo文字 */
+  }
+
+  .center-section {
+    position: static; /* 取消绝对定位 */
+    transform: none;
+    margin: 0 16px;
+    min-width: 200px; /* 减小最小宽度 */
+  }
+
+  .user-icons {
+    gap: 16px; /* 减小图标间距 */
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .user-icons .el-icon:nth-last-child(-n+2) {
+    display: none; /* 隐藏最后两个图标 */
+  }
 }
 </style> 
