@@ -93,11 +93,12 @@
                   :before-upload="beforeCoverUpload"
                   :headers="{'Authorization':tokenStore.token}"
                   name="file"
+                  :on-success="uploadSuccess"
               >
                 <i class="el-icon-plus"></i>
               </el-upload>
               <el-dialog :visible.sync="dialogVisible">
-                <img width="100%" :src="dialogImageUrl" alt="">
+                <img width="100%" v-if="form.cover" :src="form.cover" alt="">
               </el-dialog>
             </el-form-item>
             <el-form-item label="视频介绍">
@@ -190,6 +191,10 @@ const handleRemove = (file, fileList) => {
 const handlePictureCardPreview = (file) => {
   dialogImageUrl.value = file.url
   dialogVisible.value = true
+}
+//文件上传回调
+const uploadSuccess = (result)=>{
+  form.value.cover = result.data;
 }
 
 const beforeCoverUpload = (file) => {
