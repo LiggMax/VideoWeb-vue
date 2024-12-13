@@ -87,6 +87,31 @@
                 <img :src="video.cover" class="video-cover" alt="图片获取失败"/>
               </div>
               <div class="video-info">
+                <div class="video-actions">
+                  <el-dropdown trigger="click" @command="handleCommand">
+                    <div class="action-icon">
+                      <el-icon>
+                        <MoreFilled/>
+                      </el-icon>
+                    </div>
+                    <template #dropdown>
+                      <el-dropdown-menu>
+                        <el-dropdown-item :command="{ type: 'edit', id: video.id }">
+                          <el-icon>
+                            <Edit/>
+                          </el-icon>
+                          编辑
+                        </el-dropdown-item>
+                        <el-dropdown-item :command="{ type: 'delete', id: video.id }">
+                          <el-icon>
+                            <Delete/>
+                          </el-icon>
+                          删除
+                        </el-dropdown-item>
+                      </el-dropdown-menu>
+                    </template>
+                  </el-dropdown>
+                </div>
                 <h3 class="video-title">{{ video.title }}</h3>
                 <p class="video-description">{{ video.content }}</p>
                 <div class="video-meta">
@@ -100,10 +125,12 @@
 
         <!-- 抽屉弹窗 -->
         <el-drawer
-            title="发布视频"
+            :title="isEdit ? '编辑视频' : '发布视频'"
             v-model="drawerVisible"
             direction="rtl"
-            size="40%">
+            size="40%"
+            @close="handleDrawerClose"
+        >
           <el-form :model="form" label-width="80px">
             <el-form-item label="标题">
               <el-input v-model="form.title" placeholder="请输入视频标题"></el-input>
@@ -119,11 +146,17 @@
                   :headers="{'Authorization':tokenStore.token}"
                   name="file"
                   :on-success="uploadSuccess"
+                  :file-list="fileList"
+                  :limit="1"
+                  :on-exceed="handleExceed"
+                  :hide-upload="fileList.length >= 1"
               >
-                <i class="el-icon-plus"></i>
+                <el-icon>
+                  <Plus/>
+                </el-icon>
               </el-upload>
-              <el-dialog :visible.sync="dialogVisible">
-                <img width="100%" v-if="form.cover" :src="form.cover" alt="">
+              <el-dialog v-model="dialogVisible">
+                <img width="100%" :src="dialogImageUrl" alt="">
               </el-dialog>
             </el-form-item>
             <el-form-item label="视频介绍">
@@ -135,7 +168,10 @@
               </el-input>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="submitForm">发布</el-button>
+              <el-button type="primary" @click="isEdit ? updateVideo() : submitForm()">{{
+                  isEdit ? '修改' : '发布'
+                }}
+              </el-button>
               <el-button @click="resetForm">重置</el-button>
             </el-form-item>
           </el-form>
@@ -154,12 +190,15 @@ import {
   Star,
   Edit,
   Document,
-  ChatDotRound
+  ChatDotRound,
+  MoreFilled,
+  Delete,
+  Plus
 } from '@element-plus/icons-vue'
 import useUserInfoStore from '@/stores/userInfo'
-import {ElMessage} from "element-plus";
+import {ElMessage, ElMessageBox} from "element-plus";
 import {useTokenStore} from "@/stores/token";
-import {getUserVideoService, publishVideoService} from "@/api/video";
+import {editVideoService, getUserVideoService, publishVideoService} from "@/api/userVideo";
 import {getUserInfoService} from "@/api/user";
 
 const router = useRouter()
@@ -208,22 +247,32 @@ const form = ref({
 })
 const dialogImageUrl = ref('')
 const dialogVisible = ref(false)
+const isEdit = ref(false)
+const currentEditId = ref(null)
 
 const openDrawer = () => {
+  isEdit.value = false
   drawerVisible.value = true
 }
 
+const fileList = ref([])
+
 const handleRemove = (file, fileList) => {
-  console.log(file, fileList)
+  form.value.cover = ''
+  fileList.value = fileList
 }
 
 const handlePictureCardPreview = (file) => {
-  dialogImageUrl.value = file.url
+  dialogImageUrl.value = file.url || file.response?.data
   dialogVisible.value = true
 }
 //文件上传回调
 const uploadSuccess = (result) => {
   form.value.cover = result.data;
+  fileList.value = [{
+    name: 'cover',
+    url: result.data
+  }]
 }
 
 const beforeCoverUpload = (file) => {
@@ -240,18 +289,29 @@ const beforeCoverUpload = (file) => {
 }
 
 const submitForm = async () => {
-  // 提交表单逻辑
-  console.log('提交表单:', form)
-  await publishVideoService(form.value);
+  await publishVideoService(form.value)
   ElMessage.success('发布成功')
+  currentEditId.value = {}
+  //关闭抽屉
   drawerVisible.value = false
+  //更新视频列表
+  await getUserVideoInfo()
 }
 
-//重置表单
 const resetForm = () => {
-  form.title = ''
-  form.cover = ''
-  form.description = ''
+  form.value = {
+    title: '',
+    cover: '',
+    content: ''
+  }
+  fileList.value = []
+  isEdit.value = false
+  currentEditId.value = null
+}
+
+const handleDrawerClose = () => {
+  resetForm()
+  drawerVisible.value = false
 }
 
 //视频区域数据模型
@@ -261,36 +321,6 @@ const videos = ref([
     title: '视频标题1',
     content: '这是视频1的描述',
     cover: 'https://example.com/video1.jpg'
-  },
-  {
-    id: 2,
-    title: '视频标题2',
-    content: '这是视频2的描述',
-    cover: 'http://sncodwj9m.hn-bkt.clouddn.com/b546e174-33f4-42be-bdd2-e3ac690bdf24.jpg'
-  },
-  {
-    id: 3,
-    title: '视频标题3',
-    content: '这是视频3的描述',
-    cover: 'https://example.com/video3.jpg'
-  },
-  {
-    id: 3,
-    title: '视频标题2',
-    content: '这是视频2的描述',
-    cover: 'https://example.com/video2.jpg'
-  },
-  {
-    id: 4,
-    title: '视频标题2',
-    content: '这是视频2的描述',
-    cover: 'https://example.com/video2.jpg'
-  },
-  {
-    id: 5,
-    title: '视频标题2',
-    content: '这是视频2的描述',
-    cover: 'https://example.com/video2.jpg'
   }
 ]);
 //获取用视频信息
@@ -298,6 +328,64 @@ const getUserVideoInfo = async () => {
   let result = await getUserVideoService();
   videos.value = result.data;
 }
+
+
+// 处理下拉菜单命令
+const handleCommand = async ({type, id}) => {
+  if (type === 'edit') {
+    const currentVideo = videos.value.find(video => video.id === id)
+    if (currentVideo) {
+      form.value = {
+        title: currentVideo.title,
+        cover: currentVideo.cover,
+        content: currentVideo.content
+      }
+      fileList.value = [{
+        name: 'cover',
+        url: currentVideo.cover
+      }]
+      isEdit.value = true
+      currentEditId.value = id
+      drawerVisible.value = true
+    }
+  } else if (type === 'delete') {
+    // 处理删除逻辑
+    try {
+      await ElMessageBox.confirm(
+          '确定要删除这个视频吗？',
+          '警告',
+          {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning',
+          }
+      )
+      // TODO: 调用删除API
+      console.log('删除视频:', id)
+      ElMessage.success('删除成功')
+    } catch (error) {
+      console.log('取消删除')
+    }
+  }
+}
+const handleExceed = (files) => {
+  ElMessage.warning('只能上传一张封面图片')
+}
+// 更新视频信息
+const updateVideo = async () => {
+  await editVideoService({
+    id: currentEditId.value,
+    ...form.value
+  })
+  ElMessage.success('更新成功')
+  //清除数据
+  currentEditId.value = {}
+  //关闭抽屉
+  drawerVisible.value = false
+  //更新视频列表
+  await getUserVideoInfo()
+}
+// 获取用户视频信息
 getUserVideoInfo()
 </script>
 
@@ -698,6 +786,7 @@ getUserVideoInfo()
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  position: relative; /* 添加相对定位 */
 }
 
 .video-title {
@@ -708,8 +797,14 @@ getUserVideoInfo()
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
+  display: -moz-box;
+  display: box;
   -webkit-line-clamp: 2;
+  -moz-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
+  -moz-box-orient: vertical;
+  box-orient: vertical;
   line-height: 1.4;
 }
 
@@ -720,8 +815,14 @@ getUserVideoInfo()
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
+  display: -moz-box;
+  display: box;
   -webkit-line-clamp: 2;
+  -moz-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
+  -moz-box-orient: vertical;
+  box-orient: vertical;
   line-height: 1.4;
   max-height: 2.8em;
 }
@@ -771,5 +872,41 @@ getUserVideoInfo()
   display: flex;
   justify-content: flex-end; /* 右对齐 */
   margin-bottom: 20px; /* 添加底部间距 */
+}
+
+.video-actions {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1;
+}
+
+.action-icon {
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  color: #666;
+  transition: all 0.3s;
+}
+
+.action-icon:hover {
+  background-color: #f5f5f5;
+  color: #fb7299;
+}
+
+:deep(.el-dropdown-menu__item) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+:deep(.el-dropdown-menu__item:hover) {
+  color: #fb7299;
+  background-color: #fff1f5;
+}
+
+:deep(.el-dropdown-menu__item .el-icon) {
+  margin-right: 4px;
 }
 </style>
