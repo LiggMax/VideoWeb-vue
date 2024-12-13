@@ -56,10 +56,8 @@
 
         <!-- 右侧内容 -->
         <div class="main-content">
-          <div class="empty-state" v-if="!hasContent">
+          <div class="empty-state" v-if="!hasContent && currentNav === 'videos'">
             <el-empty :description="getEmptyText">
-              <template #image>
-              </template>
               <template #description>
                 <p class="empty-text">{{ getEmptyText }}</p>
               </template>
@@ -70,6 +68,33 @@
                 立即投稿
               </el-button>
             </el-empty>
+          </div>
+
+          <!-- 发布视频按钮 -->
+          <div class="button-container" v-if="currentNav === 'videos'">
+            <el-button type="primary" @click="drawerVisible = true" class="publish-button">
+              <el-icon>
+                <VideoCamera/>
+              </el-icon>
+              发布视频
+            </el-button>
+          </div>
+
+          <!-- 视频列表展示 -->
+          <div class="video-list" v-if="currentNav === 'videos' && hasContent">
+            <div v-for="video in videos" :key="video.id" class="video-card">
+              <div class="video-cover-wrap">
+                <img :src="video.cover" class="video-cover" alt="图片获取失败"/>
+              </div>
+              <div class="video-info">
+                <h3 class="video-title">{{ video.title }}</h3>
+                <p class="video-description">{{ video.content }}</p>
+                <div class="video-meta">
+                  <span class="update-time">发布时间: {{ video.createTime }}</span>
+                  <span class="view-count">更新时间: {{ video.updateTime }}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -134,7 +159,8 @@ import {
 import useUserInfoStore from '@/stores/userInfo'
 import {ElMessage} from "element-plus";
 import {useTokenStore} from "@/stores/token";
-import {publishVideoService} from "@/api/video";
+import {getUserVideoService, publishVideoService} from "@/api/video";
+import {getUserInfoService} from "@/api/user";
 
 const router = useRouter()
 const userInfoStore = useUserInfoStore()
@@ -144,7 +170,9 @@ const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726
 const tokenStore = useTokenStore()
 
 const userInfo = computed(() => userInfoStore.info)
-const hasContent = ref(false)
+const hasContent = computed(() => {
+  return videos.value.length > 0;
+});
 
 const navItems = [
   {name: 'videos', label: '视频', icon: 'VideoCamera', count: 0},
@@ -171,6 +199,7 @@ const getEmptyText = computed(() => {
   }
   return texts[currentNav.value]
 })
+
 const drawerVisible = ref(false)
 const form = ref({
   title: '',
@@ -193,7 +222,7 @@ const handlePictureCardPreview = (file) => {
   dialogVisible.value = true
 }
 //文件上传回调
-const uploadSuccess = (result)=>{
+const uploadSuccess = (result) => {
   form.value.cover = result.data;
 }
 
@@ -210,8 +239,7 @@ const beforeCoverUpload = (file) => {
   return isJPGorPNG && isLt2M
 }
 
-const submitForm = async () =>
-{
+const submitForm = async () => {
   // 提交表单逻辑
   console.log('提交表单:', form)
   await publishVideoService(form.value);
@@ -219,16 +247,58 @@ const submitForm = async () =>
   drawerVisible.value = false
 }
 
-
+//重置表单
 const resetForm = () => {
   form.title = ''
   form.cover = ''
   form.description = ''
 }
 
-const goToUpload = () => {
-  router.push('/upload')
+//视频区域数据模型
+const videos = ref([
+  {
+    id: 1,
+    title: '视频标题1',
+    content: '这是视频1的描述',
+    cover: 'https://example.com/video1.jpg'
+  },
+  {
+    id: 2,
+    title: '视频标题2',
+    content: '这是视频2的描述',
+    cover: 'http://sncodwj9m.hn-bkt.clouddn.com/b546e174-33f4-42be-bdd2-e3ac690bdf24.jpg'
+  },
+  {
+    id: 3,
+    title: '视频标题3',
+    content: '这是视频3的描述',
+    cover: 'https://example.com/video3.jpg'
+  },
+  {
+    id: 3,
+    title: '视频标题2',
+    content: '这是视频2的描述',
+    cover: 'https://example.com/video2.jpg'
+  },
+  {
+    id: 4,
+    title: '视频标题2',
+    content: '这是视频2的描述',
+    cover: 'https://example.com/video2.jpg'
+  },
+  {
+    id: 5,
+    title: '视频标题2',
+    content: '这是视频2的描述',
+    cover: 'https://example.com/video2.jpg'
+  }
+]);
+//获取用视频信息
+const getUserVideoInfo = async () => {
+  let result = await getUserVideoService();
+  videos.value = result.data;
 }
+getUserVideoInfo()
 </script>
 
 <style scoped>
@@ -567,7 +637,7 @@ const goToUpload = () => {
   }
 
   .content-main {
-    padding: 10px;
+    padding: 1200px;
   }
 
   .side-nav {
@@ -588,13 +658,118 @@ const goToUpload = () => {
   }
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
+.video-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 10px;
+}
+
+.video-card {
+  display: flex;
+  background: #fff;
+  border-radius: 4px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid #e3e5e7;
+  height: 120px; /* 固定高度 */
+}
+
+.video-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.video-cover-wrap {
+  width: 200px; /* 固定宽度 */
+  height: 120px; /* 固定高度 */
+  flex-shrink: 0; /* 防止图片被压缩 */
+}
+
+.video-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-info {
+  flex: 1;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.video-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0;
+  color: #18191c;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.4;
+}
+
+.video-description {
+  font-size: 14px;
+  color: #61666d;
+  margin: 8px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.4;
+  max-height: 2.8em;
+}
+
+.video-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+  color: #9499a0;
+}
+
+.update-time, .view-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 响应式布局 */
+@media (max-width: 768px) {
+  .video-card {
+    height: 100px;
   }
-  to {
-    opacity: 1;
+
+  .video-cover-wrap {
+    width: 160px;
+    height: 100px;
+  }
+
+  .video-info {
+    padding: 8px 12px;
+  }
+
+  .video-title {
+    font-size: 14px;
+  }
+
+  .video-description {
+    font-size: 12px;
+    margin: 4px 0;
+    line-height: 1.3;
+    max-height: 2.6em;
   }
 }
 
+.button-container {
+  display: flex;
+  justify-content: flex-end; /* 右对齐 */
+  margin-bottom: 20px; /* 添加底部间距 */
+}
 </style>
