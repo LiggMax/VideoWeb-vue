@@ -48,6 +48,13 @@ const carouselItems = ref([
     description: '这是另一段视频介绍文字，帮助用户了解视频内容...',
     image: 'https://play.xfvod.pro/images/hb/lx.jpg',
     link: '/video/1'
+  },
+  {
+    id: 1,
+    title: '推荐内容4',
+    description: '这是另一段视频介绍文字，帮助用户了解视频内容...',
+    image: 'https://play.xfvod.pro/images/hb/lx.jpg',
+    link: '/video/1'
   }
 ])
 
@@ -83,27 +90,23 @@ getVideoList()
     </div>
 
     <!-- 主要内容区域 -->
-    <div class="main-content">
-      <el-row :gutter="20">
-          <div class="content-section">
-            <!-- 视频列表 -->
-            <div class="video-grid">
-              <el-card v-for="video in videos" :key="video.id" class="video-card" @click="handleVideoClick(video)">
-                <div class="video-thumbnail">
-                  <img :src="video.cover" :alt="video.title" class="cover-image">
-                </div>
-                <div class="video-title">{{ video.title }}</div>
-                <div class="video-info">
-                  <span class="uploader">
-                    <span class="up-tag">UP：</span>
-                    {{ video.nickname }}
-                  </span>
-                  <span class="play-count">播放: 10000 万</span>
-                </div>
-              </el-card>
-            </div>
+    <div class="content-section">
+      <!-- 视频列表 -->
+      <div class="video-grid">
+        <el-card v-for="video in videos" :key="video.id" class="video-card" @click="handleVideoClick(video)">
+          <div class="video-thumbnail">
+            <img :src="video.cover" :alt="video.title" class="cover-image">
           </div>
-      </el-row>
+          <div class="video-title">{{ video.title }}</div>
+          <div class="video-info">
+            <span class="uploader">
+              <span class="up-tag">UP：</span>
+              {{ video.nickname }}
+            </span>
+            <span class="play-count">播放: 10000 万</span>
+          </div>
+        </el-card>
+      </div>
     </div>
 
     <!-- 返回顶部按钮 -->
@@ -123,6 +126,8 @@ getVideoList()
 <style scoped>
 .home {
   padding-bottom: 20px;
+  width: 100%;
+  min-height: 100vh;
 }
 
 .carousel-wrapper {
@@ -165,24 +170,22 @@ getVideoList()
   border-radius: 12px;
 }
 
-.main-content {
-  max-width: 1800px;
+.content-section {
+  margin-top: 20px;
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
   padding: 0 40px;
   box-sizing: border-box;
 }
 
-.content-section {
-  margin-top: 20px;
-  width: 100%;
-}
-
 .video-grid {
   margin-top: 20px;
   display: grid;
-  grid-template-columns: repeat(5, minmax(300px, 1fr));
-  gap: 24px;
-  max-width: 1800px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  width: 100%;
+  max-width: 2400px;
   margin: 0 auto;
 }
 
@@ -192,7 +195,10 @@ getVideoList()
   border-radius: 6px;
   transition: all 0.3s ease;
   cursor: pointer;
-  min-width: 300px;
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
 }
 
 .video-card:hover {
@@ -201,11 +207,12 @@ getVideoList()
 }
 
 .video-thumbnail {
-  height: 220px;
+  aspect-ratio: 16 / 9;
   background-color: #f5f5f5;
   margin-bottom: 8px;
   overflow: hidden;
   border-radius: 4px;
+  width: 100%;
 }
 
 :deep(.el-card__body) {
@@ -227,6 +234,7 @@ getVideoList()
   -webkit-box-orient: vertical;
   line-height: 1.4;
   font-weight: 500;
+  text-align: left;
 }
 
 .video-info {
@@ -235,6 +243,7 @@ getVideoList()
   display: flex;
   justify-content: space-between;
   padding: 0 2px;
+  text-align: left;
 }
 
 .cover-image {
@@ -368,53 +377,67 @@ getVideoList()
   background-color: rgba(251, 114, 153, 0.9);
 }
 
-@media screen and (max-width: 1800px) {
+@media screen and (min-width: 2400px) {
   .video-grid {
-    grid-template-columns: repeat(4, minmax(280px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(8, 1fr);
   }
+}
 
-  .video-thumbnail {
-    height: 200px;
+@media screen and (max-width: 2000px) {
+  .video-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+@media screen and (max-width: 1600px) {
+  .video-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  
+  .content-section {
+    padding: 0 30px;
   }
 }
 
 @media screen and (max-width: 1400px) {
   .video-grid {
-    grid-template-columns: repeat(3, minmax(280px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
   }
-
-  .main-content {
+  
+  .content-section {
     padding: 0 30px;
-  }
-
-  .video-thumbnail {
-    height: 190px;
   }
 }
 
 @media screen and (max-width: 1200px) {
   .video-grid {
-    grid-template-columns: repeat(3, minmax(240px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 16px;
   }
-
-  .main-content {
+  
+  .content-section {
     padding: 0 20px;
-  }
-
-  .video-thumbnail {
-    height: 160px;
   }
 }
 
-@media screen and (max-width: 960px) {
+@media screen and (max-width: 900px) {
   .video-grid {
-    grid-template-columns: repeat(2, minmax(260px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
   }
+  
+  .content-section {
+    padding: 0 16px;
+  }
+}
 
-  .video-thumbnail {
-    height: 180px;
+@media screen and (max-width: 600px) {
+  .video-grid {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 12px;
+  }
+  
+  .content-section {
+    padding: 0 12px;
   }
 }
 
@@ -491,6 +514,13 @@ getVideoList()
 
   .carousel-overlay {
     padding: 80px 30px 30px;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .video-grid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
   }
 }
 </style> 
