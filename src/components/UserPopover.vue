@@ -125,6 +125,8 @@ const handleLogout = () => {
   tokenStore.removeToken()
   // 关闭弹窗
   visible.value = false
+  // 跳转回首页
+  router.push('/')
   // 提示退出成功
   ElMessage.success('退出成功')
 }

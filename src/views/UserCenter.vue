@@ -315,14 +315,7 @@ const handleDrawerClose = () => {
 }
 
 //视频区域数据模型
-const videos = ref([
-  {
-    id: 1,
-    title: '视频标题1',
-    content: '这是视频1的描述',
-    cover: 'https://example.com/video1.jpg'
-  }
-]);
+const videos = ref([]);
 //获取用视频信息
 const getUserVideoInfo = async () => {
   let result = await getUserVideoService();
