@@ -120,6 +120,20 @@
                 </div>
               </div>
             </div>
+
+            <!-- 添加分页组件 -->
+            <div class="pagination-container">
+              <el-pagination
+                v-model:current-page="pagination.pageNum"
+                v-model:page-size="pagination.pageSize"
+                :page-sizes="[5, 10, 20, 50]"
+                layout="total, sizes, prev, pager, next, jumper"
+                :total="pagination.total"
+                @size-change="handleSizeChange"
+                @current-change="handlePageChange"
+                background
+              />
+            </div>
           </div>
         </div>
 
@@ -198,7 +212,7 @@ import {
 import useUserInfoStore from '@/stores/userInfo'
 import {ElMessage, ElMessageBox} from "element-plus";
 import {useTokenStore} from "@/stores/token";
-import {editVideoService, getUserVideoService, publishVideoService} from "@/api/userVideo";
+import {deleteVideoService, editVideoService, getUserVideoService, publishVideoService} from "@/api/userVideo";
 import {getUserInfoService} from "@/api/user";
 
 const router = useRouter()
@@ -316,12 +330,34 @@ const handleDrawerClose = () => {
 
 //视频区域数据模型
 const videos = ref([]);
+//分页相关的数据
+const pagination = ref({
+  pageNum: 1,
+  pageSize: 5,
+  total: 0
+})
+
 //获取用视频信息
 const getUserVideoInfo = async () => {
-  let result = await getUserVideoService();
-  videos.value = result.data;
+  let result = await getUserVideoService({
+    pageNum: pagination.value.pageNum,
+    pageSize: pagination.value.pageSize
+  });
+  videos.value = result.data.items;
+  pagination.value.total = result.data.total;
 }
 
+// 添加分页改变的处理方法
+const handlePageChange = (newPage) => {
+  pagination.value.pageNum = newPage;
+  getUserVideoInfo();
+}
+
+const handleSizeChange = (newSize) => {
+  pagination.value.pageSize = newSize;
+  pagination.value.pageNum = 1;
+  getUserVideoInfo();
+}
 
 // 处理下拉菜单命令
 const handleCommand = async ({type, id}) => {
@@ -355,7 +391,10 @@ const handleCommand = async ({type, id}) => {
       )
       // TODO: 调用删除API
       console.log('删除视频:', id)
-      ElMessage.success('删除成功')
+      await deleteVideoService(id)
+      //刷新列表
+      await getUserVideoInfo()
+      await ElMessage.success('删除成功')
     } catch (error) {
       console.log('取消删除')
     }
@@ -901,5 +940,20 @@ getUserVideoInfo()
 
 :deep(.el-dropdown-menu__item .el-icon) {
   margin-right: 4px;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  padding: 10px 0;
+}
+
+:deep(.el-pagination.is-background .el-pager li:not(.is-disabled).is-active) {
+  background-color: #fb7299;
+}
+
+:deep(.el-pagination.is-background .el-pager li:not(.is-disabled):hover) {
+  color: #fb7299;
 }
 </style>
