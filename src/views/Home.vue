@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import {getVideoListService} from "@/api/video";
-import { VideoPlay } from '@element-plus/icons-vue'
+import { VideoPlay, CaretTop, ArrowUp } from '@element-plus/icons-vue'
 
 // 视频列表数据模型
 const videos = ref([
@@ -101,6 +101,18 @@ getVideoList()
           </div>
       </el-row>
     </div>
+
+    <!-- 返回顶部按钮 -->
+    <el-backtop 
+      :right="40" 
+      :bottom="40" 
+      :visibility-height="400"
+      class="back-to-top"
+    >
+      <div class="back-top-content">
+        <el-icon><ArrowUp /></el-icon>
+      </div>
+    </el-backtop>
   </div>
 </template>
 
@@ -149,21 +161,23 @@ getVideoList()
 }
 
 .main-content {
-  max-width: 1400px;
+  max-width: 1800px;
   margin: 0 auto;
   padding: 0 40px;
+  box-sizing: border-box;
 }
 
 .content-section {
   margin-top: 20px;
+  width: 100%;
 }
 
 .video-grid {
   margin-top: 20px;
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 12px;
-  max-width: 1600px;
+  grid-template-columns: repeat(5, minmax(300px, 1fr));
+  gap: 24px;
+  max-width: 1800px;
   margin: 0 auto;
 }
 
@@ -173,7 +187,7 @@ getVideoList()
   border-radius: 6px;
   transition: all 0.3s ease;
   cursor: pointer;
-  min-width: 200px;
+  min-width: 300px;
 }
 
 .video-card:hover {
@@ -182,7 +196,7 @@ getVideoList()
 }
 
 .video-thumbnail {
-  height: 160px;
+  height: 220px;
   background-color: #f5f5f5;
   margin-bottom: 8px;
   overflow: hidden;
@@ -332,63 +346,35 @@ getVideoList()
   background-color: rgba(251, 114, 153, 0.9);
 }
 
-@media screen and (max-width: 1200px) {
-  .carousel-container {
-    height: 400px !important;
-  }
-
-  .carousel-title {
-    font-size: 24px;
-  }
-
-  .carousel-overlay {
-    padding: 30px;
-  }
-}
-
-@media screen and (max-width: 768px) {
-  .carousel-container {
-    height: 350px !important;
-  }
-
-  .carousel-title {
-    font-size: 20px;
-    margin-bottom: 12px;
-  }
-
-  .carousel-overlay {
-    padding: 20px;
-  }
-
-  .play-icon {
-    padding: 6px 16px;
-    font-size: 14px;
-  }
-
-  :deep(.el-carousel__indicators) {
-    bottom: 20px;
-  }
-}
-
-@media screen and (max-width: 1600px) {
+@media screen and (max-width: 1800px) {
   .video-grid {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .video-thumbnail {
+    height: 200px;
   }
 }
 
 @media screen and (max-width: 1400px) {
   .video-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, minmax(280px, 1fr));
   }
 
   .main-content {
     padding: 0 30px;
   }
+
+  .video-thumbnail {
+    height: 190px;
+  }
 }
 
 @media screen and (max-width: 1200px) {
   .video-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(240px, 1fr));
+    gap: 16px;
   }
 
   .main-content {
@@ -396,7 +382,52 @@ getVideoList()
   }
 
   .video-thumbnail {
+    height: 160px;
+  }
+}
+
+@media screen and (max-width: 960px) {
+  .video-grid {
+    grid-template-columns: repeat(2, minmax(260px, 1fr));
+  }
+
+  .video-thumbnail {
     height: 180px;
   }
+}
+
+/* 返回顶部按钮样式 */
+.back-to-top {
+  --el-backtop-bg-color: #fb7299;
+  --el-backtop-text-color: #fff;
+  --el-backtop-hover-bg-color: #fc8bab;
+}
+
+.back-top-content {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-top-content .el-icon {
+  font-size: 20px;
+}
+
+:deep(.el-backtop) {
+  background-color: var(--el-backtop-bg-color);
+  color: var(--el-backtop-text-color);
+  height: 44px;
+  width: 44px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+:deep(.el-backtop:hover) {
+  background-color: var(--el-backtop-hover-bg-color);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(251, 114, 153, 0.3);
 }
 </style> 
