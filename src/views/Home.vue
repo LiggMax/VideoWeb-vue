@@ -9,10 +9,7 @@ const videos = ref([
     id: 1,
     title: '示例视频标题1',
     cover: 'https://example.com/cover1.jpg',
-    uploader: {
-      id: 1,
-      nickname: 'UP主1'
-    },
+    nickname: 'UP主1',
     playCount: 12000,
     createTime: '2024-03-20'
   },
@@ -33,19 +30,22 @@ const videos = ref([
 const carouselItems = ref([
   {
     id: 1,
-    title: '推荐内容1',
+    title: '我推的孩子',
+    description: '16岁的天才少女星野爱久爱海梦想成为偶像，但在甄选会上却屡屡受挫...',
     image: 'https://play.xfvod.pro/images/hb/wtdhz.png',
     link: '/video/1'
   },
   {
     id: 1,
     title: '推荐内容2',
+    description: '这是一段视频介绍文字，简单描述视频的主要内容...',
     image: 'https://play.xfvod.pro/images/hb/baiquan.jpg',
     link: '/video/1'
   },
   {
     id: 1,
     title: '推荐内容3',
+    description: '这是另一段视频介绍文字，帮助用户了解视频内容...',
     image: 'https://play.xfvod.pro/images/hb/lx.jpg',
     link: '/video/1'
   }
@@ -69,6 +69,7 @@ getVideoList()
             <img :src="item.image" :alt="item.title" class="carousel-image">
             <div class="carousel-overlay">
               <h3 class="carousel-title">{{ item.title }}</h3>
+              <p class="carousel-description">{{ item.description }}</p>
               <div class="carousel-info">
                 <span class="play-icon">
                   <el-icon><VideoPlay /></el-icon>
@@ -93,7 +94,10 @@ getVideoList()
                 </div>
                 <div class="video-title">{{ video.title }}</div>
                 <div class="video-info">
-                  <span class="uploader">UP主: lwz</span>
+                  <span class="uploader">
+                    <span class="up-tag">UP：</span>
+                    {{ video.nickname }}
+                  </span>
                   <span class="play-count">播放: 10000 万</span>
                 </div>
               </el-card>
@@ -149,6 +153,7 @@ getVideoList()
   transition: transform 0.3s ease;
   overflow: hidden;
   border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .carousel-image {
@@ -256,6 +261,15 @@ getVideoList()
 
 .uploader {
   color: #666;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.up-tag {
+  color: #fb7299;
+  font-weight: bold;
+  font-size: 13px;
 }
 
 .play-count {
@@ -279,18 +293,26 @@ getVideoList()
   left: 0;
   right: 0;
   padding: 40px;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  background: linear-gradient(
+    transparent 0%,
+    rgba(0, 0, 0, 0.2) 20%,
+    rgba(0, 0, 0, 0.4) 40%,
+    rgba(0, 0, 0, 0.7) 70%,
+    rgba(0, 0, 0, 0.85) 100%
+  );
   color: #fff;
   border-bottom-left-radius: 12px;
   border-bottom-right-radius: 12px;
+  padding-top: 100px;
 }
 
 .carousel-title {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: bold;
   margin: 0;
-  margin-bottom: 16px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  margin-bottom: 8px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  letter-spacing: 1px;
 }
 
 .carousel-info {
@@ -429,5 +451,46 @@ getVideoList()
   background-color: var(--el-backtop-hover-bg-color);
   transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(251, 114, 153, 0.3);
+}
+
+.carousel-description {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 16px 0;
+  line-height: 1.6;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 800px;
+}
+
+@media screen and (max-width: 1200px) {
+  .carousel-title {
+    font-size: 28px;
+  }
+
+  .carousel-description {
+    font-size: 15px;
+    margin-bottom: 12px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .carousel-title {
+    font-size: 24px;
+  }
+
+  .carousel-description {
+    font-size: 14px;
+    margin-bottom: 10px;
+    -webkit-line-clamp: 1;
+  }
+
+  .carousel-overlay {
+    padding: 80px 30px 30px;
+  }
 }
 </style> 
