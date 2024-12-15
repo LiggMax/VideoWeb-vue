@@ -20,6 +20,11 @@ const routes = [
     name: 'userCenter',
     component: UserCenter,
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/video/:id',
+    name: 'VideoDetail',
+    component: () => import('@/views/VideoDetail.vue')
   }
 ]
 

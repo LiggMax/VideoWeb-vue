@@ -2,6 +2,10 @@
 import { ref, onMounted } from 'vue'
 import {getVideoListService} from "@/api/video";
 import { VideoPlay, CaretTop, ArrowUp } from '@element-plus/icons-vue'
+import { useRouter } from 'vue-router'
+
+// 添加 router 实例
+const router = useRouter()
 
 // 视频列表数据模型
 const videos = ref([
@@ -64,6 +68,18 @@ const getVideoList = async () => {
   videos.value = res.data
 }
 getVideoList()
+
+// 添加视频点击处理函数
+const handleVideoClick = (video) => {
+  router.push({
+    path: `/video/${video.id}`,
+    // 可选:通过 query 传递一些基础数据,减少详情页的首次加载等待
+    query: {
+      title: video.title,
+      cover: video.cover
+    }
+  })
+}
 </script>
 
 <template>
