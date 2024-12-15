@@ -18,7 +18,7 @@
           <div class="video-stats">
             <span class="view-count">{{ videoInfo.viewCount }}播放</span>
             <span class="bullet">·</span>
-            <span class="date">{{ videoInfo.createTime }}</span>
+            <span class="date">发布时间：{{ videoInfo.createTime }}</span>
           </div>
         </div>
 
@@ -91,7 +91,7 @@
                 <div class="video-stats">
                   <span>{{ video.viewCount }}播放</span>
                   <span class="bullet">·</span>
-                  <span>{{ video.createTime }}</span>
+                  <span>发布时间：{{ video.createTime }}</span>
                 </div>
               </div>
             </div>

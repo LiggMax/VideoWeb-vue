@@ -149,30 +149,64 @@
             <el-form-item label="标题">
               <el-input v-model="form.title" placeholder="请输入视频标题"></el-input>
             </el-form-item>
+
+            <!-- 修改封面上传组件 -->
             <el-form-item label="封面">
               <el-upload
+                  class="cover-uploader"
+                  list-type="picture-card"
+                  :show-file-list="false"
                   :auto-upload="true"
                   action="/api/upload"
-                  list-type="picture-card"
-                  :on-preview="handlePictureCardPreview"
-                  :on-remove="handleRemove"
-                  :before-upload="beforeCoverUpload"
-                  :headers="{'Authorization':tokenStore.token}"
                   name="file"
+                  :headers="{'Authorization':tokenStore.token}"
                   :on-success="uploadSuccess"
-                  :file-list="fileList"
-                  :limit="1"
-                  :on-exceed="handleExceed"
-                  :hide-upload="fileList.length >= 1"
               >
-                <el-icon>
+                <img v-if="form.cover" :src="form.cover" class="cover-preview"/>
+                <el-icon v-else>
                   <Plus/>
                 </el-icon>
               </el-upload>
-              <el-dialog v-model="dialogVisible">
-                <img width="100%" :src="dialogImageUrl" alt="">
-              </el-dialog>
             </el-form-item>
+
+            <!-- 然后是视频文件上传 -->
+            <el-form-item label="视频文件">
+              <el-upload
+                class="video-uploader"
+                :auto-upload="true"
+                action="/api/uploadVideo"
+                :on-success="handleVideoSuccess"
+                :before-upload="beforeVideoUpload"
+                :headers="{'Authorization':tokenStore.token}"
+                name="video"
+                :limit="1"
+                :on-exceed="handleVideoExceed"
+                accept=".mp4,.mov,.avi"
+              >
+                <div class="video-upload-box">
+                  <template v-if="!form.videoUrl">
+                    <el-icon class="upload-icon"><VideoCamera /></el-icon>
+                    <div class="upload-text">点击上传视频</div>
+                    <div class="upload-tip">支持 mp4/mov/avi 格式，最大 500MB</div>
+                  </template>
+                  <template v-else>
+                    <div class="video-preview">
+                      <el-icon class="success-icon"><CircleCheckFilled /></el-icon>
+                      <span class="file-name">{{ videoFileName }}</span>
+                      <el-button 
+                        type="danger" 
+                        size="small" 
+                        class="remove-btn"
+                        @click.stop="removeVideo"
+                      >
+                        移除
+                      </el-button>
+                    </div>
+                  </template>
+                </div>
+              </el-upload>
+            </el-form-item>
+
             <el-form-item label="视频介绍">
               <el-input
                   type="textarea"
@@ -207,7 +241,8 @@ import {
   ChatDotRound,
   MoreFilled,
   Delete,
-  Plus
+  Plus,
+  CircleCheckFilled
 } from '@element-plus/icons-vue'
 import useUserInfoStore from '@/stores/userInfo'
 import {ElMessage, ElMessageBox} from "element-plus";
@@ -257,7 +292,8 @@ const drawerVisible = ref(false)
 const form = ref({
   title: '',
   cover: '',
-  content: ''
+  content: '',
+  videoUrl: ''
 })
 const dialogImageUrl = ref('')
 const dialogVisible = ref(false)
@@ -280,7 +316,7 @@ const handlePictureCardPreview = (file) => {
   dialogImageUrl.value = file.url || file.response?.data
   dialogVisible.value = true
 }
-//文件上传回调
+//封面文件上传回调
 const uploadSuccess = (result) => {
   form.value.cover = result.data;
   fileList.value = [{
@@ -291,13 +327,13 @@ const uploadSuccess = (result) => {
 
 const beforeCoverUpload = (file) => {
   const isJPGorPNG = file.type === 'image/jpeg' || file.type === 'image/png'
-  const isLt2M = file.size / 1024 / 1024 < 2
+  const isLt10M = file.size / 1024 / 1024 < 10
 
   if (!isJPGorPNG) {
     ElMessage.error('上传封面图片只能是 JPG 或 PNG 格式!')
   }
-  if (!isLt2M) {
-    ElMessage.error('上传封面图片大小不能超过 2MB!')
+  if (!isLt10M) {
+    ElMessage.error('上传封面图片大小不能超过 10MB!')
   }
   return isJPGorPNG && isLt2M
 }
@@ -316,9 +352,11 @@ const resetForm = () => {
   form.value = {
     title: '',
     cover: '',
-    content: ''
+    content: '',
+    videoUrl: ''
   }
   fileList.value = []
+  videoFileName.value = ''
   isEdit.value = false
   currentEditId.value = null
 }
@@ -419,6 +457,42 @@ const updateVideo = async () => {
 }
 // 获取用户视频信息
 getUserVideoInfo()
+
+// 添加新的响应式变量
+const videoFileName = ref('')
+
+// 视频上传成功回调
+const handleVideoSuccess = (response) => {
+  form.value.videoUrl = response.data
+  videoFileName.value = response.originalFilename || '已上传视频'
+}
+
+// 视频上传前的验证
+const beforeVideoUpload = (file) => {
+  const isValidFormat = ['video/mp4', 'video/quicktime', 'video/x-msvideo'].includes(file.type)
+  const isLt500M = file.size / 1024 / 1024 < 500
+
+  if (!isValidFormat) {
+    ElMessage.error('请上传正确的视频格式!')
+    return false
+  }
+  if (!isLt500M) {
+    ElMessage.error('视频大小不能超过 500MB!')
+    return false
+  }
+  return true
+}
+
+// 处理超出上传数量限制
+const handleVideoExceed = () => {
+  ElMessage.warning('只能上传一个视频文件')
+}
+
+// 移除视频
+const removeVideo = () => {
+  form.value.videoUrl = ''
+  videoFileName.value = ''
+}
 </script>
 
 <style scoped>
@@ -955,5 +1029,89 @@ getUserVideoInfo()
 
 :deep(.el-pagination.is-background .el-pager li:not(.is-disabled):hover) {
   color: #fb7299;
+}
+
+/* 添加新的样式 */
+.video-uploader {
+  width: 100%;
+}
+
+.video-upload-box {
+  width: 100%;
+  height: 150px;
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.3s;
+}
+
+.video-upload-box:hover {
+  border-color: #fb7299;
+}
+
+.upload-icon {
+  font-size: 28px;
+  color: #8c939d;
+  margin-bottom: 8px;
+}
+
+.upload-text {
+  font-size: 14px;
+  color: #606266;
+  margin-bottom: 4px;
+}
+
+.upload-tip {
+  font-size: 12px;
+  color: #909399;
+}
+
+.video-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+}
+
+.success-icon {
+  color: #67c23a;
+  font-size: 20px;
+}
+
+.file-name {
+  color: #606266;
+  font-size: 14px;
+}
+
+.remove-btn {
+  margin-left: auto;
+}
+
+.cover-uploader :deep(.el-upload) {
+  width: 178px;
+  height: 178px;
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+
+.cover-uploader :deep(.el-upload:hover) {
+  border-color: #fb7299;
+}
+
+.cover-preview {
+  width: 178px;
+  height: 178px;
+  object-fit: cover;
+  display: block;
 }
 </style>
