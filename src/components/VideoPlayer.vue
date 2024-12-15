@@ -165,6 +165,13 @@
         重新播放
       </div>
     </div>
+
+    <!-- 添加收缩按钮 -->
+    <div class="collapse-trigger" @click="$emit('toggle-collapse')" :class="{ 'is-collapsed': isCollapsed }">
+      <div class="collapse-btn">
+        <el-icon><CaretRight /></el-icon>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -172,7 +179,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { 
   VideoPlay, VideoPause, Microphone, Mute, 
-  FullScreen, Aim, RefreshRight 
+  FullScreen, Aim, RefreshRight, CaretRight 
 } from '@element-plus/icons-vue'
 
 // Props定义
@@ -188,6 +195,10 @@ const props = defineProps({
   title: {
     type: String,
     default: ''
+  },
+  isCollapsed: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -420,6 +431,9 @@ onUnmounted(() => {
 
 // 添加到现有的响应式变量中
 const showVolumeSlider = ref(false)
+
+// 定义事件
+defineEmits(['toggle-collapse'])
 </script>
 
 <style scoped>
@@ -792,5 +806,59 @@ const showVolumeSlider = ref(false)
 /* 确保按钮在控制栏显示时也可见 */
 .video-player:hover .float-play-btn {
   bottom: 80px;
+}
+
+/* 修改收缩按钮样式 */
+.collapse-trigger {
+  position: absolute;
+  right: 0;
+  top: 50%;  /* 改为50% */
+  transform: translateY(-50%);  /* 添加垂直居中变换 */
+  height: 60px;
+  width: 24px;
+  transition: all 0.3s ease;
+  z-index: 100;
+}
+
+.collapse-btn {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 24px;
+  height: 60px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 4px 0 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(2px);
+}
+
+/* 修改视频播放器容器样式 */
+.video-player {
+  width: 100%;
+  background: #000;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  aspect-ratio: 16 / 9;
+}
+
+/* 悬停效果 */
+.collapse-btn:hover {
+  background: rgba(251, 114, 153, 0.9);
+  width: 28px;
+}
+
+.collapse-btn .el-icon {
+  font-size: 16px;
+  color: #fff;
+  transition: transform 0.3s ease;
+}
+
+.collapse-trigger.is-collapsed .el-icon {
+  transform: rotate(180deg);
 }
 </style> 

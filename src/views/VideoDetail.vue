@@ -1,7 +1,6 @@
 <template>
   <div class="video-detail">
-    <!-- 主要内容区域 -->
-    <div class="main-content">
+    <div class="main-content" :class="{ 'collapsed': isCollapsed }">
       <!-- 左侧视频区域 -->
       <div class="video-section">
         <!-- 视频播放器 -->
@@ -9,6 +8,8 @@
           :video-url="videoInfo.videoUrl"
           :poster="videoInfo.cover"
           :title="videoInfo.title"
+          :is-collapsed="isCollapsed"
+          @toggle-collapse="toggleCollapse"
         />
 
         <!-- 视频信息 -->
@@ -59,7 +60,7 @@
       </div>
 
       <!-- 右侧推荐区域 -->
-      <div class="recommend-section">
+      <div class="recommend-section" :class="{ 'is-collapsed': isCollapsed }">
         <!-- UP主信息卡片 -->
         <div class="uploader-card">
           <div class="uploader-header">
@@ -105,7 +106,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { getVideoDetailService } from '@/api/video' // 假设你会创建这个API服务
-import { VideoPlay, Plus, ChatDotRound } from '@element-plus/icons-vue'
+import { VideoPlay, Plus, ChatDotRound, CaretRight } from '@element-plus/icons-vue'
 import VideoPlayer from '@/components/VideoPlayer.vue'
 import {ElMessage} from "element-plus";
 
@@ -196,6 +197,14 @@ const recommendVideos = ref([
     createTime: '1天前'
   }
 ])
+
+// 添加收缩状态控制
+const isCollapsed = ref(false)
+
+// 切换收缩状态
+const toggleCollapse = () => {
+  isCollapsed.value = !isCollapsed.value
+}
 </script>
 
 <style scoped>
@@ -206,17 +215,46 @@ const recommendVideos = ref([
 }
 
 .main-content {
+  position: relative;
   max-width: 1400px;
   margin: 0 auto;
-  display: flex;
-  gap: 24px;
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 20px;
   padding: 0 20px;
+  transition: all 0.3s ease-in-out;
 }
 
-/* 左侧视频区域 */
+.main-content.collapsed {
+  grid-template-columns: 1fr 0;
+}
+
+/* 右侧区域样式 */
+.recommend-section {
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+}
+
+.recommend-section.is-collapsed {
+  transform: translateX(100%);
+  opacity: 0;
+  width: 0;
+  padding: 0;
+  margin: 0;
+}
+
+/* 视频区域样式 */
 .video-section {
-  flex: 1;
-  min-width: 0;
+  width: 100%;
+  position: relative;
+  transition: all 0.3s ease-in-out;
+  padding-right: 24px;
+}
+
+/* 确保视频播放器响应式 */
+.video-section :deep(.video-player) {
+  width: 100%;
+  transition: all 0.3s ease-in-out;
 }
 
 .video-info {
