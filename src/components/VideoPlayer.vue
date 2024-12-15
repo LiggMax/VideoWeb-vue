@@ -1,5 +1,10 @@
 <template>
-  <div class="video-player">
+  <div class="video-player"
+    @mousemove="showControls"
+    @mouseleave="startHideControlsTimer"
+    @click="handleVideoClick"
+    @dblclick="toggleFullscreen"
+  >
     <div class="video-title" v-show="showTitle">
       {{ title }}
     </div>
@@ -24,7 +29,7 @@
 
     <!-- 在自定义控制栏之前添加 -->
     <div class="float-play-btn" 
-      v-show="!isPlaying && !isEnded" 
+      v-show="!isPlaying && !isEnded && isControlsVisible" 
       @click="togglePlay"
     >
       <svg 
@@ -41,7 +46,11 @@
     </div>
 
     <!-- 自定义控制栏 -->
-    <div class="custom-controls" v-show="!isEnded">
+    <div class="custom-controls" 
+      v-show="isControlsVisible && !isEnded"
+      @mouseenter="showControls"
+      @mouseleave="startHideControlsTimer"
+    >
       <!-- 进度条 -->
       <div class="progress-bar" 
         ref="progressRef"
@@ -167,7 +176,11 @@
     </div>
 
     <!-- 添加收缩按钮 -->
-    <div class="collapse-trigger" @click="$emit('toggle-collapse')" :class="{ 'is-collapsed': isCollapsed }">
+    <div class="collapse-trigger" 
+      v-show="isControlsVisible"
+      @click="$emit('toggle-collapse')" 
+      :class="{ 'is-collapsed': isCollapsed }"
+    >
       <div class="collapse-btn">
         <el-icon><CaretRight /></el-icon>
       </div>
@@ -176,7 +189,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { 
   VideoPlay, VideoPause, Microphone, Mute, 
   FullScreen, Aim, RefreshRight, CaretRight 
@@ -432,8 +445,120 @@ onUnmounted(() => {
 // 添加到现有的响应式变量中
 const showVolumeSlider = ref(false)
 
+// 添加新的响应式变量
+const isControlsVisible = ref(true)
+const hideControlsTimer = ref(null)
+
+// 修改显示控制方法
+const showControls = () => {
+  isControlsVisible.value = true
+  // 清除之前的定时器
+  if (hideControlsTimer.value) {
+    clearTimeout(hideControlsTimer.value)
+  }
+  // 重新开始计时
+  startHideControlsTimer()
+}
+
+const startHideControlsTimer = () => {
+  // 清除之前的定时器
+  if (hideControlsTimer.value) {
+    clearTimeout(hideControlsTimer.value)
+  }
+  // 设置5秒后隐藏
+  hideControlsTimer.value = setTimeout(() => {
+    // 只有在视频播放时才自动隐藏
+    if (isPlaying.value) {
+      isControlsVisible.value = false
+    }
+  }, 5000)
+}
+
+// 在视频播放/暂停状态改变时也要处理控制栏显示
+watch(isPlaying, (newValue) => {
+  if (!newValue) {
+    // 视频暂停时保持控制栏显示
+    isControlsVisible.value = true
+    if (hideControlsTimer.value) {
+      clearTimeout(hideControlsTimer.value)
+    }
+  } else {
+    // 视频播放时开始计时
+    startHideControlsTimer()
+  }
+})
+
+// 组件卸载时清理定时器
+onUnmounted(() => {
+  if (hideControlsTimer.value) {
+    clearTimeout(hideControlsTimer.value)
+  }
+})
+
 // 定义事件
 defineEmits(['toggle-collapse'])
+
+// 添加点击事件处理
+const handleVideoClick = (e) => {
+  // 防止点击控制栏时触发
+  if (e.target.closest('.custom-controls') || e.target.closest('.float-play-btn') || e.target.closest('.collapse-trigger')) {
+    return
+  }
+  togglePlay()
+}
+
+// 添加键盘事件监听
+const handleKeyPress = (e) => {
+  // 空格键控制播放/暂停
+  if (e.code === 'Space') {
+    e.preventDefault()
+    togglePlay()
+  }
+  // ESC 键退出全屏
+  if (e.code === 'Escape' && isFullscreen.value) {
+    document.exitFullscreen()
+  }
+  // F 键切换全屏
+  if (e.code === 'KeyF') {
+    toggleFullscreen()
+  }
+  // 左右方向键控制进度
+  if (e.code === 'ArrowLeft') {
+    if (videoRef.value) {
+      videoRef.value.currentTime = Math.max(0, videoRef.value.currentTime - 5)
+    }
+  }
+  if (e.code === 'ArrowRight') {
+    if (videoRef.value) {
+      videoRef.value.currentTime = Math.min(duration.value, videoRef.value.currentTime + 5)
+    }
+  }
+  // 上下方向键控制音量
+  if (e.code === 'ArrowUp') {
+    if (videoRef.value) {
+      videoRef.value.volume = Math.min(1, videoRef.value.volume + 0.1)
+    }
+  }
+  if (e.code === 'ArrowDown') {
+    if (videoRef.value) {
+      videoRef.value.volume = Math.max(0, videoRef.value.volume - 0.1)
+    }
+  }
+  // M 键静音
+  if (e.code === 'KeyM') {
+    toggleMute()
+  }
+}
+
+// 在组件挂载时添加键盘事件监听
+onMounted(() => {
+  document.addEventListener('keydown', handleKeyPress)
+})
+
+// 在组件卸载时移除键盘事件监听
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeyPress)
+})
 </script>
 
 <style scoped>
@@ -444,6 +569,8 @@ defineEmits(['toggle-collapse'])
   overflow: hidden;
   position: relative;
   aspect-ratio: 16 / 9;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .video-element {
@@ -499,12 +626,8 @@ defineEmits(['toggle-collapse'])
   right: 0;
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
   padding: 10px;
-  opacity: 0;
+  opacity: 1;  /* 改为始终不透明 */
   transition: opacity 0.3s;
-}
-
-.video-player:hover .custom-controls {
-  opacity: 1;
 }
 
 /* 优化进度条样式 */
@@ -826,7 +949,7 @@ defineEmits(['toggle-collapse'])
   top: 0;
   width: 24px;
   height: 60px;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.3);  /* 增加不透明度 */
   border-radius: 4px 0 0 4px;
   display: flex;
   align-items: center;
@@ -834,6 +957,17 @@ defineEmits(['toggle-collapse'])
   cursor: pointer;
   transition: all 0.2s ease;
   backdrop-filter: blur(2px);
+}
+
+.collapse-btn:hover {
+  background: rgba(251, 114, 153, 0.95);  /* 悬停时更不透明 */
+  width: 28px;
+}
+
+.collapse-btn .el-icon {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.95);  /* 图标也更不透明 */
+  transition: transform 0.3s ease;
 }
 
 /* 修改视频播放器容器样式 */
