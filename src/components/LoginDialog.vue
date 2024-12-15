@@ -107,6 +107,37 @@
                   size="large"
               />
             </el-form-item>
+            
+            <!-- 添加邮箱输入框 -->
+            <el-form-item prop="email">
+              <el-input
+                  v-model="registerForm.email"
+                  placeholder="请输入邮箱"
+                  :prefix-icon="Message"
+                  size="large"
+              />
+            </el-form-item>
+            
+            <!-- 添加验证码输入框和发送按钮 -->
+            <el-form-item prop="code">
+              <div class="code-input-group">
+                <el-input
+                    v-model="registerForm.code"
+                    placeholder="请输入验证码"
+                    :prefix-icon="Key"
+                    size="large"
+                />
+                <el-button 
+                    type="primary" 
+                    :disabled="isCountdown" 
+                    @click="sendEmailCode"
+                    class="send-code-btn"
+                >
+                  {{ countdownText }}
+                </el-button>
+              </div>
+            </el-form-item>
+
             <el-form-item prop="password">
               <el-input
                   v-model="registerForm.password"
@@ -116,6 +147,7 @@
                   size="large"
               />
             </el-form-item>
+            
             <el-form-item prop="confirmPassword">
               <el-input
                   v-model="registerForm.confirmPassword"
@@ -125,6 +157,7 @@
                   size="large"
               />
             </el-form-item>
+            
             <el-button type="primary" class="submit-btn" @click="handleRegister">
               注册
             </el-button>
@@ -142,7 +175,7 @@
 </template>
 
 <script setup>
-import {ref, watch} from 'vue'
+import {ref, watch, computed} from 'vue'
 import {
   Close,
   Position,
@@ -151,9 +184,10 @@ import {
   User,
   Lock,
   Iphone,
-  Message
+  Message,
+  Key
 } from '@element-plus/icons-vue'
-import {userLoginService, userRegisterService} from "@/api/user";
+import {sendEmailCodeService, userLoginService, userRegisterService} from "@/api/user";
 import {ElMessage} from "element-plus";
 import router from "@/router";
 import {useTokenStore} from "@/stores/token";
@@ -169,6 +203,8 @@ const emit = defineEmits(['update:visible'])
 const dialogVisible = ref(props.visible)
 const currentView = ref('login')
 const countdown = ref(0)
+const isCountdown = computed(() => countdown.value > 0)
+const countdownText = computed(() => isCountdown.value ? `${countdown.value}秒后重新发送` : '发送验证码')
 
 //引入tokenStore
 const tokenStore = useTokenStore();
@@ -189,6 +225,8 @@ const smsForm = ref({
 // 注册表单数据
 const registerForm = ref({
   username: '',
+  email: '',
+  code: '',
   password: '',
   confirmPassword: ''
 })
@@ -198,6 +236,14 @@ const registerRules = {
   username: [
     {required: true, message: '请输入账号', trigger: 'blur'},
     {min: 5, max: 15, message: '长度在 5 到 15 个字符', trigger: 'blur'}
+  ],
+  email: [
+    {required: true, message: '请输入邮箱', trigger: 'blur'},
+    {type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur'}
+  ],
+  code: [
+    {required: true, message: '请输入验证码', trigger: 'blur'},
+    {len: 6, message: '验证码长度为6位', trigger: 'blur'}
   ],
   password: [
     {required: true, message: '请输入密码', trigger: 'blur'},
@@ -234,6 +280,8 @@ const switchView = (view) => {
   if (view === 'register') {
     registerForm.value = {
       username: '',
+      email: '',
+      code: '',
       password: '',
       confirmPassword: ''
     }
@@ -271,13 +319,14 @@ const handleLogin = async () => {
 // 处理注册
 const handleRegister = async () => {
   if (!registerFormRef.value) return
+  try {
     await registerFormRef.value.validate()
-    console.log('注册表单数据:', registerForm.value)
-    // 这里添加注册逻辑
-    let result = await userRegisterService(registerForm.value)
+    await userRegisterService(registerForm.value)
     ElMessage.success('注册成功')
-    //展示登录页面
     switchView('login')
+  } catch (error) {
+    console.error('注册失败:', error)
+  }
 }
 
 // 发送验证码
@@ -289,6 +338,28 @@ const sendCode = () => {
       clearInterval(timer)
     }
   }, 1000)
+}
+
+// 发送邮箱验证码
+const sendEmailCode = async () => {
+  // 验证邮箱格式
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(registerForm.value.email)) {
+    return ElMessage.error('请输入正确的邮箱格式')
+  }
+  
+    // TODO: 调用发送验证码接口
+    await sendEmailCodeService(registerForm.value.email)
+    ElMessage.success('验证码已发送，请注意查收')
+    
+    // 开始倒计时
+    countdown.value = 60
+    const timer = setInterval(() => {
+      countdown.value--
+      if (countdown.value <= 0) {
+        clearInterval(timer)
+      }
+    }, 1000)
 }
 </script>
 
@@ -607,5 +678,30 @@ const sendCode = () => {
 
 .login-link:hover {
   color: #fb7299;
+}
+
+/* 添加新样式 */
+.code-input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.code-input-group :deep(.el-input) {
+  flex: 1;
+}
+
+.send-code-btn {
+  width: 120px;
+  font-size: 14px;
+}
+
+.send-code-btn:not(:disabled) {
+  background-color: #fb7299;
+  border-color: #fb7299;
+}
+
+.send-code-btn:not(:disabled):hover {
+  background-color: #fc8bab;
+  border-color: #fc8bab;
 }
 </style>

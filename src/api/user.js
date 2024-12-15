@@ -24,3 +24,7 @@ export const getUserInfoService = ()=>{
     // const tokenStore = useTokenStore()
     return request.get('/user/userInfo'/*,{headers:{Authorization:tokenStore.token}}*/)
 }
+// 发送邮箱验证码
+export const sendEmailCodeService = (email) => {
+    return request.post('/user/email?email='+ email )
+}
