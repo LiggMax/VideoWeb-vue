@@ -21,11 +21,23 @@
       @timeupdate="handleTimeUpdate"
       @loadedmetadata="handleLoadedMetadata"
       @volumechange="handleVolumeChange"
+      @waiting="handleWaiting"
+      @canplay="handleCanPlay"
       @mouseover="showTitle = true"
       @mouseleave="showTitle = false"
     >
       您的浏览器不支持 HTML5 视频播放
     </video>
+
+    <!-- 添加加载动画 -->
+    <div class="loading-overlay" v-show="isLoading">
+      <div class="loading-spinner">
+        <svg viewBox="25 25 50 50" class="circular">
+          <circle cx="50" cy="50" r="20" fill="none" class="path"></circle>
+        </svg>
+        <span class="loading-text">视频加载中...</span>
+      </div>
+    </div>
 
     <!-- 在自定义控制栏之前添加 -->
     <div class="float-play-btn" 
@@ -365,6 +377,7 @@ const handleLoadedMetadata = () => {
   if (videoRef.value) {
     duration.value = videoRef.value.duration
     volume.value = videoRef.value.volume
+    isLoading.value = false
   }
 }
 
@@ -559,6 +572,18 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKeyPress)
 })
+
+// 在现有的响应式变量声明中添加
+const isLoading = ref(false)
+
+// 添加新的事件处理函数
+const handleWaiting = () => {
+  isLoading.value = true
+}
+
+const handleCanPlay = () => {
+  isLoading.value = false
+}
 </script>
 
 <style scoped>
@@ -994,5 +1019,67 @@ onUnmounted(() => {
 
 .collapse-trigger.is-collapsed .el-icon {
   transform: rotate(180deg);
+}
+
+/* 在现有样式后添加加载动画相关样式 */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.loading-text {
+  color: #fff;
+  font-size: 14px;
+}
+
+.circular {
+  width: 42px;
+  height: 42px;
+  animation: loading-rotate 2s linear infinite;
+}
+
+.path {
+  stroke-dasharray: 90, 150;
+  stroke-dashoffset: 0;
+  stroke-width: 3;
+  stroke: #fb7299;
+  stroke-linecap: round;
+  animation: loading-dash 1.5s ease-in-out infinite;
+}
+
+@keyframes loading-rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loading-dash {
+  0% {
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -40px;
+  }
+  100% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -120px;
+  }
 }
 </style> 
