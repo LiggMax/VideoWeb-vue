@@ -56,17 +56,20 @@
 ## 📷 **截图展示**
 
 ### **首页界面**
+![image](https://github.com/user-attachments/assets/62689dd7-4e98-4f1c-9653-9afd360f126e)
 
-![image-20241216235905323](C:\Users\LiGG\AppData\Roaming\Typora\typora-user-images\image-20241216235905323.png)
 
 
 
 ### **视频播放页**
 
-![image-20241216235924642](C:\Users\LiGG\AppData\Roaming\Typora\typora-user-images\image-20241216235924642.png)
+
+![image](https://github.com/user-attachments/assets/edb30dca-4919-4900-930c-26893d788bd5)
+
 
 
 
 ### **个人中心**
 
-![image-20241217000219241](C:\Users\LiGG\AppData\Roaming\Typora\typora-user-images\image-20241217000219241.png)
+
+![image](https://github.com/user-attachments/assets/54c73a4d-6e10-44c1-a3ef-a53acea8bec1)
