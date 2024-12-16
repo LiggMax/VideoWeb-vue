@@ -613,53 +613,53 @@ const sendEmailCode = async () => {
   color: #333;
 }
 
-/* 注册表单样式 */
-.register-form {
-  margin-top: 32px;
-}
-
-.register-form :deep(.el-form-item) {
-  margin-bottom: 24px;
-}
-
+/* 修改注册表单样式 */
 .register-form :deep(.el-input__wrapper) {
-  padding: 4px 12px;
-  height: 48px;
+  padding: 1px 12px;  /* 减小内边距 */
+  height: 40px;  /* 减小高度 */
   box-shadow: 0 0 0 1px #dcdfe6;
 }
 
-.register-form :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 1px #fb7299;
-}
-
 .register-form :deep(.el-input__inner) {
-  font-size: 16px;
+  font-size: 14px;  /* 减小字体大小 */
   height: 100%;
 }
 
-.register-form :deep(.el-input__prefix) {
-  margin-right: 12px;
+.register-form :deep(.el-form-item) {
+  margin-bottom: 16px;  /* 减小表单项间距 */
 }
 
+/* 调整验证码按钮样式 */
+.send-code-btn {
+  width: 110px;  /* 减小按钮宽度 */
+  font-size: 13px;  /* 减小按钮字体 */
+  height: 40px;  /* 匹配输入框高度 */
+  padding: 0 10px;  /* 减小按钮内边距 */
+}
+
+/* 调整注册按钮样式 */
+.register-form .submit-btn {
+  height: 40px;  /* 减小按钮高度 */
+  font-size: 15px;  /* 减小按钮字体 */
+  margin-top: 8px;  /* 调整顶部间距 */
+}
+
+/* 调整图标大小 */
 .register-form :deep(.el-input__prefix-inner svg) {
-  width: 18px;
-  height: 18px;
+  width: 16px;  /* 减小图标大小 */
+  height: 16px;
   color: #909399;
 }
 
-.register-form :deep(.el-input__wrapper input) {
-  font-size: 16px;
-  font-weight: 500;
-  color: #333;
-}
-
+/* 调整输入框占位符文字大小 */
 .register-form :deep(.el-input__wrapper input::placeholder) {
-  font-size: 16px;
-  color: #909399;
+  font-size: 14px;
 }
 
-.register-form :deep(.el-input__wrapper:hover) {
-  box-shadow: 0 0 0 1px #fb7299;
+/* 调整输入框文字大小 */
+.register-form :deep(.el-input__wrapper input) {
+  font-size: 14px;
+  font-weight: normal;
 }
 
 .login-tip {
