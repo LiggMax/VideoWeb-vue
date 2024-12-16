@@ -25,6 +25,11 @@ const routes = [
     path: '/video/:id',
     name: 'VideoDetail',
     component: () => import('@/views/VideoDetail.vue')
+  },
+  {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: () => import('@/components/ResetPassword.vue')
   }
 ]
 

@@ -1,0 +1,289 @@
+<template>
+  <el-dialog
+    v-model="dialogVisible"
+    width="400px"
+    :show-close="false"
+    class="reset-dialog"
+    @close="$emit('close')"
+  >
+    <!-- 对话框头部 -->
+    <div class="dialog-header">
+      <div class="header-content">
+        <h3>找回密码</h3>
+        <div class="close-btn" @click="closeDialog">
+          <el-icon><Close/></el-icon>
+        </div>
+      </div>
+    </div>
+
+    <!-- 对话框内容 -->
+    <div class="dialog-content">
+      <p class="subtitle">通过邮箱验证找回密码</p>
+      
+      <el-form 
+        :model="resetForm" 
+        :rules="resetRules" 
+        ref="resetFormRef" 
+        label-width="0"
+        class="reset-form"
+      >
+        <!-- 邮箱输入 -->
+        <el-form-item prop="email">
+          <el-input
+            v-model="resetForm.email"
+            placeholder="请输入注册邮箱"
+            :prefix-icon="Message"
+          />
+        </el-form-item>
+
+        <!-- 验证码 -->
+        <el-form-item prop="code">
+          <div class="code-input-group">
+            <el-input
+              v-model="resetForm.code"
+              placeholder="请输入验证码"
+              :prefix-icon="Key"
+            />
+            <el-button 
+              type="primary" 
+              :disabled="isCountdown" 
+              @click="sendEmailCode"
+              class="send-code-btn"
+            >
+              {{ countdownText }}
+            </el-button>
+          </div>
+        </el-form-item>
+
+        <!-- 新密码 -->
+        <el-form-item prop="newPassword">
+          <el-input
+            v-model="resetForm.newPassword"
+            type="password"
+            placeholder="请输入新密码"
+            :prefix-icon="Lock"
+          />
+        </el-form-item>
+
+        <!-- 确认新密码 -->
+        <el-form-item prop="confirmPassword">
+          <el-input
+            v-model="resetForm.confirmPassword"
+            type="password"
+            placeholder="请确认新密码"
+            :prefix-icon="Lock"
+          />
+        </el-form-item>
+
+        <!-- 提交按钮 -->
+        <el-button type="primary" class="submit-btn" @click="handleReset">
+          重置密码
+        </el-button>
+
+        <!-- 返回登录 -->
+        <div class="back-login">
+          <span class="back-link" @click="$emit('switch-to-login')">返回登录</span>
+        </div>
+      </el-form>
+    </div>
+  </el-dialog>
+</template>
+
+<script setup>
+import { ref, computed, watch } from 'vue'
+import { Message, Lock, Key, Close } from '@element-plus/icons-vue'
+
+const props = defineProps({
+  visible: {
+    type: Boolean,
+    default: false
+  }
+})
+
+const emit = defineEmits(['update:visible', 'switch-to-login', 'close'])
+
+const dialogVisible = ref(props.visible)
+
+watch(() => props.visible, (newVal) => {
+  dialogVisible.value = newVal
+})
+
+watch(dialogVisible, (newVal) => {
+  emit('update:visible', newVal)
+})
+
+// 关闭对话框
+const closeDialog = () => {
+  dialogVisible.value = false
+}
+
+// 表单数据
+const resetForm = ref({
+  email: '',
+  code: '',
+  newPassword: '',
+  confirmPassword: ''
+})
+
+// 表单验证规则
+const resetRules = {
+  email: [
+    { required: true, message: '请输入邮箱', trigger: 'blur' },
+    { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
+  ],
+  code: [
+    { required: true, message: '请输入验证码', trigger: 'blur' },
+    { len: 6, message: '验证码长度为6位', trigger: 'blur' }
+  ],
+  newPassword: [
+    { required: true, message: '请输入新密码', trigger: 'blur' },
+    { min: 6, max: 16, message: '密码长度在 6 到 16 个字符', trigger: 'blur' }
+  ],
+  confirmPassword: [
+    { required: true, message: '请确认新密码', trigger: 'blur' },
+    {
+      validator: (rule, value, callback) => {
+        if (value !== resetForm.value.newPassword) {
+          callback(new Error('两次输入密码不一致'))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur'
+    }
+  ]
+}
+
+// 验证码倒计时相关
+const countdown = ref(0)
+const isCountdown = computed(() => countdown.value > 0)
+const countdownText = computed(() => isCountdown.value ? `${countdown.value}秒后重新发送` : '发送验证码')
+
+// 发送验证码
+const sendEmailCode = () => {
+  // TODO: 实现发送验证码逻辑
+}
+
+// 重置密码
+const handleReset = () => {
+  // TODO: 实现重置密码逻辑
+}
+
+const resetFormRef = ref(null)
+</script>
+
+<style scoped>
+.reset-dialog :deep(.el-dialog__header) {
+  display: none;
+}
+
+.reset-dialog :deep(.el-dialog__body) {
+  padding: 0;
+}
+
+.dialog-header {
+  padding: 20px 20px 0;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-content h3 {
+  font-size: 20px;
+  color: #18191c;
+  margin: 0;
+}
+
+.close-btn {
+  cursor: pointer;
+  padding: 4px;
+  color: #909399;
+  transition: color 0.3s;
+}
+
+.close-btn:hover {
+  color: #fb7299;
+}
+
+.dialog-content {
+  padding: 20px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #61666d;
+  margin: 0 0 24px;
+  text-align: center;
+}
+
+.reset-form :deep(.el-input__wrapper) {
+  padding: 1px 12px;
+  height: 40px;
+  box-shadow: 0 0 0 1px #dcdfe6;
+}
+
+.reset-form :deep(.el-input__inner) {
+  font-size: 14px;
+  height: 100%;
+}
+
+.reset-form :deep(.el-form-item) {
+  margin-bottom: 20px;
+}
+
+.code-input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.code-input-group :deep(.el-input) {
+  flex: 1;
+}
+
+.send-code-btn {
+  width: 120px;
+  font-size: 14px;
+}
+
+.send-code-btn:not(:disabled) {
+  background-color: #fb7299;
+  border-color: #fb7299;
+}
+
+.send-code-btn:not(:disabled):hover {
+  background-color: #fc8bab;
+  border-color: #fc8bab;
+}
+
+.submit-btn {
+  width: 100%;
+  margin-top: 20px;
+  height: 40px;
+  background-color: #fb7299;
+  border-color: #fb7299;
+}
+
+.submit-btn:hover {
+  background-color: #fc8bab;
+  border-color: #fc8bab;
+}
+
+.back-login {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.back-link {
+  color: #00aeec;
+  cursor: pointer;
+  font-size: 14px;
+  transition: color 0.3s;
+}
+
+.back-link:hover {
+  color: #fb7299;
+}
+</style> 

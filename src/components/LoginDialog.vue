@@ -4,6 +4,7 @@
       width="800px"
       :show-close="false"
       class="login-dialog"
+      @close="handleDialogClose"
   >
     <div class="dialog-header">
       <div class="header-content">
@@ -59,7 +60,7 @@
             </el-form-item>
             <div class="form-options">
               <el-checkbox v-model="loginForm.remember">记住我</el-checkbox>
-              <span class="forget-pwd">忘记密码？</span>
+              <span class="forget-pwd" @click="handleForgetPassword">忘记密码？</span>
             </div>
             <!--登录按钮-->
             <el-button type="primary" class="submit-btn" @click="handleLogin">
@@ -172,10 +173,18 @@
       </div>
     </div>
   </el-dialog>
+
+  <!-- 重置密码弹窗 - 移到登录弹窗外部 -->
+  <reset-password 
+    v-if="showResetPassword"
+    v-model:visible="showResetPassword"
+    @switch-to-login="handleSwitchToLogin"
+    @close="handleResetClose"
+  />
 </template>
 
 <script setup>
-import {ref, watch, computed} from 'vue'
+import {ref, watch, computed, nextTick} from 'vue'
 import {
   Close,
   Position,
@@ -191,6 +200,7 @@ import {sendEmailCodeService, userLoginService, userRegisterService} from "@/api
 import {ElMessage} from "element-plus";
 import router from "@/router";
 import {useTokenStore} from "@/stores/token";
+import ResetPassword from './ResetPassword.vue'
 
 const props = defineProps({
   visible: {
@@ -268,6 +278,9 @@ const registerFormRef = ref(null)
 
 watch(() => props.visible, (newVal) => {
   dialogVisible.value = newVal
+  if (!newVal) {
+    showResetPassword.value = false
+  }
 })
 
 watch(dialogVisible, (newVal) => {
@@ -360,6 +373,37 @@ const sendEmailCode = async () => {
         clearInterval(timer)
       }
     }, 1000)
+}
+
+// 添加状态控制
+const showResetPassword = ref(false)
+
+// 处理忘记密码点击
+const handleForgetPassword = () => {
+  dialogVisible.value = false
+  // 使用 nextTick 确保在 DOM 更新后再显示重置密码弹窗
+  nextTick(() => {
+    showResetPassword.value = true
+  })
+}
+
+// 处理返回登录
+const handleSwitchToLogin = () => {
+  showResetPassword.value = false
+  nextTick(() => {
+    dialogVisible.value = true
+    currentView.value = 'login'
+  })
+}
+
+const handleDialogClose = () => {
+  showResetPassword.value = false
+  emit('update:visible', false)
+}
+
+const handleResetClose = () => {
+  showResetPassword.value = false
+  emit('update:visible', false)
 }
 </script>
 
@@ -588,6 +632,9 @@ const sendEmailCode = async () => {
 }
 
 .form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin: 24px 0 32px;
 }
 
@@ -703,5 +750,17 @@ const sendEmailCode = async () => {
 .send-code-btn:not(:disabled):hover {
   background-color: #fc8bab;
   border-color: #fc8bab;
+}
+
+.forget-pwd {
+  color: #00aeec;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.forget-pwd:hover {
+  color: #fb7299;
 }
 </style>
