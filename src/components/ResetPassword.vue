@@ -58,7 +58,7 @@
         <!-- 新密码 -->
         <el-form-item prop="newPassword">
           <el-input
-            v-model="resetForm.newPassword"
+            v-model="resetForm.password"
             type="password"
             placeholder="请输入新密码"
             :prefix-icon="Lock"
@@ -92,6 +92,8 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { Message, Lock, Key, Close } from '@element-plus/icons-vue'
+import {ElMessage} from "element-plus";
+import {resetPasswordService, sendResetEmailCodeService} from "@/api/user";
 
 const props = defineProps({
   visible: {
@@ -121,7 +123,7 @@ const closeDialog = () => {
 const resetForm = ref({
   email: '',
   code: '',
-  newPassword: '',
+  password: '',
   confirmPassword: ''
 })
 
@@ -135,7 +137,7 @@ const resetRules = {
     { required: true, message: '请输入验证码', trigger: 'blur' },
     { len: 6, message: '验证码长度为6位', trigger: 'blur' }
   ],
-  newPassword: [
+  password: [
     { required: true, message: '请输入新密码', trigger: 'blur' },
     { min: 6, max: 16, message: '密码长度在 6 到 16 个字符', trigger: 'blur' }
   ],
@@ -143,7 +145,7 @@ const resetRules = {
     { required: true, message: '请确认新密码', trigger: 'blur' },
     {
       validator: (rule, value, callback) => {
-        if (value !== resetForm.value.newPassword) {
+        if (value !== resetForm.value.password) {
           callback(new Error('两次输入密码不一致'))
         } else {
           callback()
@@ -160,13 +162,29 @@ const isCountdown = computed(() => countdown.value > 0)
 const countdownText = computed(() => isCountdown.value ? `${countdown.value}秒后重新发送` : '发送验证码')
 
 // 发送验证码
-const sendEmailCode = () => {
+const sendEmailCode = async () => {
   // TODO: 实现发送验证码逻辑
+  //调用接口
+  await sendResetEmailCodeService(resetForm.value.email)
+  await ElMessage.success('验证码已发送，请注意查收')
+  //开始倒计时
+  countdown.value = 60
+  const timer = setInterval(() => {
+    countdown.value--
+    if (countdown.value <= 0) {
+      clearInterval(timer)
+    }
+  }, 1000)
 }
 
 // 重置密码
-const handleReset = () => {
+const handleReset = async () => {
   // TODO: 实现重置密码逻辑
+  await resetPasswordService(resetForm.value)
+  await ElMessage.success('密码重置成功，请返回登录页')
+  //清除表单
+  resetForm.value = {}
+  closeDialog()
 }
 
 const resetFormRef = ref(null)
@@ -223,11 +241,14 @@ const resetFormRef = ref(null)
   padding: 1px 12px;
   height: 40px;
   box-shadow: 0 0 0 1px #dcdfe6;
+  display: flex;
+  align-items: center;
 }
 
 .reset-form :deep(.el-input__inner) {
+  height: 38px;
+  line-height: 38px;
   font-size: 14px;
-  height: 100%;
 }
 
 .reset-form :deep(.el-form-item) {
@@ -237,6 +258,7 @@ const resetFormRef = ref(null)
 .code-input-group {
   display: flex;
   gap: 8px;
+  align-items: stretch;
 }
 
 .code-input-group :deep(.el-input) {
@@ -246,6 +268,12 @@ const resetFormRef = ref(null)
 .send-code-btn {
   width: 120px;
   font-size: 14px;
+  height: 40px;
+  padding: 0 12px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .send-code-btn:not(:disabled) {

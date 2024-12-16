@@ -24,7 +24,19 @@ export const getUserInfoService = ()=>{
     // const tokenStore = useTokenStore()
     return request.get('/user/userInfo'/*,{headers:{Authorization:tokenStore.token}}*/)
 }
-// 发送邮箱验证码
+// 发送注册邮箱验证码
 export const sendEmailCodeService = (email) => {
-    return request.post('/user/email?email='+ email )
+    return request.post('/email?email='+ email )
+}
+//发送重置密码邮箱验证码
+export const sendResetEmailCodeService = (email) => {
+    return request.post('/email/forget?email='+ email )
+}
+//重置密码
+export const resetPasswordService = (resetData) => {
+    const params = new URLSearchParams()
+    for (let key in resetData) {
+        params.append(key, resetData[key]);
+    }
+    return request.post('/user/resetPassword', params)
 }
