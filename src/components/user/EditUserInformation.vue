@@ -52,7 +52,7 @@
           placeholder="介绍一下你自己吧"
         />
       </el-form-item>
-      <el-form-item label="注册时间">
+      <el-form-item label="注册时间:">
         <div class="info-value readonly">{{ formatDate(userInfo.createTime) }}</div>
       </el-form-item>
       
