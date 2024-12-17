@@ -14,7 +14,7 @@
           <div class="user-detail">
             <div class="name-row">
               <h1 class="username">{{ userInfo.nickname }}</h1>
-              <el-button size="small" class="edit-btn">
+              <el-button size="small" class="edit-btn" @click="goToEditProfile">
                 <el-icon>
                   <Edit/>
                 </el-icon>
@@ -45,7 +45,7 @@
                v-for="item in navItems"
                :key="item.name"
                :class="{ active: currentNav === item.name }"
-               @click="currentNav = item.name">
+               @click="handleNavClick(item)">
             <el-icon>
               <component :is="item.icon"></component>
             </el-icon>
@@ -56,174 +56,25 @@
 
         <!-- 右侧内容 -->
         <div class="main-content">
-          <div class="empty-state" v-if="!hasContent && currentNav === 'videos'">
+          <!-- 视频列表相关内容 -->
+          <template v-if="currentNav === 'videos'">
+            <user-video-content />
+          </template>
+
+          <!-- 编辑资料内容 -->
+          <template v-if="currentNav === 'edit-profile'">
+            <edit-profile-content />
+          </template>
+
+          <!-- 其他导航内容的空状态 -->
+          <div class="empty-state" v-if="currentNav !== 'videos' && currentNav !== 'edit-profile'">
             <el-empty :description="getEmptyText">
               <template #description>
                 <p class="empty-text">{{ getEmptyText }}</p>
               </template>
-              <el-button type="primary" @click="drawerVisible = true" v-if="currentNav === 'videos'">
-                <el-icon>
-                  <VideoCamera/>
-                </el-icon>
-                立即投稿
-              </el-button>
             </el-empty>
           </div>
-
-          <!-- 发布视频按钮 -->
-          <div class="button-container" v-if="currentNav === 'videos'">
-            <el-button type="primary" @click="drawerVisible = true" class="publish-button">
-              <el-icon>
-                <VideoCamera/>
-              </el-icon>
-              发布视频
-            </el-button>
-          </div>
-
-          <!-- 视频列表展示 -->
-          <div class="video-list" v-if="currentNav === 'videos' && hasContent">
-            <div v-for="video in videos" :key="video.id" class="video-card">
-              <div class="video-cover-wrap">
-                <img :src="video.cover" class="video-cover" alt="图片获取失败"/>
-              </div>
-              <div class="video-info">
-                <div class="video-actions">
-                  <el-dropdown trigger="click" @command="handleCommand">
-                    <div class="action-icon">
-                      <el-icon>
-                        <MoreFilled/>
-                      </el-icon>
-                    </div>
-                    <template #dropdown>
-                      <el-dropdown-menu>
-                        <el-dropdown-item :command="{ type: 'edit', id: video.id }">
-                          <el-icon>
-                            <Edit/>
-                          </el-icon>
-                          编辑
-                        </el-dropdown-item>
-                        <el-dropdown-item :command="{ type: 'delete', id: video.id }">
-                          <el-icon>
-                            <Delete/>
-                          </el-icon>
-                          删除
-                        </el-dropdown-item>
-                      </el-dropdown-menu>
-                    </template>
-                  </el-dropdown>
-                </div>
-                <h3 class="video-title">{{ video.title }}</h3>
-                <p class="video-description">{{ video.content }}</p>
-                <div class="video-meta">
-                  <span class="update-time">发布时间: {{ video.createTime }}</span>
-                  <span class="view-count">更新时间: {{ video.updateTime }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- 添加分页组件 -->
-            <div class="pagination-container">
-              <el-pagination
-                v-model:current-page="pagination.pageNum"
-                v-model:page-size="pagination.pageSize"
-                :page-sizes="[5, 10, 20, 50]"
-                layout="total, sizes, prev, pager, next, jumper"
-                :total="pagination.total"
-                @size-change="handleSizeChange"
-                @current-change="handlePageChange"
-                background
-              />
-            </div>
-          </div>
         </div>
-
-        <!-- 抽屉弹窗 -->
-        <el-drawer
-            :title="isEdit ? '编辑视频' : '发布视频'"
-            v-model="drawerVisible"
-            direction="rtl"
-            size="40%"
-            @close="handleDrawerClose"
-        >
-          <el-form :model="form" label-width="80px">
-            <el-form-item label="标题">
-              <el-input v-model="form.title" placeholder="请输入视频标题"></el-input>
-            </el-form-item>
-
-            <!-- 修改封面上传组件 -->
-            <el-form-item label="封面">
-              <el-upload
-                  class="cover-uploader"
-                  list-type="picture-card"
-                  :show-file-list="false"
-                  :auto-upload="true"
-                  action="/api/upload"
-                  name="file"
-                  :headers="{'Authorization':tokenStore.token}"
-                  :on-success="uploadSuccess"
-              >
-                <img v-if="form.cover" :src="form.cover" class="cover-preview"/>
-                <el-icon v-else>
-                  <Plus/>
-                </el-icon>
-              </el-upload>
-            </el-form-item>
-
-            <!-- 然后是视频文件上传 -->
-            <el-form-item label="视频文件">
-              <el-upload
-                class="video-uploader"
-                :auto-upload="true"
-                action="/api/uploadVideo"
-                :on-success="handleVideoSuccess"
-                :before-upload="beforeVideoUpload"
-                :headers="{'Authorization':tokenStore.token}"
-                name="video"
-                :limit="1"
-                :on-exceed="handleVideoExceed"
-                accept=".mp4,.mov,.avi"
-              >
-                <div class="video-upload-box">
-                  <template v-if="!form.videoUrl">
-                    <el-icon class="upload-icon"><VideoCamera /></el-icon>
-                    <div class="upload-text">点击上传视频</div>
-                    <div class="upload-tip">支持 mp4/mov/avi 格式，最大 500MB</div>
-                  </template>
-                  <template v-else>
-                    <div class="video-preview">
-                      <el-icon class="success-icon"><CircleCheckFilled /></el-icon>
-                      <span class="file-name">{{ videoFileName }}</span>
-                      <el-button 
-                        type="danger" 
-                        size="small" 
-                        class="remove-btn"
-                        @click.stop="removeVideo"
-                      >
-                        移除
-                      </el-button>
-                    </div>
-                  </template>
-                </div>
-              </el-upload>
-            </el-form-item>
-
-            <el-form-item label="视频介绍">
-              <el-input
-                  type="textarea"
-                  :rows="4"
-                  placeholder="请输入视频介绍"
-                  v-model="form.content">
-              </el-input>
-            </el-form-item>
-            <el-form-item>
-              <el-button type="primary" @click="isEdit ? updateVideo() : submitForm()">{{
-                  isEdit ? '修改' : '发布'
-                }}
-              </el-button>
-              <el-button @click="resetForm">重置</el-button>
-            </el-form-item>
-          </el-form>
-        </el-drawer>
       </div>
     </div>
   </div>
@@ -249,6 +100,8 @@ import {ElMessage, ElMessageBox} from "element-plus";
 import {useTokenStore} from "@/stores/token";
 import {deleteVideoService, editVideoService, getUserVideoService, publishVideoService} from "@/api/userVideo";
 import {getUserInfoService} from "@/api/user";
+import EditProfileContent from '@/components/user/EditUserInformation.vue'
+import UserVideoContent from '@/components/user/UserVideoContent.vue'
 
 const router = useRouter()
 const userInfoStore = useUserInfoStore()
@@ -267,7 +120,8 @@ const navItems = [
   {name: 'favorites', label: '收藏', icon: 'Collection', count: 0},
   {name: 'likes', label: '点赞', icon: 'Star', count: 0},
   {name: 'articles', label: '专栏', icon: 'Document', count: 0},
-  {name: 'comments', label: '评论', icon: 'ChatDotRound', count: 0}
+  {name: 'comments', label: '评论', icon: 'ChatDotRound', count: 0},
+  {name: 'edit-profile', label: '编辑资料', icon: 'Edit'}
 ]
 
 const userStats = [
@@ -493,6 +347,15 @@ const removeVideo = () => {
   form.value.videoUrl = ''
   videoFileName.value = ''
 }
+
+// 添加跳转到编辑资料页面的方法
+const goToEditProfile = () => {
+  currentNav.value = 'edit-profile'
+}
+
+const handleNavClick = (item) => {
+  currentNav.value = item.name
+}
 </script>
 
 <style scoped>
@@ -600,10 +463,19 @@ const removeVideo = () => {
   border: 1px solid #e3e5e7;
   color: #61666d;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .edit-btn:hover {
-  background: #e3e5e7;
+  background: #fb7299;
+  border-color: #fb7299;
+  color: #fff;
+}
+
+.edit-btn .el-icon {
+  font-size: 14px;
 }
 
 .user-id {

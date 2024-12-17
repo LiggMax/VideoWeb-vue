@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import {getVideoListService} from "@/api/video";
-import { VideoPlay, CaretTop, ArrowUp } from '@element-plus/icons-vue'
+import { VideoPlay, CaretTop, ArrowUp, Refresh } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 
 // 添加 router 实例
@@ -80,6 +80,11 @@ const handleVideoClick = (video) => {
     }
   })
 }
+
+// 添加刷新方法
+const handleRefresh = () => {
+  window.location.reload()
+}
 </script>
 
 <template>
@@ -125,17 +130,25 @@ const handleVideoClick = (video) => {
       </div>
     </div>
 
-    <!-- 返回顶部按钮 -->
-    <el-backtop 
-      :right="40" 
-      :bottom="40" 
-      :visibility-height="400"
-      class="back-to-top"
-    >
-      <div class="back-top-content">
-        <el-icon><ArrowUp /></el-icon>
+    <!-- 修改固定按钮组 -->
+    <div class="fixed-buttons">
+      <!-- 刷新按钮 -->
+      <div class="action-button refresh-btn" @click="handleRefresh">
+        <el-icon><Refresh /></el-icon>
       </div>
-    </el-backtop>
+      
+      <!-- 返回顶部按钮 -->
+      <el-backtop 
+        :right="40" 
+        :bottom="100" 
+        :visibility-height="400"
+        class="back-to-top"
+      >
+        <div class="back-top-content">
+          <el-icon><ArrowUp /></el-icon>
+        </div>
+      </el-backtop>
+    </div>
   </div>
 </template>
 
@@ -484,6 +497,8 @@ const handleVideoClick = (video) => {
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  position: static;
+  transform: none;
 }
 
 :deep(.el-backtop:hover) {
@@ -537,6 +552,63 @@ const handleVideoClick = (video) => {
   .video-grid {
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 12px;
+  }
+}
+
+/* 添加固定按钮组样式 */
+.fixed-buttons {
+  position: fixed;
+  right: 40px;
+  bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  z-index: 999;
+}
+
+/* 通用按钮样式 */
+.action-button {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background-color: #fb7299;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.action-button:hover {
+  background-color: #fc8bab;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(251, 114, 153, 0.3);
+}
+
+.action-button .el-icon {
+  font-size: 20px;
+}
+
+/* 修改返回顶部按钮位置 */
+:deep(.el-backtop) {
+  position: static;
+  transform: none;
+}
+
+/* 响应式调整 */
+@media screen and (max-width: 768px) {
+  .fixed-buttons {
+    right: 20px;
+    bottom: 20px;
+    gap: 12px;
+  }
+
+  .action-button,
+  :deep(.el-backtop) {
+    width: 40px;
+    height: 40px;
   }
 }
 </style> 

@@ -53,7 +53,7 @@
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import SearchBar from '@/components/SearchBar.vue'
 import LoginDialog from '@/components/LoginDialog.vue'
-import UserPopover from '@/components/UserPopover.vue'
+import UserPopover from '@/components/user/UserPopover.vue'
 import { useTokenStore } from '@/stores/token'
 import useUserInfoStore  from '@/stores/userInfo'
 import { getUserInfoService } from '@/api/user'
@@ -134,8 +134,7 @@ const showLoginDialog = () => {
   display: flex;
   align-items: center;
   padding: 0 24px;
-  justify-content: space-between;
-  gap: 20px;
+  gap: 40px;
 }
 
 /* 左侧区域 */
@@ -144,17 +143,15 @@ const showLoginDialog = () => {
   align-items: center;
   flex-shrink: 0;
   min-width: fit-content;
+  margin-right: auto;
+  padding-right: 20px;
 }
 
 /* 中间区域 */
 .center-section {
-  flex: 1;
+  flex: 0 1 500px;
   min-width: 300px;
-  max-width: 500px;
-  margin: 0 auto;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  margin-right: auto;
 }
 
 /* 右侧区域 */
@@ -164,6 +161,7 @@ const showLoginDialog = () => {
   gap: 24px;
   flex-shrink: 0;
   min-width: fit-content;
+  margin-left: auto;
 }
 
 .user-info {
@@ -244,7 +242,6 @@ const showLoginDialog = () => {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-right: 20px;
   cursor: pointer;
 }
 
@@ -284,7 +281,7 @@ const showLoginDialog = () => {
 .nav-links {
   display: flex;
   align-items: center;
-  margin-left: 20px;
+  margin-left: 40px;
   gap: 30px;
 }
 
@@ -367,8 +364,6 @@ const showLoginDialog = () => {
   }
 
   .center-section {
-    position: static; /* 取消绝对定位 */
-    transform: none;
     margin: 0 16px;
     min-width: 200px; /* 减小最小宽度 */
   }

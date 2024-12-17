@@ -107,7 +107,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { getVideoDetailService } from '@/api/video' // 假设你会创建这个API服务
 import { VideoPlay, Plus, ChatDotRound, CaretRight } from '@element-plus/icons-vue'
-import VideoPlayer from '@/components/VideoPlayer.vue'
+import VideoPlayer from '@/components/video/VideoPlayer.vue'
 import {ElMessage} from "element-plus";
 
 const route = useRoute()

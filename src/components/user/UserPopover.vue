@@ -63,6 +63,10 @@
             <el-icon><User /></el-icon>
             个人中心
           </div>
+          <div class="menu-item" @click="goToEditProfile">
+            <el-icon><Edit /></el-icon>
+            编辑资料
+          </div>
           <div class="menu-item">
             <el-icon><VideoCamera /></el-icon>
             投稿管理
@@ -83,8 +87,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { User, VideoCamera, Star } from '@element-plus/icons-vue'
+import { ref, computed, nextTick } from 'vue'
+import { User, VideoCamera, Star, Edit } from '@element-plus/icons-vue'
 import useUserInfoStore from '@/stores/userInfo'
 import { useTokenStore } from '@/stores/token'
 import { ElMessage } from 'element-plus'
@@ -95,6 +99,7 @@ const userInfoStore = useUserInfoStore()
 const tokenStore = useTokenStore()
 const visible = ref(false)
 const router = useRouter()
+const emits = defineEmits(['update:currentNav'])
 
 // 鼠标悬停处理
 const handleMouseEnter = () => {
@@ -135,6 +140,20 @@ const goToUserCenter = () => {
   visible.value = false // 关闭弹窗
   router.push('/user-center')
 }
+
+const goToEditProfile = () => {
+  visible.value = false // 关闭弹窗
+  router.push('/user-center').then(() => {
+    // 使用 nextTick 确保导航完成后再设置 currentNav
+    nextTick(() => {
+      const userCenterComponent = document.querySelector('#user-center')?.__vueParent$
+      if (userCenterComponent) {
+        userCenterComponent.currentNav = 'edit-profile'
+      }
+    })
+  })
+}
+
 getUserInfo()
 </script>
 

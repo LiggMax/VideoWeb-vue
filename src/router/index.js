@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '@/views/Home.vue'
 import Anime from '@/views/Anime.vue'
-import UserCenter from '@/views/UserCenter.vue'
+import UserCenter from '@/components/user/UserCenter.vue'
 import { useTokenStore } from '@/stores/token'
 
 const routes = [
