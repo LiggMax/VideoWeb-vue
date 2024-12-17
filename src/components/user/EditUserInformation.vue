@@ -20,7 +20,7 @@
           :on-success="handleAvatarSuccess"
           :before-upload="beforeAvatarUpload"
         >
-          <img v-if="form.userPic" :src="form.userPic" class="avatar-preview"/>
+          <img v-if="form.userPic" :src="form.userPic" class="avatar-preview" alt="头像加载失败"/>
           <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
         </el-upload>
       </el-form-item>
@@ -32,7 +32,7 @@
 
       <!-- 性别 -->
       <el-form-item label="性别" prop="gender">
-        <el-radio-group v-model="form.gender">
+        <el-radio-group v-model="form.sex">
           <el-radio :label="1">男</el-radio>
           <el-radio :label="2">女</el-radio>
           <el-radio :label="0">保密</el-radio>
@@ -44,9 +44,9 @@
       </el-form-item>
 
       <!-- 个人简介 -->
-      <el-form-item label="个人简介" prop="intro">
+      <el-form-item label="个人简介" prop="introduction">
         <el-input
-          v-model="form.intro"
+          v-model="form.introduction"
           type="textarea"
           :rows="4"
           placeholder="介绍一下你自己吧"
@@ -81,18 +81,19 @@ const formRef = ref(null)
 const form = ref({
   nickname: '',
   userPic: '',
-  gender: 0,
-  intro: ''
+  sex: 0,
+  introduction: ''
 })
 
 // 表单验证规则
 const rules = {
   nickname: [
     { required: true, message: '请输入昵称', trigger: 'blur' },
-    { min: 2, max: 20, message: '昵称长度在 2 到 20 个字符', trigger: 'blur' }
+    { min: 2, max: 12, message: '昵称长度在 2 到 12 个字符', trigger: 'blur' }
   ],
-  intro: [
-    { max: 200, message: '简介不能超过200个字符', trigger: 'blur' }
+  introduction: [
+    { required: true, message: '请输入个人简介', trigger: 'blur' },
+    { min: 5, max: 100, message: '简介长度在 5 到 100 个字符', trigger: 'blur' }
   ]
 }
 
@@ -123,15 +124,11 @@ const submitForm = async (formEl) => {
   if (!formEl) return
   await formEl.validate(async (valid) => {
     if (valid) {
-      try {
         await updateUserInfoService(form.value)
         ElMessage.success('个人资料更新成功')
         // 更新 store 中的用户信息
-        await userInfoStore.getUserInfo()
-      } catch (error) {
-        ElMessage.error('更新失败，请重试')
+        await userInfoStore.info()
       }
-    }
   })
 }
 
@@ -148,8 +145,8 @@ const initForm = () => {
   form.value = {
     nickname: userInfo.nickname || '',
     userPic: userInfo.userPic || '',
-    gender: userInfo.gender || 0,
-    intro: userInfo.intro || ''
+    sex: userInfo.sex || 0,
+    introduction: userInfo.introduction || ''
   }
 }
 

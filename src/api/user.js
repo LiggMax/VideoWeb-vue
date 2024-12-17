@@ -40,7 +40,7 @@ export const resetPasswordService = (resetData) => {
     }
     return request.post('/user/resetPassword', params)
 }
-// 添加更新用户信息的接口
+//更新用户信息的接口
 export const updateUserInfoService = (data) => {
-  return request.put('/user/info', data)
+  return request.put('/user/updateUser', data)
 }
