@@ -6,6 +6,7 @@ import {ElMessage} from "element-plus";
 import {useTokenStore} from "@/stores/token.js";
 import router from "@/router/index.js";
 import useUserInfoStore from "@/stores/userInfo";
+import {ref} from "vue";
 //定义一个变量,记录公共的前缀  ,  baseURL
 const baseURL = '/api';
 const instance = axios.create({baseURL})
@@ -45,6 +46,8 @@ instance.interceptors.response.use(
             ElMessage.error('请先登录')
             //清除token
             useTokenStore().removeToken();
+            //展示登录页面
+            const loginDialogVisible = ref(true)
             router.push('/')
         }else {
             ElMessage.error('服务异常')

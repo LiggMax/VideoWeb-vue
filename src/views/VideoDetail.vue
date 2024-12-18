@@ -33,15 +33,40 @@
             <h3>评论 {{ videoInfo.commentCount }}</h3>
           </div>
           
+          <!-- 评论输入框 -->
+          <div class="comment-input-area">
+            <el-avatar :size="40" :src="userInfo.userPic" class="comment-avatar" />
+            <div class="input-wrapper">
+              <el-input
+                v-model="commentContent"
+                type="textarea"
+                :rows="2"
+                placeholder="发一条友善的评论"
+                resize="none"
+                maxlength="300"
+                show-word-limit
+              />
+              <div class="comment-tools">
+                <div class="emoji-picker">
+                  <el-icon><ChatRound /></el-icon>
+                  表情
+                </div>
+                <el-button type="primary" :disabled="!commentContent.trim()" @click="submitComment">
+                  发布评论
+                </el-button>
+              </div>
+            </div>
+          </div>
+          
           <!-- 评论列表 -->
           <div class="comment-list">
             <div v-for="comment in comments" :key="comment.id" class="comment-item">
-              <el-avatar :size="40" :src="comment.avatar" />
+              <el-avatar :size="40" :src="comment.userPic" />
               <div class="comment-content">
                 <div class="comment-user">{{ comment.nickname }}</div>
                 <div class="comment-text">{{ comment.content }}</div>
                 <div class="comment-info">
-                  <span class="comment-time">{{ comment.createTime }}</span>
+                  <span class="comment-time">{{ formatCommentTime(comment.createTime) }}</span>
                   <div class="comment-actions">
                     <span class="action-item">
                       <el-icon><Thumb /></el-icon>
@@ -103,13 +128,36 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { getVideoDetailService } from '@/api/video' // 假设你会创建这个API服务
-import { VideoPlay, Plus, ChatDotRound, CaretRight } from '@element-plus/icons-vue'
+import {getVideoDetailService, getVideoListService} from '@/api/video' // 假设你会创建这个API服务
+import { VideoPlay, Plus, ChatDotRound, CaretRight, ChatRound } from '@element-plus/icons-vue'
 import VideoPlayer from '@/components/video/VideoPlayer.vue'
 import {ElMessage} from "element-plus";
+import useUserInfoStore from '@/stores/userInfo'
+import {addCommentService, getCommentsService} from "@/api/comments";
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+import 'dayjs/locale/zh-cn'
 
+// 配置 dayjs
+dayjs.extend(relativeTime)
+dayjs.locale('zh-cn')
+
+// 格式化时间的函数
+const formatCommentTime = (time) => {
+  const now = dayjs()
+  const commentTime = dayjs(time)
+  const diffDays = now.diff(commentTime, 'day')
+
+  if (diffDays < 1) {
+    return commentTime.fromNow()  // 显示"几分钟前"、"几小时前"
+  } else if (diffDays < 30) {
+    return commentTime.format('MM-DD HH:mm')  // 显示"月-日 时:分"
+  } else {
+    return commentTime.format('YYYY-MM-DD')   // 显示完整日期
+  }
+}
 const route = useRoute()
 // 视频详情数据模型
 const videoInfo = ref({
@@ -169,7 +217,7 @@ const comments = ref([
   {
     id: 2,
     nickname: '用户B',
-    avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
+    userPic: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
     content: '期待更新！',
     createTime: '2024-01-22',
     likeCount: 23
@@ -205,6 +253,42 @@ const isCollapsed = ref(false)
 const toggleCollapse = () => {
   isCollapsed.value = !isCollapsed.value
 }
+
+const userInfoStore = useUserInfoStore()
+const userInfo = computed(() => userInfoStore.info)
+const commentContent = ref('')  // 评论内容
+
+// 提交评论方法
+const submitComment = async () => {
+    // 检查评论内容是否为空
+    if (!commentContent.value.trim()) {
+      return ElMessage.warning('评论内容不能为空')
+    }
+    // 从路由中获取当前视频ID
+    const id = route.params.id
+    // 调用添加评论接口
+    await addCommentService(id, commentContent.value.trim())
+    // 提示成功
+    ElMessage.success('评论成功')
+    
+    // 清空评论内容
+    commentContent.value = ''
+    
+    // 重新获取视频详情（更新评论数）
+    await gteComment()
+    
+    // TODO: 重新获取评论列表（如果有分页获取评论列表的接口）
+}
+//获取评论内容
+const gteComment = async () => {
+  // 从路由中获取当前视频ID
+  const id = route.params.id
+  const res = await getCommentsService(id)
+  comments.value = res.data
+}
+gteComment()
+
+
 </script>
 
 <style scoped>
@@ -328,6 +412,11 @@ const toggleCollapse = () => {
 .comment-time {
   font-size: 12px;
   color: #9499a0;
+  transition: color 0.3s;
+}
+
+.comment-time:hover {
+  color: #61666d;
 }
 
 .comment-actions {
@@ -505,5 +594,75 @@ const toggleCollapse = () => {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 16px;
   }
+}
+
+/* 评论输入区域样式 */
+.comment-input-area {
+  display: flex;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid #e3e5e7;
+}
+
+.comment-avatar {
+  flex-shrink: 0;
+}
+
+.input-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+:deep(.el-textarea__inner) {
+  resize: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+:deep(.el-textarea__inner:focus) {
+  border-color: #fb7299;
+  box-shadow: 0 0 0 2px rgba(251, 114, 153, 0.2);
+}
+
+.comment-tools {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.emoji-picker {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #61666d;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+.emoji-picker:hover {
+  background-color: #f4f5f7;
+  color: #fb7299;
+}
+
+:deep(.el-button--primary) {
+  background-color: #fb7299;
+  border-color: #fb7299;
+}
+
+:deep(.el-button--primary:hover) {
+  background-color: #fc8bab;
+  border-color: #fc8bab;
+}
+
+:deep(.el-button--primary:disabled) {
+  background-color: #fbd4e0;
+  border-color: #fbd4e0;
 }
 </style> 

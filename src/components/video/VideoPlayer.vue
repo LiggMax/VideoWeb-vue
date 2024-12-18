@@ -531,10 +531,6 @@ const handleKeyPress = (e) => {
   if (e.code === 'Escape' && isFullscreen.value) {
     document.exitFullscreen()
   }
-  // F 键切换全屏
-  if (e.code === 'KeyF') {
-    toggleFullscreen()
-  }
   // 左右方向键控制进度
   if (e.code === 'ArrowLeft') {
     if (videoRef.value) {

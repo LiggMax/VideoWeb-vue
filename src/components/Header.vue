@@ -107,7 +107,6 @@ onUnmounted(() => {
 // 显示登录对话框
 const showLoginDialog = () => {
   loginDialogVisible.value = true
-  console.log('显示登录弹窗', loginDialogVisible.value)
 }
 </script>
 
