@@ -13,6 +13,7 @@
     <video
       ref="videoRef"
       class="video-element"
+      :class="{ 'playing': isPlaying }"
       :src="videoUrl"
       :poster="poster"
       @play="handlePlay"
@@ -222,6 +223,10 @@ const props = defineProps({
     default: ''
   },
   isCollapsed: {
+    type: Boolean,
+    default: false
+  },
+  autoplay: {
     type: Boolean,
     default: false
   }
@@ -580,6 +585,18 @@ const handleWaiting = () => {
 const handleCanPlay = () => {
   isLoading.value = false
 }
+
+// 监听 videoUrl 变化，实现自动播放
+watch(() => props.videoUrl, (newUrl) => {
+  if (newUrl && props.autoplay) {
+    // 确保视频加载完成后再播放
+    nextTick(() => {
+      if (videoRef.value) {
+        videoRef.value.play()
+      }
+    })
+  }
+})
 </script>
 
 <style scoped>
@@ -592,11 +609,17 @@ const handleCanPlay = () => {
   aspect-ratio: 16 / 9;
   user-select: none;
   -webkit-user-select: none;
+  min-width: 680px;  /* 设置最小宽度 */
+  min-height: 470px; /* 设置最小高度，保持16:9比例 */
 }
 
 .video-element {
   width: 100%;
   height: 100%;
+  object-fit: cover;
+}
+
+.video-element.playing {
   object-fit: contain;
 }
 
@@ -1076,6 +1099,14 @@ const handleCanPlay = () => {
   100% {
     stroke-dasharray: 90, 150;
     stroke-dashoffset: -120px;
+  }
+}
+
+/* 在小屏幕上允许播放器缩小到更小尺寸 */
+@media screen and (max-width: 768px) {
+  .video-player {
+    min-width: 320px;
+    min-height: 180px;
   }
 }
 </style> 

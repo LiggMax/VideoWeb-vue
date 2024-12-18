@@ -16,9 +16,9 @@
         <div class="video-info">
           <h1 class="video-title">{{ videoInfo.title }}</h1>
           <div class="video-stats">
-            <span class="view-count">{{ videoInfo.viewCount }}播放</span>
+            <span class="view-count">{{ videoInfo.viewCount }}:播放</span>
             <span class="bullet">·</span>
-            <span class="date">发布时间：{{ videoInfo.createTime }}</span>
+            <span class="date">发布于 {{ formatPublishTime(videoInfo.createTime) }}</span>
           </div>
         </div>
 
@@ -35,7 +35,7 @@
           
           <!-- 评论输入框 -->
           <div class="comment-input-area">
-            <el-avatar :size="40" :src="userInfo.userPic" class="comment-avatar" />
+            <el-avatar :size="60" :src="userInfo.userPic" class="input-avatar" />
             <div class="input-wrapper">
               <el-input
                 v-model="commentContent"
@@ -47,9 +47,15 @@
                 show-word-limit
               />
               <div class="comment-tools">
-                <div class="emoji-picker">
+                <div class="emoji-picker" @click="handleEmojiClick">
                   <el-icon><ChatRound /></el-icon>
                   表情
+                  <EmojiPicker 
+                    :visible="showEmojiPicker"
+                    :position="emojiPosition"
+                    @select="insertEmoji"
+                    @close="showEmojiPicker = false"
+                  />
                 </div>
                 <el-button type="primary" :disabled="!commentContent.trim()" @click="submitComment">
                   发布评论
@@ -61,9 +67,12 @@
           <!-- 评论列表 -->
           <div class="comment-list">
             <div v-for="comment in comments" :key="comment.id" class="comment-item">
-              <el-avatar :size="40" :src="comment.userPic" />
+              <el-avatar :size="48" :src="comment.userPic" class="comment-avatar" />
               <div class="comment-content">
-                <div class="comment-user">{{ comment.nickname }}</div>
+                <div class="comment-user">
+                  {{ comment.nickname }}
+                  <UploaderIcon v-if="comment.userId === videoInfo.userId" />
+                </div>
                 <div class="comment-text">{{ comment.content }}</div>
                 <div class="comment-info">
                   <span class="comment-time">{{ formatCommentTime(comment.createTime) }}</span>
@@ -128,17 +137,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import {getVideoDetailService, getVideoListService} from '@/api/video' // 假设你会创建这个API服务
 import { VideoPlay, Plus, ChatDotRound, CaretRight, ChatRound } from '@element-plus/icons-vue'
 import VideoPlayer from '@/components/video/VideoPlayer.vue'
 import {ElMessage} from "element-plus";
 import useUserInfoStore from '@/stores/userInfo'
+import UploaderIcon from '@/components/icons/UploaderIcon.vue'
 import {addCommentService, getCommentsService} from "@/api/comments";
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/zh-cn'
+import EmojiPicker from '@/components/EmojiPicker.vue'
 
 // 配置 dayjs
 dayjs.extend(relativeTime)
@@ -158,6 +169,25 @@ const formatCommentTime = (time) => {
     return commentTime.format('YYYY-MM-DD')   // 显示完整日期
   }
 }
+
+// 格式化发布时间
+const formatPublishTime = (time) => {
+  if (!time) return ''
+  const publishTime = dayjs(time)
+  const now = dayjs()
+  const diffDays = now.diff(publishTime, 'day')
+
+  if (diffDays < 1) {
+    return publishTime.fromNow()  // 显示"几分钟前"、"几小时前"
+  } else if (diffDays < 7) {
+    return `${diffDays}天前`
+  } else if (diffDays < 30) {
+    return publishTime.format('MM-DD')  // 显示"月-日"
+  } else {
+    return publishTime.format('YYYY-MM-DD')  // 显示完整日期
+  }
+}
+
 const route = useRoute()
 // 视频详情数据模型
 const videoInfo = ref({
@@ -288,6 +318,46 @@ const gteComment = async () => {
 }
 gteComment()
 
+const showEmojiPicker = ref(false)
+const emojiPosition = ref({ top: '40px', left: '0px' })
+
+// 处理表情点击
+const handleEmojiClick = (event) => {
+  event.stopPropagation()  // 阻止事件冒泡
+  showEmojiPicker.value = !showEmojiPicker.value
+  if (showEmojiPicker.value) {
+    // 计算弹窗位置
+    const emojiButton = event.currentTarget
+    const rect = emojiButton.getBoundingClientRect()
+    emojiPosition.value = {
+      top: '40px',  // 相对于按钮向下偏移
+      left: '0'
+    }
+  }
+}
+
+// 插入表情
+const insertEmoji = (emoji) => {
+  commentContent.value += emoji
+  showEmojiPicker.value = false
+}
+
+// 点击其他地方关闭表情选择器
+const handleClickOutside = (event) => {
+  const emojiPicker = event.target.closest('.emoji-picker-popup')
+  const emojiButton = event.target.closest('.emoji-picker')
+  if (showEmojiPicker.value && !emojiPicker && !emojiButton) {
+    showEmojiPicker.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 
 </script>
 
@@ -300,7 +370,7 @@ gteComment()
 
 .main-content {
   position: relative;
-  max-width: 1400px;
+  max-width: 1800px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr 380px;
@@ -311,6 +381,13 @@ gteComment()
 
 .main-content.collapsed {
   grid-template-columns: 1fr 0;
+}
+
+/* 当屏幕宽度大于 1920px 时限制最大宽度 */
+@media screen and (min-width: 1920px) {
+  .main-content {
+    max-width: 2200px;
+  }
 }
 
 /* 右侧区域样式 */
@@ -333,12 +410,14 @@ gteComment()
   position: relative;
   transition: all 0.3s ease-in-out;
   padding-right: 24px;
+  min-width: 680px;
 }
 
 /* 确保视频播放器响应式 */
 .video-section :deep(.video-player) {
   width: 100%;
   transition: all 0.3s ease-in-out;
+  min-height: 470px;
 }
 
 .video-info {
@@ -347,19 +426,25 @@ gteComment()
 }
 
 .video-title {
-  font-size: 20px;
+  font-size: 35px;
   font-weight: bold;
   color: #18191c;
-  margin: 0 0 12px;
+  margin: 0 0 16px;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
 }
 
 .video-stats {
   color: #9499a0;
   font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .bullet {
-  margin: 0 8px;
+  color: #ccc;
 }
 
 /* 评论区样式 */
@@ -384,6 +469,17 @@ gteComment()
   border-bottom: 1px solid #e3e5e7;
 }
 
+.comment-avatar {
+  flex-shrink: 0;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.comment-avatar:hover {
+  transform: scale(1.05);
+}
+
 .comment-content {
   flex: 1;
   min-width: 0;
@@ -394,6 +490,9 @@ gteComment()
   font-weight: 500;
   color: #18191c;
   margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .comment-text {
@@ -582,6 +681,7 @@ gteComment()
 
 @media screen and (max-width: 1200px) {
   .main-content {
+    max-width: 100%;
     flex-direction: column;
   }
 
@@ -604,8 +704,15 @@ gteComment()
   border-bottom: 1px solid #e3e5e7;
 }
 
-.comment-avatar {
+.input-avatar {
   flex-shrink: 0;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.input-avatar:hover {
+  transform: scale(1.05);
 }
 
 .input-wrapper {
@@ -644,6 +751,7 @@ gteComment()
   padding: 6px 8px;
   border-radius: 4px;
   transition: all 0.3s;
+  position: relative;
 }
 
 .emoji-picker:hover {
@@ -664,5 +772,23 @@ gteComment()
 :deep(.el-button--primary:disabled) {
   background-color: #fbd4e0;
   border-color: #fbd4e0;
+}
+
+.author-icon {
+  margin-left: 4px;
+  transform: scale(0.8);
+  flex-shrink: 0;
+}
+
+/* 在小屏幕上调整最小尺寸 */
+@media screen and (max-width: 768px) {
+  .video-section {
+    min-width: 100%;
+    padding-right: 0;
+  }
+
+  .video-section :deep(.video-player) {
+    min-height: auto;
+  }
 }
 </style> 
