@@ -5,12 +5,11 @@ import axios from 'axios';
 import {ElMessage} from "element-plus";
 import {useTokenStore} from "@/stores/token.js";
 import router from "@/router/index.js";
-import useUserInfoStore from "@/stores/userInfo";
+import eventBus from './eventBus'
 import {ref} from "vue";
 //定义一个变量,记录公共的前缀  ,  baseURL
 const baseURL = '/api';
 const instance = axios.create({baseURL})
-
 //添加请求拦截器
 instance.interceptors.request.use(
     config => {
@@ -46,9 +45,8 @@ instance.interceptors.response.use(
             ElMessage.error('请先登录')
             //清除token
             useTokenStore().removeToken();
-            //展示登录页面
-            const loginDialogVisible = ref(true)
-            router.push('/')
+            // 触发显示登录弹窗事件
+            eventBus.emit('showLogin')
         }else {
             ElMessage.error('服务异常')
         }

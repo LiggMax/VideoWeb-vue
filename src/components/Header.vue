@@ -65,6 +65,8 @@ import {
   Clock,
   Monitor
 } from '@element-plus/icons-vue'
+import { useRouter } from 'vue-router'
+import eventBus from '@/utils/eventBus'
 
 const activeIndex = ref('/')
 const isScrolled = ref(false)
@@ -102,12 +104,18 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  eventBus.off('showLogin')
 })
 
 // 显示登录对话框
 const showLoginDialog = () => {
   loginDialogVisible.value = true
 }
+
+// 监听显示登录弹窗事件
+eventBus.on('showLogin', () => {
+  loginDialogVisible.value = true
+})
 </script>
 
 <style scoped>
