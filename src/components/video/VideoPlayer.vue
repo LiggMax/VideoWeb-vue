@@ -91,24 +91,8 @@
             effect="dark"
           >
             <button class="control-btn play-btn" @click="togglePlay">
-              <svg 
-                class="play-icon" 
-                viewBox="0 0 22 22" 
-                xmlns="http://www.w3.org/2000/svg"
-                width="40" 
-                height="40"
-              >
-                <path 
-                  v-if="isPlaying"
-                  d="M7 3a2 2 0 0 0-2 2v12a2 2 0 1 0 4 0V5a2 2 0 0 0-2-2zm8 0a2 2 0 0 0-2 2v12a2 2 0 1 0 4 0V5a2 2 0 0 0-2-2z"
-                  fill="currentColor"
-                />
-                <path
-                  v-else
-                  d="M17.982 9.275 8.06 3.27A2.013 2.013 0 0 0 5 4.994v12.011a2.017 2.017 0 0 0 3.06 1.725l9.922-6.005a2.017 2.017 0 0 0 0-3.45z"
-                  fill="currentColor"
-                />
-              </svg>
+              <PauseIcon v-if="isPlaying" />
+              <PlayIcon v-else />
             </button>
           </el-tooltip>
 
@@ -174,7 +158,8 @@
 
           <!-- 全屏按钮 -->
           <button class="control-btn fullscreen-btn" @click="toggleFullscreen">
-            <el-icon><FullScreen v-if="!isFullscreen" /><Aim v-else /></el-icon>
+            <ExitFullscreenIcon v-if="isFullscreen" />
+            <FullscreenIcon v-else />
           </button>
         </div>
       </div>
@@ -183,7 +168,7 @@
     <!-- 播放结束遮罩 -->
     <div class="end-overlay" v-if="isEnded" @click="replayVideo">
       <div class="replay-button">
-        <el-icon><RefreshRight /></el-icon>
+        <RefreshIcon />
         重新播放
       </div>
     </div>
@@ -195,7 +180,23 @@
       :class="{ 'is-collapsed': isCollapsed }"
     >
       <div class="collapse-btn">
-        <el-icon><CaretRight /></el-icon>
+        <CollapseIcon />
+      </div>
+    </div>
+
+    <!-- 音量提示 -->
+    <div class="volume-indicator" v-show="showVolumeIndicator">
+      <div class="volume-indicator-content">
+        <div class="volume-icon">
+          <MuteIcon v-if="volume === 0" />
+          <VolumeIcon v-else />
+        </div>
+        <div class="volume-control-wrapper">
+          <div class="volume-bar">
+            <div class="volume-bar-fill" :style="{ width: volume * 100 + '%' }"></div>
+          </div>
+          <div class="volume-value">{{ Math.round(volume * 100) }}%</div>
+        </div>
       </div>
     </div>
   </div>
@@ -204,10 +205,15 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { 
-  VideoPlay, VideoPause, Microphone, Mute, 
-  FullScreen, Aim, RefreshRight, CaretRight 
-} from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
+import VolumeIcon from '../icons/VolumeIcon.vue'
+import MuteIcon from '../icons/MuteIcon.vue'
+import PlayIcon from '../icons/PlayIcon.vue'
+import PauseIcon from '../icons/PauseIcon.vue'
+import FullscreenIcon from '../icons/FullscreenIcon.vue'
+import ExitFullscreenIcon from '../icons/ExitFullscreenIcon.vue'
+import RefreshIcon from '../icons/RefreshIcon.vue'
+import CollapseIcon from '../icons/CollapseIcon.vue'
 
 // Props定义
 const props = defineProps({
@@ -571,13 +577,23 @@ const handleKeyPress = (e) => {
   }
   // 上下方向键控制音量
   if (e.code === 'ArrowUp') {
+    e.preventDefault()
     if (videoRef.value) {
-      videoRef.value.volume = Math.min(1, videoRef.value.volume + 0.1)
+      const newVolume = Math.min(1, volume.value + 0.1)
+      videoRef.value.volume = newVolume
+      volume.value = newVolume
+      isMuted.value = newVolume === 0
+      showVolumeHint()
     }
   }
   if (e.code === 'ArrowDown') {
+    e.preventDefault()
     if (videoRef.value) {
-      videoRef.value.volume = Math.max(0, videoRef.value.volume - 0.1)
+      const newVolume = Math.max(0, volume.value - 0.1)
+      videoRef.value.volume = newVolume
+      volume.value = newVolume
+      isMuted.value = newVolume === 0
+      showVolumeHint()
     }
   }
   // M 键静音
@@ -645,6 +661,23 @@ const savePlayTime = (time) => {
       localStorage.setItem(key, time.toString())
     }
   }
+}
+
+// 添加新的响应式变量
+const showVolumeIndicator = ref(false)
+let volumeIndicatorTimer = null
+
+// 显示音量提示
+const showVolumeHint = () => {
+  showVolumeIndicator.value = true
+  // 清除之前的定时器
+  if (volumeIndicatorTimer) {
+    clearTimeout(volumeIndicatorTimer)
+  }
+  // 设置新的定时器
+  volumeIndicatorTimer = setTimeout(() => {
+    showVolumeIndicator.value = false
+  }, 1000)
 }
 </script>
 
@@ -842,7 +875,7 @@ const savePlayTime = (time) => {
   border-radius: 2px;
   position: relative;
   cursor: pointer;
-  overflow: hidden;  /* 防止进度条溢出 */
+  overflow: hidden;  /* 防止进度条超出 */
   transition: width 0.3s ease;  /* 添加宽度过渡效果 */
   opacity: 0;  /* 初始透明度为0 */
 }
@@ -854,7 +887,7 @@ const savePlayTime = (time) => {
 }
 
 .volume-btn-wrapper:hover .volume-slider {
-  width: 60px;  /* 悬停时展开到完整宽度 */
+  width: 60px;  /* 悬停时展开完整宽度 */
   opacity: 1;   /* 悬停时完全显示 */
 }
 
@@ -988,9 +1021,15 @@ const savePlayTime = (time) => {
   width: 32px;
   height: 32px;
   padding: 6px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s;
 }
 
-.volume-icon {
+/* 移除音量图标的背景样式 */
+.volume-btn .volume-icon {
   width: 100%;
   height: 100%;
   color: #ffffff;
@@ -999,6 +1038,35 @@ const savePlayTime = (time) => {
 
 .volume-btn:hover .volume-icon {
   transform: scale(1.1);
+  color: #fb7299;
+}
+
+/* 修改音量控制区域样式 */
+.volume-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.volume-btn-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 移除其他可能影响的样式 */
+.control-btn {
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s;
+}
+
+.control-btn:hover {
   color: #fb7299;
 }
 
@@ -1157,5 +1225,121 @@ const savePlayTime = (time) => {
     min-width: 320px;
     min-height: 180px;
   }
+}
+
+/* 全局样式，需要添加到 App.vue 或全局样式文件中 */
+:deep(.volume-message) {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+  border: none !important;
+  padding: 8px 16px !important;
+}
+
+:deep(.volume-message .el-message__content) {
+  color: #fff !important;
+  font-size: 14px !important;
+}
+
+:deep(.volume-message .el-message__icon) {
+  display: none !important;
+}
+
+/* 修改音量提示样式 */
+.volume-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.85); /* 调整主背景透明度 */
+  backdrop-filter: blur(12px); /* 增加模糊效果 */
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: rgba(255, 255, 255, 0.95); /* 调整文字透明度 */
+  z-index: 100;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25); /* 调整阴影透明度 */
+  border: 1px solid rgba(255, 255, 255, 0.12); /* 调整边框透明度 */
+}
+
+.volume-indicator-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 200px;
+}
+
+.volume-icon {
+  font-size: 24px;
+  color: rgba(251, 114, 153, 0.95); /* 调整图标颜色透明度 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: rgba(251, 114, 153, 0.12); /* 调整图标背景透明度 */
+  border-radius: 8px;
+  animation: scaleIcon 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.volume-control-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.volume-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.25); /* 调整进度条背景透明度 */
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.volume-bar-fill {
+  height: 100%;
+  background: rgba(251, 114, 153, 0.9); /* 调整进度条填充透明度 */
+  border-radius: 2px;
+  transition: width 0.2s ease;
+}
+
+.volume-value {
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 40px;
+  text-align: right;
+  color: rgba(255, 255, 255, 0.95); /* 调整数值文字透明度 */
+  animation: fadeInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes scaleIcon {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.volume-indicator-enter-active,
+.volume-indicator-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.volume-indicator-enter-from,
+.volume-indicator-leave-to {
+  opacity: 0;
 }
 </style> 
