@@ -1015,9 +1015,9 @@ const resumeTime = ref(0)
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;  /* 增加按钮尺寸 */
+  width: 40px;
   height: 40px;
-  padding: 8px;  /* 调整内边距 */
+  padding: 8px;
   background: transparent;
   border: none;
   color: #fff;
@@ -1027,18 +1027,14 @@ const resumeTime = ref(0)
 
 /* 修改音量按钮中的图标样式 */
 .volume-btn svg {
-  width: 24px;  /* 设置固定的图标尺寸 */
+  width: 24px;
   height: 24px;
   color: #ffffff;
   transition: transform 0.2s;
+  font-size: 24px; /* 添加字体大小 */
 }
 
-.volume-btn:hover svg {
-  transform: scale(1.1);
-  color: #fb7299;
-}
-
-/* 调整音量控制区域的布局 */
+/* 修改音量控制区域的布局 */
 .volume-control {
   position: relative;
   display: flex;
@@ -1051,19 +1047,9 @@ const resumeTime = ref(0)
   gap: 8px;
 }
 
-/* 移除其他可能影响的样式 */
-.control-btn {
-  background: transparent;
-  border: none;
-  color: #fff;
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  transition: all 0.3s;
-}
-
-.control-btn:hover {
+/* 悬停效果 */
+.volume-btn:hover svg {
+  transform: scale(1.1);
   color: #fb7299;
 }
 
