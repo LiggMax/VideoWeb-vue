@@ -1,10 +1,10 @@
 <template>
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
-    viewBox="0 0 24 24"
+    viewBox="0 0 1024 1024"
   >
     <path 
-      d="M8 3v3H3v2h7V3H8m6 0v5h7V6h-5V3h-2M3 16h5v3h2v-5H3v2m13 0v5h-2v-3h5v-2h-3z"
+      d="M768 298.667h170.667V384h-256V128H768v170.667zM341.333 384h-256v-85.333H256V128h85.333v256zM768 725.333V896h-85.333V640h256v85.333H768zM341.333 640v256H256V725.333H85.333V640h256z"
       fill="currentColor"
     />
   </svg>

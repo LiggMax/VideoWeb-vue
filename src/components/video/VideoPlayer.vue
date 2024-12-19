@@ -103,24 +103,8 @@
               @mouseleave="showVolumeSlider = false"
             >
               <button class="control-btn volume-btn" @click="toggleMute">
-                <svg 
-                  class="volume-icon" 
-                  viewBox="0 0 22 22" 
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="22" 
-                  height="22"
-                >
-                  <path 
-                    v-if="!isMuted && volume > 0"
-                    d="M10.188 4.65 6 8H5a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h1l4.188 3.35a.5.5 0 0 0 .812-.39V5.04a.498.498 0 0 0-.812-.39zm4.258-.872a1 1 0 0 0-.862 1.804 6.002 6.002 0 0 1-.007 10.838 1 1 0 0 0 .86 1.806A8.001 8.001 0 0 0 19 11a8.001 8.001 0 0 0-4.554-7.222z M15 11a3.998 3.998 0 0 0-2-3.465v6.93A3.998 3.998 0 0 0 15 11z"
-                    fill="currentColor"
-                  />
-                  <path
-                    v-else
-                    d="M15 11a3.998 3.998 0 0 0-2-3.465v2.636l1.865 1.865A4.02 4.02 0 0 0 15 11zM4.5 5.375l15 15 1.5-1.5-15-15-1.5 1.5z M10.188 4.65 6 8H5a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h1l4.188 3.35a.5.5 0 0 0 .812-.39V5.04a.498.498 0 0 0-.812-.39z"
-                    fill="currentColor"
-                  />
-                </svg>
+                <MuteIcon v-if="isMuted || volume === 0" />
+                <VolumeIcon v-else />
               </button>
               <div class="volume-slider" 
                 v-show="showVolumeSlider"
@@ -199,6 +183,16 @@
         </div>
       </div>
     </div>
+
+    <!-- 添加播放记录提示 -->
+    <Transition name="fade">
+      <div class="resume-tip" v-if="showResumeTip">
+        <div class="resume-tip-content">
+          <div class="resume-tip-title">继续播放</div>
+          <div class="resume-tip-time">从 {{ formatTime(resumeTime) }} 继续播放</div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -404,12 +398,11 @@ const handleLoadedMetadata = () => {
     const lastTime = getLastPlayTime()
     if (lastTime > 0) {
       videoRef.value.currentTime = lastTime
-      // 显示提示消息
-      ElMessage({
-        message: `从上次观看位置${formatTime(lastTime)}继续播放`,
-        type: 'success',
-        duration: 3000
-      })
+      resumeTime.value = lastTime
+      showResumeTip.value = true
+      setTimeout(() => {
+        showResumeTip.value = false
+      }, 3000)
     }
   }
 }
@@ -679,6 +672,10 @@ const showVolumeHint = () => {
     showVolumeIndicator.value = false
   }, 1000)
 }
+
+// 添加新的响应式变量
+const showResumeTip = ref(false)
+const resumeTime = ref(0)
 </script>
 
 <style scoped>
@@ -1018,9 +1015,9 @@ const showVolumeHint = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  padding: 6px;
+  width: 40px;  /* 增加按钮尺寸 */
+  height: 40px;
+  padding: 8px;  /* 调整内边距 */
   background: transparent;
   border: none;
   color: #fff;
@@ -1028,20 +1025,20 @@ const showVolumeHint = () => {
   transition: all 0.3s;
 }
 
-/* 移除音量图标的背景样式 */
-.volume-btn .volume-icon {
-  width: 100%;
-  height: 100%;
+/* 修改音量按钮中的图标样式 */
+.volume-btn svg {
+  width: 24px;  /* 设置固定的图标尺寸 */
+  height: 24px;
   color: #ffffff;
   transition: transform 0.2s;
 }
 
-.volume-btn:hover .volume-icon {
+.volume-btn:hover svg {
   transform: scale(1.1);
   color: #fb7299;
 }
 
-/* 修改音量控制区域样式 */
+/* 调整音量控制区域的布局 */
 .volume-control {
   position: relative;
   display: flex;
@@ -1249,15 +1246,15 @@ const showVolumeHint = () => {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: rgba(0, 0, 0, 0.85); /* 调整主背景透明度 */
-  backdrop-filter: blur(12px); /* 增加模糊效果 */
+  background: rgba(0, 0, 0, 0.5); /* 进一步降低背景透明度 */
+  backdrop-filter: blur(6px); /* 减少模糊效果 */
   border-radius: 8px;
   padding: 12px 16px;
-  color: rgba(255, 255, 255, 0.95); /* 调整文字透明度 */
+  color: rgba(255, 255, 255, 0.85); /* 降低文字透明度 */
   z-index: 100;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25); /* 调整阴影透明度 */
-  border: 1px solid rgba(255, 255, 255, 0.12); /* 调整边框透明度 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* 降低阴影透明度 */
+  border: 1px solid rgba(255, 255, 255, 0.06); /* 降低边框透明度 */
 }
 
 .volume-indicator-content {
@@ -1268,16 +1265,22 @@ const showVolumeHint = () => {
 }
 
 .volume-icon {
-  font-size: 24px;
-  color: rgba(251, 114, 153, 0.95); /* 调整图标颜色透明度 */
+  font-size: 28px; /* 统一设置图标大小 */
+  color: rgba(251, 114, 153, 0.85);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: rgba(251, 114, 153, 0.12); /* 调整图标背景透明度 */
+  width: 40px;  /* 统一容器大小 */
+  height: 40px;
+  background: rgba(251, 114, 153, 0.06);
   border-radius: 8px;
   animation: scaleIcon 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 确保SVG图标在容器中居中且大小一致 */
+.volume-icon svg {
+  width: 28px;
+  height: 28px;
 }
 
 .volume-control-wrapper {
@@ -1290,14 +1293,14 @@ const showVolumeHint = () => {
 .volume-bar {
   flex: 1;
   height: 4px;
-  background: rgba(255, 255, 255, 0.25); /* 调整进度条背景透明度 */
+  background: rgba(255, 255, 255, 0.1); /* 降低进度条背景透明度 */
   border-radius: 2px;
   overflow: hidden;
 }
 
 .volume-bar-fill {
   height: 100%;
-  background: rgba(251, 114, 153, 0.9); /* 调整进度条填充透明度 */
+  background: rgba(251, 114, 153, 0.8); /* 降低进度条填充透明度 */
   border-radius: 2px;
   transition: width 0.2s ease;
 }
@@ -1307,7 +1310,7 @@ const showVolumeHint = () => {
   font-weight: 500;
   min-width: 40px;
   text-align: right;
-  color: rgba(255, 255, 255, 0.95); /* 调整数值文字透明度 */
+  color: rgba(255, 255, 255, 0.85); /* 降低数值文字透明度 */
   animation: fadeInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1341,5 +1344,145 @@ const showVolumeHint = () => {
 .volume-indicator-enter-from,
 .volume-indicator-leave-to {
   opacity: 0;
+}
+
+/* 修改全屏按钮样式 */
+.fullscreen-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.fullscreen-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.fullscreen-btn:hover {
+  color: #fb7299;
+  transform: scale(1.1);
+}
+
+/* 确保所有控制按钮的基础样式 */
+.control-btn {
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.control-btn svg {
+  width: 100%;
+  height: 100%;
+}
+
+.control-btn:hover {
+  color: #fb7299;
+}
+
+/* 播放记录提示样式 */
+:deep(.resume-notification) {
+  background: rgba(0, 0, 0, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(8px) !important;
+  padding: 12px 16px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+  min-width: 240px !important;
+}
+
+:deep(.resume-message) {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+:deep(.resume-title) {
+  color: #fff !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+:deep(.resume-time) {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: 13px !important;
+}
+
+:deep(.el-message__content) {
+  padding: 0 !important;
+  line-height: 1.4 !important;
+}
+
+:deep(.el-message .el-message__badge) {
+  display: none !important;
+}
+
+/* 添加播放记录提示样式 */
+.resume-tip {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: transparent;
+  border-radius: 8px;
+  padding: 12px 16px;
+  z-index: 100;
+  min-width: 200px;
+}
+
+.resume-tip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 8px 12px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.resume-tip-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.resume-tip-time {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* 添加淡入淡出动画 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* 移除原来的ElMessage相关样式 */
+:deep(.resume-notification),
+:deep(.resume-message),
+:deep(.resume-title),
+:deep(.resume-time),
+:deep(.el-message__content),
+:deep(.el-message .el-message__badge) {
+  display: none !important;
 }
 </style> 

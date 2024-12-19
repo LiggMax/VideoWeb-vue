@@ -1,9 +1,10 @@
 <template>
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
-    xml:space="preserve" 
-    data-pointer="none" 
+    width="22"
+    height="22"
     viewBox="0 0 22 22"
+    style="width: 1em; height: 1em;"
   >
     <path 
       d="M15 11a3.998 3.998 0 0 0-2-3.465v2.636l1.865 1.865A4.02 4.02 0 0 0 15 11z"
