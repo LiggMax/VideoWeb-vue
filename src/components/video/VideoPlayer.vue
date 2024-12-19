@@ -202,7 +202,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { 
   VideoPlay, VideoPause, Microphone, Mute, 
   FullScreen, Aim, RefreshRight, CaretRight 
@@ -250,6 +251,8 @@ const playbackRate = ref(1)
 const showTooltip = ref(false)
 const tooltipPosition = ref(0)
 const tooltipTime = ref('00:00')
+const route = useRoute()
+const videoId = computed(() => route.params.id)
 
 // 播放速度选项
 const speedOptions = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0]
@@ -364,6 +367,9 @@ const handlePause = () => {
 const handleEnded = () => {
   isPlaying.value = false
   isEnded.value = true
+  // 清除播放进度记录
+  const key = `video_progress_${videoId.value}`
+  localStorage.removeItem(key)
 }
 
 const handleTimeUpdate = () => {
@@ -375,6 +381,11 @@ const handleTimeUpdate = () => {
     if (videoRef.value.buffered.length > 0) {
       loadedProgress.value = (videoRef.value.buffered.end(0) / duration.value) * 100
     }
+    
+    // 每秒保存一次播放位置
+    if (Math.floor(currentTime.value) % 1 === 0) {
+      savePlayTime(currentTime.value)
+    }
   }
 }
 
@@ -383,6 +394,17 @@ const handleLoadedMetadata = () => {
     duration.value = videoRef.value.duration
     volume.value = videoRef.value.volume
     isLoading.value = false
+    // 设置上次播放位置
+    const lastTime = getLastPlayTime()
+    if (lastTime > 0) {
+      videoRef.value.currentTime = lastTime
+      // 显示提示消息
+      ElMessage({
+        message: `从上次观看位置${formatTime(lastTime)}继续播放`,
+        type: 'success',
+        duration: 3000
+      })
+    }
   }
 }
 
@@ -597,6 +619,33 @@ watch(() => props.videoUrl, (newUrl) => {
     })
   }
 })
+
+// 获取上次播放位置
+const getLastPlayTime = () => {
+  const key = `video_progress_${videoId.value}`
+  const time = localStorage.getItem(key)
+  // 如果播放进度超过95%，则返回0从头开始播放
+  if (time && duration.value) {
+    const progress = parseFloat(time) / duration.value * 100
+    if (progress > 95) {
+      localStorage.removeItem(key)
+      return 0
+    }
+  }
+  return time ? parseFloat(time) : 0
+}
+
+// 保存播放位置
+const savePlayTime = (time) => {
+  // 只有当播放进度在1%到95%之间时才保存
+  if (duration.value) {
+    const progress = time / duration.value * 100
+    if (progress > 1 && progress < 95) {
+      const key = `video_progress_${videoId.value}`
+      localStorage.setItem(key, time.toString())
+    }
+  }
+}
 </script>
 
 <style scoped>
