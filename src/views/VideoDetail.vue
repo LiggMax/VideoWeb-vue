@@ -104,7 +104,7 @@
               <div class="fans-count">100粉丝</div>
             </div>
           </div>
-          <div class="uploader-desc">{{ videoInfo.description || '这个UP主很懒，还没有添加简介~' }}</div>
+          <div class="uploader-desc">{{ videoInfo.introduction || '这个UP主很懒，还没有添加简介~' }}</div>
           <el-button type="primary" class="follow-btn" block>
             <el-icon><Plus /></el-icon>
             关注
