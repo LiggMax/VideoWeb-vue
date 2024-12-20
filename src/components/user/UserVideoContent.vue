@@ -300,14 +300,14 @@ const handleVideoSuccess = (response) => {
 
 const beforeVideoUpload = (file) => {
   const isValidFormat = ['video/mp4', 'video/quicktime', 'video/x-msvideo'].includes(file.type)
-  const isLt500M = file.size / 1024 / 1024 < 500
+  const isLt500M = file.size / 1024 / 1024 < 1500
 
   if (!isValidFormat) {
     ElMessage.error('请上传正确的视频格式!')
     return false
   }
   if (!isLt500M) {
-    ElMessage.error('视频大小不能超过 500MB!')
+    ElMessage.error('视频大小不能超过 1.5G!')
     return false
   }
   return true

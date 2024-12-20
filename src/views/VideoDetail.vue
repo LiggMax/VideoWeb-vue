@@ -105,7 +105,7 @@
             </div>
           </div>
           <div class="uploader-desc">{{ videoInfo.introduction || '这个UP主很懒，还没有添加简介~' }}</div>
-          <div class="button-group">
+          <div v-if="!isSelfVideo" class="button-group">
             <el-button type="primary" class="follow-btn">
               <el-icon><Plus /></el-icon>
               关注
@@ -378,6 +378,11 @@ const goToChat = () => {
     }
   })
 }
+
+// 判断是否是自己的视频
+const isSelfVideo = computed(() => {
+  return videoInfo.value.username === userInfo.value.username
+})
 
 </script>
 
