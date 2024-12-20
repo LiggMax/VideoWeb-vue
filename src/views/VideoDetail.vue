@@ -105,10 +105,16 @@
             </div>
           </div>
           <div class="uploader-desc">{{ videoInfo.introduction || '这个UP主很懒，还没有添加简介~' }}</div>
-          <el-button type="primary" class="follow-btn" block>
-            <el-icon><Plus /></el-icon>
-            关注
-          </el-button>
+          <div class="button-group">
+            <el-button type="primary" class="follow-btn">
+              <el-icon><Plus /></el-icon>
+              关注
+            </el-button>
+            <el-button class="message-btn" @click="goToChat">
+              <el-icon><ChatDotRound /></el-icon>
+              私信
+            </el-button>
+          </div>
         </div>
 
         <h3 class="recommend-title">相关推荐</h3>
@@ -138,7 +144,7 @@
 
 <script setup>
 import { ref, onMounted, computed, onUnmounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import {getVideoDetailService, getVideoListService} from '@/api/video' // 假设你会创建这个API服务
 import { VideoPlay, Plus, ChatDotRound, CaretRight, ChatRound } from '@element-plus/icons-vue'
 import VideoPlayer from '@/components/video/VideoPlayer.vue'
@@ -189,6 +195,8 @@ const formatPublishTime = (time) => {
 }
 
 const route = useRoute()
+const router = useRouter()
+
 // 视频详情数据模型
 const videoInfo = ref({
   id: 0,
@@ -201,6 +209,7 @@ const videoInfo = ref({
   commentCount: 0,//评论数
   nickname: '',//作者昵称
   userPic: '',//作者头像
+  username: '',//作者用户名
 })
 
 // 获取视频详情
@@ -358,6 +367,17 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
+
+// 添加跳转到私信页面的方法
+const goToChat = () => {
+  // 检查是否有视频作者的用户名
+  router.push({
+    name: 'UserChat',
+    query: {
+      username: videoInfo.value.username // 使用视频作者的用户名
+    }
+  })
+}
 
 </script>
 
@@ -663,8 +683,13 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
+.button-group {
+  display: flex;
+  gap: 12px;
+}
+
 .follow-btn {
-  width: 100%;
+  flex: 2;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -674,9 +699,22 @@ onUnmounted(() => {
   font-size: 14px;
 }
 
-.follow-btn:hover {
-  background: #fc8bab;
-  border-color: #fc8bab;
+.message-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 14px;
+  background: #fff;
+  border-color: #e3e5e7;
+  color: #61666d;
+}
+
+.message-btn:hover {
+  background: #f4f5f7;
+  border-color: #d0d3d7;
+  color: #18191c;
 }
 
 @media screen and (max-width: 1200px) {

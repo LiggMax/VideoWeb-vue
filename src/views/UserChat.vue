@@ -1,0 +1,413 @@
+<template>
+  <div class="chat-page">
+    <!-- 左侧聊天列表 -->
+    <div class="chat-list">
+      <div class="list-header">
+        <h3>私信列表</h3>
+      </div>
+      <div class="chat-items">
+        <div 
+          v-for="chat in chatList" 
+          :key="chat.id" 
+          class="chat-item"
+          :class="{ 'active': currentChat?.id === chat.id }"
+          @click="selectChat(chat)"
+        >
+          <el-avatar :size="40" :src="chat.userPic" />
+          <div class="chat-info">
+            <div class="chat-header">
+              <span class="nickname">{{ chat.nickname }}</span>
+              <span class="time">{{ formatTime(chat.lastTime) }}</span>
+            </div>
+            <div class="last-message">{{ chat.lastMessage }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧聊天区域 -->
+    <div class="chat-area">
+      <template v-if="currentChat">
+        <div class="chat-header">
+          <div class="user-info">
+            <span class="nickname">{{ currentChat.nickname }}</span>
+          </div>
+        </div>
+        
+        <div class="chat-messages" ref="messageContainer">
+          <div 
+            v-for="msg in messageList" 
+            :key="msg.id" 
+            class="message-bubble"
+            :class="{ 'self': msg.isSelf }"
+          >
+            <el-avatar 
+              :size="32" 
+              :src="msg.isSelf ? userInfo.userPic : currentChat.userPic" 
+            />
+            <div class="message-content">{{ msg.content }}</div>
+          </div>
+        </div>
+
+        <div class="chat-input">
+          <div class="input-tools">
+            <div class="emoji-picker" @click="handleEmojiClick">
+              <el-icon><ChatRound /></el-icon>
+            </div>
+          </div>
+          <div class="input-area">
+            <el-input
+              v-model="messageContent"
+              type="textarea"
+              :rows="3"
+              placeholder="发送消息..."
+              resize="none"
+              @keyup.enter.native.exact="sendMessage"
+            />
+          </div>
+          <div class="send-btn">
+            <el-button 
+              type="primary" 
+              :disabled="!messageContent.trim()"
+              @click="sendMessage"
+            >
+              发送
+            </el-button>
+          </div>
+        </div>
+      </template>
+      
+      <div v-else class="empty-chat">
+        <el-empty description="选择一个聊天" />
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted, nextTick } from 'vue'
+import { ElMessage } from 'element-plus'
+import { ChatRound } from '@element-plus/icons-vue'
+import useUserInfoStore from '@/stores/userInfo'
+import { useRoute } from 'vue-router'
+import { getUserChatService } from '@/api/Chat'  // 导入获取私信对象的接口
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+import 'dayjs/locale/zh-cn'
+
+dayjs.extend(relativeTime)
+dayjs.locale('zh-cn')
+
+const route = useRoute()
+const userInfoStore = useUserInfoStore()
+const userInfo = computed(() => userInfoStore.info)
+
+// 聊天列表数据
+const chatList = ref([])
+
+// 当前选中的聊天
+const currentChat = ref(null)
+
+// 消息列表
+const messageList = ref([])
+
+// 输入的消息内容
+const messageContent = ref('')
+
+// 消息容器的引用
+const messageContainer = ref(null)
+
+// 获取聊天对象信息
+const getChatUser = async (username) => {
+  try {
+    // 调用接口获取私信对象信息
+    const res = await getUserChatService(username)
+    if (res.data && res.data[0]) {
+      const userData = res.data[0]
+      // 创建新的聊天对象
+      const newChat = {
+        id: Date.now(),
+        username: userData.username,
+        nickname: userData.nickname,
+        userPic: userData.userPic,
+        lastMessage: userData.message || '',
+        lastTime: dayjs().format('YYYY-MM-DD HH:mm:ss')
+      }
+      
+      // 如果不存在于聊天列表中，则添加
+      const existChat = chatList.value.find(chat => chat.username === username)
+      if (!existChat) {
+        chatList.value.unshift(newChat)
+        currentChat.value = newChat
+      } else {
+        currentChat.value = existChat
+      }
+      
+      // 选中当前聊天
+      selectChat(currentChat.value)
+    } else {
+      ElMessage.warning('未找到用户信息')
+    }
+  } catch (error) {
+    console.error('获取聊天对象信息失败:', error)
+    ElMessage.error('获取聊天对象信息失败')
+  }
+}
+
+// 选择聊天
+const selectChat = (chat) => {
+  currentChat.value = chat
+  loadMessages(chat.id)
+}
+
+// 加载消息记录
+const loadMessages = async (chatId) => {
+  // TODO: 调用API获取消息记录
+  messageList.value = [
+    {
+      id: 1,
+      content: '你好！',
+      isSelf: false,
+      time: '12:30'
+    },
+    {
+      id: 2,
+      content: '你好，有什么可以帮你的吗？',
+      isSelf: true,
+      time: '12:31'
+    }
+  ]
+  
+  await nextTick()
+  scrollToBottom()
+}
+
+// 发送消息
+const sendMessage = () => {
+  if (!messageContent.value.trim()) return
+  
+  // TODO: 调用API发送消息
+  messageList.value.push({
+    id: Date.now(),
+    content: messageContent.value,
+    isSelf: true,
+    time: dayjs().format('HH:mm')
+  })
+  
+  messageContent.value = ''
+  
+  nextTick(() => {
+    scrollToBottom()
+  })
+}
+
+// 滚动到底部
+const scrollToBottom = () => {
+  const container = messageContainer.value
+  if (container) {
+    container.scrollTop = container.scrollHeight
+  }
+}
+
+// 格式化时间
+const formatTime = (time) => {
+  const messageTime = dayjs(time)
+  const now = dayjs()
+  const diffDays = now.diff(messageTime, 'day')
+
+  if (diffDays < 1) {
+    return messageTime.format('HH:mm')
+  } else if (diffDays < 7) {
+    return messageTime.format('ddd HH:mm')
+  } else {
+    return messageTime.format('MM-DD')
+  }
+}
+
+// 处理表情点击
+const handleEmojiClick = () => {
+  // TODO: 实现表情选择功能
+}
+
+onMounted(() => {
+  // 从路由参数获取username并调用接口
+  const username = route.query.username
+  if (username) {
+    getChatUser(username)
+  }
+})
+</script>
+
+<style scoped>
+.chat-page {
+  display: flex;
+  height: calc(100vh - 60px);
+  background: #fff;
+  border-radius: 8px;
+  margin: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 左侧聊天列表样式 */
+.chat-list {
+  width: 280px;
+  border-right: 1px solid #e3e5e7;
+  display: flex;
+  flex-direction: column;
+}
+
+.list-header {
+  padding: 16px;
+  border-bottom: 1px solid #e3e5e7;
+}
+
+.list-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #18191c;
+}
+
+.chat-items {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.chat-item {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.chat-item:hover {
+  background: #f6f7f8;
+}
+
+.chat-item.active {
+  background: #f0f1f2;
+}
+
+.chat-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.nickname {
+  font-size: 14px;
+  font-weight: 500;
+  color: #18191c;
+}
+
+.time {
+  font-size: 12px;
+  color: #9499a0;
+}
+
+.last-message {
+  font-size: 13px;
+  color: #61666d;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 右侧聊天区域样式 */
+.chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+.chat-header {
+  padding: 16px;
+  border-bottom: 1px solid #e3e5e7;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.message-bubble {
+  display: flex;
+  gap: 8px;
+  max-width: 70%;
+}
+
+.message-bubble.self {
+  flex-direction: row-reverse;
+  align-self: flex-end;
+}
+
+.message-content {
+  padding: 10px 16px;
+  background: #f6f7f8;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #18191c;
+  line-height: 1.5;
+}
+
+.message-bubble.self .message-content {
+  background: #fb7299;
+  color: #fff;
+}
+
+.chat-input {
+  border-top: 1px solid #e3e5e7;
+  padding: 16px;
+}
+
+.input-tools {
+  margin-bottom: 8px;
+}
+
+.emoji-picker {
+  display: inline-flex;
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #61666d;
+  transition: all 0.3s;
+}
+
+.emoji-picker:hover {
+  background: #f6f7f8;
+  color: #fb7299;
+}
+
+.input-area {
+  margin-bottom: 12px;
+}
+
+:deep(.el-textarea__inner) {
+  resize: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+}
+
+.send-btn {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.empty-chat {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+</style> 

@@ -30,6 +30,11 @@ const routes = [
     path: '/reset-password',
     name: 'ResetPassword',
     component: () => import('@/components/ResetPassword.vue')
+  },
+  {
+    path: '/chat',
+    name: 'UserChat',
+    component: () => import('@/views/UserChat.vue')
   }
 ]
 
