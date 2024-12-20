@@ -199,7 +199,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { ElMessage } from 'element-plus'
 import VolumeIcon from '../icons/VolumeIcon.vue'
 import MuteIcon from '../icons/MuteIcon.vue'
 import PlayIcon from '../icons/PlayIcon.vue'

@@ -85,7 +85,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { ChatRound } from '@element-plus/icons-vue'
 import useUserInfoStore from '@/stores/userInfo'
@@ -94,6 +94,7 @@ import { getUserChatService } from '@/api/Chat'  // 导入获取私信对象的�
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/zh-cn'
+import WebSocketClient from '@/utils/websocket'
 
 dayjs.extend(relativeTime)
 dayjs.locale('zh-cn')
@@ -117,22 +118,32 @@ const messageContent = ref('')
 // 消息容器的引用
 const messageContainer = ref(null)
 
+// 创建WebSocket客户端
+const ws = new WebSocketClient(
+  'ws://127.0.0.1:8080/ws/chat',
+  userInfo.value.username
+)
+
 // 获取聊天对象信息
 const getChatUser = async (username) => {
   try {
     // 调用接口获取私信对象信息
     const res = await getUserChatService(username)
+    console.log('Chat user response:', res) // 添加日志
+    
     if (res.data && res.data[0]) {
       const userData = res.data[0]
       // 创建新的聊天对象
       const newChat = {
         id: Date.now(),
-        username: userData.username,
-        nickname: userData.nickname,
-        userPic: userData.userPic,
+        username: userData.username || username, // 确保有用户名
+        nickname: userData.nickname || username,
+        userPic: userData.userPic || 'default-avatar.jpg',
         lastMessage: userData.message || '',
         lastTime: dayjs().format('YYYY-MM-DD HH:mm:ss')
       }
+      
+      console.log('Created new chat:', newChat) // 添加日志
       
       // 如果不存在于聊天列表中，则添加
       const existChat = chatList.value.find(chat => chat.username === username)
@@ -186,7 +197,27 @@ const loadMessages = async (chatId) => {
 const sendMessage = () => {
   if (!messageContent.value.trim()) return
   
-  // TODO: 调用API发送消息
+  // 检查是否有当前聊天对象
+  if (!currentChat.value || !currentChat.value.username) {
+    ElMessage.warning('请选择聊天对象')
+    return
+  }
+  
+  const message = {
+    type: 'chat',
+    data: {
+      to: currentChat.value.username,  // 确保这里有值
+      content: messageContent.value.trim(),
+      time: dayjs().format('YYYY-MM-DD HH:mm:ss')
+    }
+  }
+  
+  console.log('Sending message:', message) // 添加日志
+  
+  // 发送消息到服务器
+  ws.sendMessage(message)
+  
+  // 添加到本地消息列表
   messageList.value.push({
     id: Date.now(),
     content: messageContent.value,
@@ -199,6 +230,34 @@ const sendMessage = () => {
   nextTick(() => {
     scrollToBottom()
   })
+}
+
+// 处理接收到的消息
+const handleReceivedMessage = (message) => {
+  if (message.type === 'chat') {
+    const { from, content, time } = message.data
+    
+    // 如果是当前聊天的消息，添加到消息列表
+    if (currentChat.value && from === currentChat.value.username) {
+      messageList.value.push({
+        id: Date.now(),
+        content: content,
+        isSelf: false,
+        time: dayjs(time).format('HH:mm')
+      })
+      
+      nextTick(() => {
+        scrollToBottom()
+      })
+    }
+    
+    // 更新聊天列表中的最后一条消息
+    const chatIndex = chatList.value.findIndex(chat => chat.username === from)
+    if (chatIndex !== -1) {
+      chatList.value[chatIndex].lastMessage = content
+      chatList.value[chatIndex].lastTime = time
+    }
+  }
 }
 
 // 滚动到底部
@@ -230,11 +289,22 @@ const handleEmojiClick = () => {
 }
 
 onMounted(() => {
+  // 连接WebSocket
+  ws.connect()
+  
+  // 添加消息监听
+  ws.onMessage(handleReceivedMessage)
+  
   // 从路由参数获取username并调用接口
   const username = route.query.username
   if (username) {
     getChatUser(username)
   }
+})
+
+onUnmounted(() => {
+  // 关闭WebSocket连接
+  ws.close()
 })
 </script>
 
