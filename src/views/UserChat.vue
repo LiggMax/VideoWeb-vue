@@ -19,7 +19,12 @@
               <span class="nickname">{{ chat.nickname }}</span>
               <span class="time">{{ formatTime(chat.lastTime) }}</span>
             </div>
-            <div class="last-message">{{ chat.lastMessage }}</div>
+            <div class="last-message">
+              {{ chat.lastMessage }}
+              <span v-if="chat.unreadCount" class="unread-count">
+                {{ formatUnreadCount(chat.unreadCount) }}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -39,7 +44,7 @@
             v-for="msg in messageList" 
             :key="msg.id" 
             class="message-bubble"
-            :class="{ 'self': msg.isSelf }"
+            :class="{ 'self': msg.isSelf, 'offline': msg.isOffline }"
           >
             <el-avatar 
               :size="32" 
@@ -90,7 +95,7 @@ import { ElMessage } from 'element-plus'
 import { ChatRound } from '@element-plus/icons-vue'
 import useUserInfoStore from '@/stores/userInfo'
 import { useRoute } from 'vue-router'
-import { getUserChatService, getChatHistoryService, markAsReadService } from '@/api/Chat'  // 导入获取私信对象的接口
+import { getUserChatService, getChatHistoryService, markAsReadService, getUnreadCountService } from '@/api/Chat'  // 导入获取私信对象的接口
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/zh-cn'
@@ -167,10 +172,35 @@ const getChatUser = async (username) => {
   }
 }
 
-// 选择聊天
-const selectChat = (chat) => {
+// 添加获取未读消息数量的方法
+const loadUnreadCounts = async () => {
+  try {
+    if (!userInfo.value) return
+    
+    const res = await getUnreadCountService(userInfo.value.username)
+    if (res.code === 0 && res.data) {
+      // 更新聊天列表中的未读消息数量
+      chatList.value.forEach(chat => {
+        if (res.data[chat.username]) {
+          chat.unreadCount = res.data[chat.username]
+        }
+      })
+    }
+  } catch (error) {
+    console.error('获取未读消息数量失败:', error)
+  }
+}
+
+// 修改选择聊天的方法
+const selectChat = async (chat) => {
   currentChat.value = chat
-  loadMessages(chat.id)
+  // 清除未读消息数量
+  chat.unreadCount = 0
+  await loadMessages(chat.id)
+  // 标记消息为已读
+  if (userInfo.value) {
+    await markAsReadService(chat.username, userInfo.value.username)
+  }
 }
 
 // 加载消息记录
@@ -242,7 +272,7 @@ const sendMessage = () => {
   })
 }
 
-// 处理接收到的消息
+// 修改消息接收处理方法
 const handleReceivedMessage = async (message) => {
   if (message.type === 'chat') {
     const { from, content, time } = message.data
@@ -258,20 +288,33 @@ const handleReceivedMessage = async (message) => {
       
       // 标记消息为已读
       await markAsReadService(from, userInfo.value.username)
-      
-      await nextTick(() => {
-        scrollToBottom()
-      })
+    } else {
+      // 如果不是当前聊天，增加未读消息数量
+      const chatIndex = chatList.value.findIndex(chat => chat.username === from)
+      if (chatIndex !== -1) {
+        chatList.value[chatIndex].unreadCount = (chatList.value[chatIndex].unreadCount || 0) + 1
+      }
     }
     
-    // 更新聊天列表中的最后一条消息
+    // 更新聊天列表
     const chatIndex = chatList.value.findIndex(chat => chat.username === from)
     if (chatIndex !== -1) {
-      chatList.value[chatIndex].lastMessage = content
-      chatList.value[chatIndex].lastTime = time
+      const chat = chatList.value[chatIndex]
+      chat.lastMessage = content
+      chat.lastTime = time
+      
+      // 将有新消息的聊天移到顶部
+      chatList.value.splice(chatIndex, 1)
+      chatList.value.unshift(chat)
     } else {
       // 如果是新的聊天，获取用户信息并添加到列表
       await getChatUser(from)
+    }
+    
+    // 如果是当前聊天，滚动到底部
+    if (currentChat.value && from === currentChat.value.username) {
+      await nextTick()
+      scrollToBottom()
     }
   }
 }
@@ -304,7 +347,13 @@ const handleEmojiClick = () => {
   // TODO: 实现表情选择功能
 }
 
-onMounted(() => {
+// 添加未读消息数量显示
+const formatUnreadCount = (count) => {
+  if (!count) return ''
+  return count > 99 ? '99+' : count
+}
+
+onMounted(async () => {
   // 连接WebSocket
   ws.connect()
   
@@ -314,8 +363,11 @@ onMounted(() => {
   // 从路由参数获取username并调用接口
   const username = route.query.username
   if (username) {
-    getChatUser(username)
+    await getChatUser(username)
   }
+  
+  // 获取未读消息数量
+  await loadUnreadCounts()
 })
 
 onUnmounted(() => {
@@ -430,6 +482,8 @@ onUnmounted(() => {
   display: flex;
   gap: 8px;
   max-width: 70%;
+  opacity: 1;
+  transition: opacity 0.3s;
 }
 
 .message-bubble.self {
@@ -495,5 +549,25 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* 添加未读消息数量样式 */
+.unread-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  background-color: #fb7299;
+  color: white;
+  border-radius: 9px;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+/* 优化消息气泡样式 */
+.message-bubble.offline {
+  opacity: 0.8;
 }
 </style> 

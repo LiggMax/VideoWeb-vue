@@ -10,7 +10,7 @@ export const getChatHistoryService = (user1, user2) => {
   return request.get(`/user/history?user1=${user1}&user2=${user2}`);
 };
 
-// 获取未读消息数量
+// 获取所有未读消息数量
 export const getUnreadCountService = (username) => {
   return request.get(`/user/unread?username=${username}`);
 };

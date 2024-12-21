@@ -13,11 +13,28 @@ class WebSocketClient {
     this.ws.onopen = () => {
       console.log('WebSocket连接成功')
       this.isConnected = true
+      this.reconnectAttempts = 0
     }
 
     this.ws.onmessage = (event) => {
-      const message = JSON.parse(event.data)
-      this.messageCallbacks.forEach(callback => callback(message))
+      try {
+        const messages = JSON.parse(event.data)
+        // 处理批量消息的情况
+        if (Array.isArray(messages)) {
+          console.log('收到离线消息批量:', messages.length)
+          // 按时间顺序处理离线消息
+          messages
+            .sort((a, b) => new Date(a.data.time) - new Date(b.data.time))
+            .forEach(msg => {
+              this.messageCallbacks.forEach(callback => callback(msg))
+            })
+        } else {
+          // 处理单条消息
+          this.messageCallbacks.forEach(callback => callback(messages))
+        }
+      } catch (error) {
+        console.error('解析消息失败:', error)
+      }
     }
 
     this.ws.onclose = () => {
