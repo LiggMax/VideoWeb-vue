@@ -1,3 +1,5 @@
+import eventBus from '@/utils/eventBus'
+
 class WebSocketClient {
   constructor(url, username) {
     this.url = `${url}?username=${username}`
@@ -35,6 +37,7 @@ class WebSocketClient {
       } catch (error) {
         console.error('解析消息失败:', error)
       }
+      eventBus.emit('newMessage')
     }
 
     this.ws.onclose = () => {

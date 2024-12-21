@@ -19,3 +19,12 @@ export const getUnreadCountService = (username) => {
 export const markAsReadService = (fromUser, toUser) => {
   return request.post(`/user/mark-read?fromUser=${fromUser}&toUser=${toUser}`);
 };
+
+// 获取用户在线状态
+export const getOnlineStatusService = (usernames) => {
+  return request.get('/user/online-status', {
+    params: {
+      usernames: usernames.join(',')
+    }
+  });
+};

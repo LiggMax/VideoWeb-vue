@@ -13,11 +13,14 @@
           :class="{ 'active': currentChat?.id === chat.id }"
           @click="selectChat(chat)"
         >
-          <el-avatar :size="40" :src="chat.userPic" />
+          <div class="avatar-wrapper">
+            <el-avatar :size="40" :src="chat.userPic" />
+            <div class="online-status" :class="{ 'online': chat.isOnline }"></div>
+          </div>
           <div class="chat-info">
             <div class="chat-header">
               <span class="nickname">{{ chat.nickname }}</span>
-              <span class="time">{{ formatTime(chat.lastTime) }}</span>
+              <span class="online-text">{{ chat.isOnline ? '在线' : '离线' }}</span>
             </div>
             <div class="last-message">
               {{ chat.lastMessage }}
@@ -95,7 +98,7 @@ import { ElMessage } from 'element-plus'
 import { ChatRound } from '@element-plus/icons-vue'
 import useUserInfoStore from '@/stores/userInfo'
 import { useRoute } from 'vue-router'
-import { getUserChatService, getChatHistoryService, markAsReadService, getUnreadCountService } from '@/api/Chat'  // 导入获取私信对象的接口
+import { getUserChatService, getChatHistoryService, markAsReadService, getUnreadCountService, getOnlineStatusService } from '@/api/Chat'  // 导入获取私信对象的接口
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/zh-cn'
@@ -353,6 +356,45 @@ const formatUnreadCount = (count) => {
   return count > 99 ? '99+' : count
 }
 
+// 添加获取在线状态的方法
+const updateOnlineStatus = async () => {
+  try {
+    const usernames = chatList.value.map(chat => chat.username)
+    if (usernames.length === 0) return
+    
+    const res = await getOnlineStatusService(usernames)
+    if (res.code === 0) {
+      chatList.value = chatList.value.map(chat => ({
+        ...chat,
+        isOnline: res.data[chat.username] || false
+      }))
+    }
+  } catch (error) {
+    console.error('获取在线状态失败:', error)
+  }
+}
+
+// 处理状态变更消息
+const handleStatusMessage = (message) => {
+  if (message.type === 'status') {
+    const { username, online } = message.data
+    const chatIndex = chatList.value.findIndex(chat => chat.username === username)
+    if (chatIndex !== -1) {
+      chatList.value[chatIndex].isOnline = online
+    }
+  }
+}
+
+// 在 WebSocket 消息处理中添加状态处理
+ws.onMessage((message) => {
+  if (message.type === 'chat') {
+    handleReceivedMessage(message)
+  } else if (message.type === 'status') {
+    handleStatusMessage(message)
+  }
+})
+
+// 定期更新在线状态
 onMounted(async () => {
   // 连接WebSocket
   ws.connect()
@@ -368,6 +410,13 @@ onMounted(async () => {
   
   // 获取未读消息数量
   await loadUnreadCounts()
+  
+  updateOnlineStatus()
+  const statusInterval = setInterval(updateOnlineStatus, 30000)
+  
+  onUnmounted(() => {
+    clearInterval(statusInterval)
+  })
 })
 
 onUnmounted(() => {
@@ -569,5 +618,33 @@ onUnmounted(() => {
 /* 优化消息气泡样式 */
 .message-bubble.offline {
   opacity: 0.8;
+}
+
+.avatar-wrapper {
+  position: relative;
+}
+
+.online-status {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #999;
+  border: 2px solid #fff;
+}
+
+.online-status.online {
+  background-color: #52c41a;
+}
+
+.online-text {
+  font-size: 12px;
+  color: #999;
+}
+
+.online-text.online {
+  color: #52c41a;
 }
 </style> 

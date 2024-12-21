@@ -33,8 +33,9 @@ const routes = [
   },
   {
     path: '/chat',
-    name: 'UserChat',
-    component: () => import('@/views/UserChat.vue')
+    name: 'Chat',
+    component: () => import('@/views/UserChat.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 

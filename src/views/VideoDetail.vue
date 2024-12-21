@@ -156,6 +156,8 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/zh-cn'
 import EmojiPicker from '@/components/EmojiPicker.vue'
+import { useTokenStore } from '@/stores/token'
+import eventBus from '@/utils/eventBus'
 
 // 配置 dayjs
 dayjs.extend(relativeTime)
@@ -370,12 +372,13 @@ onUnmounted(() => {
 
 // 添加跳转到私信页面的方法
 const goToChat = () => {
-  // 检查是否有视频作者的用户名
+  if (!isLogin.value) {
+    eventBus.emit('showLogin')
+    return
+  }
   router.push({
-    name: 'UserChat',
-    query: {
-      username: videoInfo.value.username // 使用视频作者的用户名
-    }
+    name: 'Chat',
+    query: { username: videoInfo.value.username }
   })
 }
 
@@ -383,6 +386,10 @@ const goToChat = () => {
 const isSelfVideo = computed(() => {
   return videoInfo.value.username === userInfo.value.username
 })
+
+// 添加 isLogin 计算属性
+const tokenStore = useTokenStore()
+const isLogin = computed(() => !!tokenStore.token)
 
 </script>
 
