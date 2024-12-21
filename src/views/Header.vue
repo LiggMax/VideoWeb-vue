@@ -19,26 +19,28 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
-import { getUnreadCountService } from '@/api/Chat'
+import { getUnreadCountService, getOnlineStatusService } from '@/api/Chat'
 import { Clock, Collection, Star, Message } from "@element-plus/icons-vue"
 import UserPopover from "@/components/user/UserPopover.vue"
 import { useRouter } from "vue-router"
 import useUserInfoStore from "@/stores/userInfo"
 import { useTokenStore } from '@/stores/token'
 import eventBus from '@/utils/eventBus'
+import WebSocketClient from '@/utils/websocket'
 
 const router = useRouter()
 const unreadCount = ref(0)
 const userInfoStore = useUserInfoStore()
 const tokenStore = useTokenStore()
 const isLogin = computed(() => !!tokenStore.token)
+const userInfo = computed(() => userInfoStore.info)
 
 // 获取未读消息数量
 const getUnreadCount = async () => {
   try {
-    if (!isLogin.value || !userInfoStore.info) return
+    if (!isLogin.value || !userInfo.value) return
 
-    const res = await getUnreadCountService(userInfoStore.info.username)
+    const res = await getUnreadCountService(userInfo.value.username)
     if (res.code === 0) {
       // 计算所有未读消息的总数
       const total = Object.values(res.data || {}).reduce((sum, count) => sum + count, 0)
@@ -60,34 +62,80 @@ const goToChat = () => {
   })
 }
 
-// 监听登录状态变化
-watch(() => isLogin.value, (newVal) => {
-  if (newVal) {
-    getUnreadCount() // 登录后获取未读消息数量
-  } else {
-    unreadCount.value = 0 // 登出时清空未读消息数量
+// 添加获取在线状态的方法
+const updateOnlineStatus = async () => {
+  try {
+    if (!isLogin.value || !userInfo.value) return
+    
+    // 获取所有聊天用户的在线状态
+    const res = await getOnlineStatusService([userInfo.value.username])
+    if (res.code === 0) {
+      // 更新在线状态
+      console.log('用户在线状态:', res.data)
+    }
+  } catch (error) {
+    console.error('获取在线状态失败:', error)
   }
-})
+}
 
-// 监听用户信息变化
-watch(() => userInfoStore.info, (newVal) => {
-  if (newVal && isLogin.value) {
+// 修改 createWebSocket 方法
+const createWebSocket = () => {
+  if (isLogin.value && userInfo.value) {
+    const ws = new WebSocketClient(
+      'ws://127.0.0.1:8080/ws/chat',
+      userInfo.value.username
+    )
+    
+    // 连接 WebSocket
+    ws.connect()
+    
+    // 监听状态变化
+    ws.onStatus((message) => {
+      if (message.type === 'status') {
+        updateOnlineStatus()
+      }
+    })
+
+    // 监听消息
+    ws.onMessage((message) => {
+      if (message.type === 'chat') {
+        getUnreadCount()
+      }
+    })
+
+    // 连接成功后立即获取在线状态
+    ws.onOpen(() => {
+      updateOnlineStatus()
+    })
+  }
+}
+
+// 修改监听逻辑
+watch([() => isLogin.value, () => userInfo.value], ([newIsLogin, newUserInfo]) => {
+  if (newIsLogin && newUserInfo) {
+    createWebSocket()
     getUnreadCount()
+    updateOnlineStatus() // 立即更新在线状态
+  } else {
+    WebSocketClient.clearInstance()
+    unreadCount.value = 0
   }
 }, { immediate: true })
 
-// 定期更新未读消息数量
-let updateInterval
+// 添加定时更新
 onMounted(() => {
-  // 如果已登录，开始定期更新未读消息数量
-  if (isLogin.value && userInfoStore.info) {
-    getUnreadCount()
-    updateInterval = setInterval(getUnreadCount, 30000) // 每30秒更新一次
-  }
-})
+  if (isLogin.value && userInfo.value) {
+    // 定期更新在线状态和未读消息
+    const updateInterval = setInterval(() => {
+      updateOnlineStatus()
+      getUnreadCount()
+    }, 30000)
 
-onUnmounted(() => {
-  clearInterval(updateInterval) // 清除定时器
+    onUnmounted(() => {
+      clearInterval(updateInterval)
+      WebSocketClient.clearInstance()
+    })
+  }
 })
 
 // 监听新消息事件

@@ -396,11 +396,14 @@ ws.onMessage((message) => {
 
 // 定期更新在线状态
 onMounted(async () => {
-  // 连接WebSocket
-  ws.connect()
+  // 不需要重新连接，使用已有的连接
+  if (!ws.isConnected) {
+    ws.connect()
+  }
   
   // 添加消息监听
   ws.onMessage(handleReceivedMessage)
+  ws.onStatus(handleStatusMessage)
   
   // 从路由参数获取username并调用接口
   const username = route.query.username

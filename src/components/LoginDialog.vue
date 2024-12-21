@@ -201,6 +201,7 @@ import {ElMessage} from "element-plus";
 import router from "@/router";
 import {useTokenStore} from "@/stores/token";
 import ResetPassword from './ResetPassword.vue'
+import WebSocketClient from '@/utils/websocket'
 
 const props = defineProps({
   visible: {
@@ -316,17 +317,34 @@ const handleSmsLogin = () => {
 const handleLogin = async () => {
   if (!loginForm.value.username || !loginForm.value.password)
     return ElMessage.warning('请输入账号和密码')
+  
   //判断是否符合5~15字符
   if (loginForm.value.username.length < 5 || loginForm.value.username.length > 15 ||
       loginForm.value.password.length < 5 || loginForm.value.password.length > 15) {
     return ElMessage.error('用户或密码长度在5-15个字符')
   }
-  let result = await userLoginService(loginForm.value)
-  ElMessage.success('登录成功')
-  //把得到的token存储到pinia中
-  tokenStore.setToken(result.data)
-  //关闭弹窗
-  closeDialog()
+  
+  try {
+    let result = await userLoginService(loginForm.value)
+    
+    // 把得到的token存储到pinia中
+    tokenStore.setToken(result.data)
+    
+    // 创建 WebSocket 连接
+    const ws = new WebSocketClient(
+      'ws://127.0.0.1:8080/ws/chat',
+      loginForm.value.username
+    )
+    ws.connect()
+    
+    ElMessage.success('登录成功')
+    
+    //关闭弹窗
+    closeDialog()
+  } catch (error) {
+    console.error('登录失败:', error)
+    ElMessage.error('登录失败，请重试')
+  }
 }
 
 // 处理注册
