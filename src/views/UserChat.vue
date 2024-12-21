@@ -90,7 +90,7 @@ import { ElMessage } from 'element-plus'
 import { ChatRound } from '@element-plus/icons-vue'
 import useUserInfoStore from '@/stores/userInfo'
 import { useRoute } from 'vue-router'
-import { getUserChatService } from '@/api/Chat'  // 导入获取私信对象的接口
+import { getUserChatService, getChatHistoryService, markAsReadService } from '@/api/Chat'  // 导入获取私信对象的接口
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/zh-cn'
@@ -151,6 +151,8 @@ const getChatUser = async (username) => {
         chatList.value.unshift(newChat)
         currentChat.value = newChat
       } else {
+
+
         currentChat.value = existChat
       }
       
@@ -173,24 +175,32 @@ const selectChat = (chat) => {
 
 // 加载消息记录
 const loadMessages = async (chatId) => {
-  // TODO: 调用API获取消息记录
-  messageList.value = [
-    {
-      id: 1,
-      content: '你好！',
-      isSelf: false,
-      time: '12:30'
-    },
-    {
-      id: 2,
-      content: '你好，有什么可以帮你的吗？',
-      isSelf: true,
-      time: '12:31'
+  try {
+    if (!currentChat.value || !userInfo.value) return
+    
+    const res = await getChatHistoryService(
+      userInfo.value.username,
+      currentChat.value.username
+    )
+    
+    if (res.data) {
+      messageList.value = res.data.map(msg => ({
+        id: msg.id,
+        content: msg.content,
+        isSelf: msg.fromUser === userInfo.value.username,
+        time: dayjs(msg.createTime).format('HH:mm')
+      }))
+      
+      // 标记消息为已读
+      await markAsReadService(currentChat.value.username, userInfo.value.username)
     }
-  ]
-  
-  await nextTick()
-  scrollToBottom()
+    
+    await nextTick()
+    scrollToBottom()
+  } catch (error) {
+    console.error('获取聊天记录失败:', error)
+    ElMessage.error('获取聊天记录失败')
+  }
 }
 
 // 发送消息
@@ -233,11 +243,11 @@ const sendMessage = () => {
 }
 
 // 处理接收到的消息
-const handleReceivedMessage = (message) => {
+const handleReceivedMessage = async (message) => {
   if (message.type === 'chat') {
     const { from, content, time } = message.data
     
-    // 如果是当前聊天的消息，添加到消息列表
+    // 如果是当前聊天的消息，添加到消息列表并标记为已读
     if (currentChat.value && from === currentChat.value.username) {
       messageList.value.push({
         id: Date.now(),
@@ -246,7 +256,10 @@ const handleReceivedMessage = (message) => {
         time: dayjs(time).format('HH:mm')
       })
       
-      nextTick(() => {
+      // 标记消息为已读
+      await markAsReadService(from, userInfo.value.username)
+      
+      await nextTick(() => {
         scrollToBottom()
       })
     }
@@ -256,6 +269,9 @@ const handleReceivedMessage = (message) => {
     if (chatIndex !== -1) {
       chatList.value[chatIndex].lastMessage = content
       chatList.value[chatIndex].lastTime = time
+    } else {
+      // 如果是新的聊天，获取用户信息并添加到列表
+      await getChatUser(from)
     }
   }
 }
