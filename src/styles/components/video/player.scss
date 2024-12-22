@@ -1,0 +1,70 @@
+// 播放器基础容器样式
+.video-player {
+  width: 100%;
+  background: #000;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  user-select: none;
+  -webkit-user-select: none;
+  min-width: 680px;
+  min-height: 470px;
+}
+
+.video-element {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  
+  &.playing {
+    object-fit: contain;
+  }
+  
+  // 自定义播放器控件样式
+  &::-webkit-media-controls-panel {
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.5));
+  }
+
+  &::-webkit-media-controls-play-button {
+    border-radius: 50%;
+    transition: all 0.3s;
+  }
+
+  &::-webkit-media-controls-timeline {
+    border-radius: 2px;
+  }
+
+  &::-webkit-media-controls-volume-slider {
+    border-radius: 2px;
+  }
+
+  &::-webkit-media-controls-mute-button {
+    border-radius: 50%;
+  }
+}
+
+// 视频标题样式
+.video-title {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 16px 20px;
+  background: linear-gradient(rgba(0, 0, 0, 0.7), transparent);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  z-index: 2;
+  transition: opacity 0.3s;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+// 响应式样式
+@media screen and (max-width: 768px) {
+  .video-player {
+    min-width: 320px;
+    min-height: 180px;
+  }
+} 

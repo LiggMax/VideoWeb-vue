@@ -1,0 +1,294 @@
+// 自定义控制栏
+.custom-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  padding: 10px;
+  opacity: 1;
+  transition: opacity 0.3s;
+}
+
+// 进度条样式
+.progress-bar {
+  position: relative;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: height 0.2s;
+  margin-bottom: 10px;
+  user-select: none;
+
+  &:hover {
+    height: 6px;
+    
+    .progress-handle {
+      opacity: 1;
+    }
+    
+    .progress-current {
+      background: #fb7299;
+    }
+  }
+}
+
+.progress-current {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: #fb7299;
+  transition: none;
+  pointer-events: none;
+}
+
+.progress-handle {
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  background: #fb7299;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  z-index: 2;
+  
+  &.is-dragging {
+    opacity: 1;
+  }
+}
+
+.progress-loaded {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+  z-index: 1;
+}
+
+// 时间提示工具
+.time-tooltip {
+  position: absolute;
+  top: -30px;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+// 控制栏
+.controls-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #fff;
+}
+
+.left-controls,
+.right-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+// 控制按钮
+.control-btn {
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+  
+  &:hover {
+    color: #fb7299;
+    transform: scale(1.1);
+  }
+}
+
+// 播放按钮
+.play-btn {
+  width: 40px;
+  height: 40px;
+  padding: 6px;
+}
+
+// 浮动播放按钮
+.float-play-btn {
+  position: absolute;
+  right: 20px;
+  bottom: 70px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.8);
+  z-index: 3;
+  filter: drop-shadow(0 1px 1px #000);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    color: #fb7299;
+    transform: scale(1.1);
+  }
+}
+
+// 时间显示
+.time-display {
+  font-size: 14px;
+  min-width: 85px;
+}
+
+// 播放速度按钮
+.speed-btn {
+  .speed-text {
+    color: #fff;
+    font-size: 14px;
+  }
+}
+
+// 全屏按钮
+.fullscreen-btn {
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+  
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+// 收缩按钮
+.collapse-trigger {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 60px;
+  width: 24px;
+  transition: all 0.3s ease;
+  z-index: 100;
+  
+  .collapse-btn {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 24px;
+    height: 60px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px 0 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(2px);
+    
+    &:hover {
+      background: rgba(251, 114, 153, 0.95);
+      width: 28px;
+    }
+    
+    svg {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.95);
+      transition: transform 0.3s ease;
+    }
+  }
+  
+  &.is-collapsed svg {
+    transform: rotate(180deg);
+  }
+}
+
+// 播放结束遮罩
+.end-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  
+  .replay-button {
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    padding: 12px 24px;
+    border-radius: 4px;
+    background: rgba(251, 114, 153, 0.9);
+    transition: all 0.3s;
+    
+    &:hover {
+      background: #fb7299;
+      transform: scale(1.05);
+    }
+  }
+}
+
+// 继续播放提示
+.resume-tip {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: transparent;
+  border-radius: 8px;
+  padding: 12px 16px;
+  z-index: 100;
+  min-width: 200px;
+  
+  &-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 8px 12px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  &-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.95);
+  }
+  
+  &-time {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+  }
+}
+
+// 淡入淡出动画
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+} 

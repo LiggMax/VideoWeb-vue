@@ -1,0 +1,36 @@
+// 音量控制样式
+.volume-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.volume-btn-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  &:hover .volume-slider {
+    width: 60px;
+    opacity: 1;
+  }
+}
+
+.volume-slider {
+  width: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  transition: width 0.3s ease;
+  opacity: 0;
+  
+  &:hover .volume-progress {
+    background: #fb7299;
+    transform: scaleY(1.2);
+  }
+}
+
+// 音量指示器样式... 
