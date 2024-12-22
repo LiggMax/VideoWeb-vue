@@ -5,7 +5,7 @@
     @click="handleVideoClick"
     @dblclick="toggleFullscreen"
   >
-    <div class="video-title" v-show="showTitle">
+    <div class="video-title">
       {{ title }}
     </div>
     
@@ -24,8 +24,6 @@
       @volumechange="handleVolumeChange"
       @waiting="handleWaiting"
       @canplay="handleCanPlay"
-      @mouseover="showTitle = true"
-      @mouseleave="showTitle = false"
     >
       您的浏览器不支持 HTML5 视频播放
     </video>
@@ -199,14 +197,14 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import VolumeIcon from '../icons/VolumeIcon.vue'
-import MuteIcon from '../icons/MuteIcon.vue'
-import PlayIcon from '../icons/PlayIcon.vue'
-import PauseIcon from '../icons/PauseIcon.vue'
-import FullscreenIcon from '../icons/FullscreenIcon.vue'
-import ExitFullscreenIcon from '../icons/ExitFullscreenIcon.vue'
-import RefreshIcon from '../icons/RefreshIcon.vue'
-import CollapseIcon from '../icons/CollapseIcon.vue'
+import VolumeIcon from '@/components/icons/VolumeIcon.vue'
+import MuteIcon from '@/components/icons/MuteIcon.vue'
+import PlayIcon from '@/components/icons/PlayIcon.vue'
+import PauseIcon from '@/components/icons/PauseIcon.vue'
+import FullscreenIcon from '@/components/icons/FullscreenIcon.vue'
+import ExitFullscreenIcon from '@/components/icons/ExitFullscreenIcon.vue'
+import RefreshIcon from '@/components/icons/RefreshIcon.vue'
+import CollapseIcon from '@/components/icons/CollapseIcon.vue'
 
 // Props定义
 const props = defineProps({
@@ -236,7 +234,6 @@ const props = defineProps({
 const videoRef = ref(null)
 const progressRef = ref(null)
 const volumeRef = ref(null)
-const showTitle = ref(false)
 const isPlaying = ref(false)
 const isEnded = ref(false)
 const isMuted = ref(false)
@@ -678,8 +675,8 @@ const resumeTime = ref(0)
 </script>
 
 <style lang="scss">
-@import '@/styles/components/video/player.scss';
-@import '@/styles/components/video/controls.scss';
-@import '@/styles/components/video/volume.scss';
-@import '@/styles/components/video/loading.scss';
+@import '@/styles/components/video/player';
+@import '@/styles/components/video/controls';
+@import '@/styles/components/video/volume';
+@import '@/styles/components/video/loading';
 </style> 
