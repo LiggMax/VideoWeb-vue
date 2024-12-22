@@ -122,30 +122,6 @@
   gap: 16px;
 }
 
-// 弹幕开关按钮
-.danmaku-toggle-btn {
-  width: 48px;
-  height: 48px;
-  padding: 10px;
-  
-  svg {
-    width: 28px;
-    height: 28px;
-    transition: all 0.3s;
-    
-    &.is-active {
-      color: #fb7299;
-    }
-  }
-  
-  &:hover {
-    svg {
-      transform: scale(1.1);
-      color: #fb7299;
-    }
-  }
-}
-
 // 控制按钮
 .control-btn {
   background: transparent;
@@ -361,6 +337,13 @@
         color: rgba(255, 255, 255, 0.6);
       }
     }
+  }
+  
+  :deep(.el-input-group__prepend) {
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
   }
 }
 

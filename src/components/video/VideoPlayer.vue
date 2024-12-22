@@ -128,6 +128,8 @@
             class="danmaku-color-picker"
           />
           
+          <DanmakuToggle v-model="showDanmaku" />
+          
           <el-input
             v-model="danmakuText"
             placeholder="发个友善的弹幕见证当下"
@@ -227,8 +229,8 @@ import FullscreenIcon from '@/components/icons/FullscreenIcon.vue'
 import ExitFullscreenIcon from '@/components/icons/ExitFullscreenIcon.vue'
 import RefreshIcon from '@/components/icons/RefreshIcon.vue'
 import CollapseIcon from '@/components/icons/CollapseIcon.vue'
-import DanmakuIcon from '@/components/icons/DanmakuIcon.vue'
 import DanmakuColorPicker from '@/components/video/DanmakuColorPicker.vue'
+import DanmakuToggle from '@/components/video/DanmakuToggle.vue'
 
 // Props定义
 const props = defineProps({
@@ -713,6 +715,14 @@ const sendDanmaku = () => {
     })
     danmakuText.value = ''
   }
+}
+
+// 添加新的响应式变量
+const showDanmaku = ref(true)
+
+// 切换弹幕开关
+const toggleDanmaku = () => {
+  showDanmaku.value = !showDanmaku.value
 }
 </script>
 
