@@ -91,6 +91,8 @@
   justify-content: space-between;
   align-items: center;
   color: #fff;
+  gap: 16px;
+  padding: 0 16px;
 }
 
 .left-controls,
@@ -98,6 +100,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  flex-shrink: 0;
 }
 
 // 控制按钮
@@ -291,4 +294,85 @@
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+// 弹幕按钮样式
+.danmaku-btn {
+  width: 48px;
+  height: 48px;
+  padding: 10px;
+  
+  svg {
+    width: 28px;
+    height: 28px;
+  }
+  
+  &:hover {
+    color: #fb7299;
+    transform: scale(1.1);
+  }
+}
+
+// 弹幕输入区域
+.danmaku-input-area {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 400px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  .danmaku-input {
+    flex: 1;
+    
+    :deep(.el-input__wrapper) {
+      background: rgba(255, 255, 255, 0.2);
+      box-shadow: none;
+      border: none;
+      
+      &:hover, &.is-focus {
+        background: rgba(255, 255, 255, 0.3);
+      }
+      
+      .el-input__inner {
+        color: #fff;
+        height: 36px;
+        line-height: 36px;
+        
+        &::placeholder {
+          color: rgba(255, 255, 255, 0.6);
+        }
+      }
+    }
+  }
+
+  .danmaku-btn {
+    width: 48px;
+    height: 48px;
+    padding: 10px;
+    
+    svg {
+      width: 28px;
+      height: 28px;
+    }
+    
+    &:hover {
+      color: #fb7299;
+      transform: scale(1.1);
+    }
+  }
+}
+
+// 确保左侧控制按钮对齐
+.left-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  
+  .control-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 } 

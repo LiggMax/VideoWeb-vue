@@ -120,6 +120,39 @@
           </span>
         </div>
 
+        <!-- 弹幕输入区域 -->
+        <div class="danmaku-input-area">
+          <!-- 添加颜色选择器 -->
+          <DanmakuColorPicker
+            v-model="danmakuColor"
+            class="danmaku-color-picker"
+          />
+          
+          <el-input
+            v-model="danmakuText"
+            placeholder="发个友善的弹幕见证当下"
+            class="danmaku-input"
+            @keyup.enter="sendDanmaku"
+          >
+            <template #append>
+              <el-button @click="sendDanmaku" type="primary">
+                发送
+              </el-button>
+            </template>
+          </el-input>
+          
+          <!-- 将弹幕按钮移到这里 -->
+          <el-tooltip
+            content="发送弹幕"
+            placement="top"
+            effect="dark"
+          >
+            <button class="control-btn danmaku-btn" @click="toggleDanmakuInput">
+              <DanmakuIcon />
+            </button>
+          </el-tooltip>
+        </div>
+
         <div class="right-controls">
           <!-- 播放速度 -->
           <el-dropdown trigger="click" @command="handleSpeedChange">
@@ -205,6 +238,8 @@ import FullscreenIcon from '@/components/icons/FullscreenIcon.vue'
 import ExitFullscreenIcon from '@/components/icons/ExitFullscreenIcon.vue'
 import RefreshIcon from '@/components/icons/RefreshIcon.vue'
 import CollapseIcon from '@/components/icons/CollapseIcon.vue'
+import DanmakuIcon from '@/components/icons/DanmakuIcon.vue'
+import DanmakuColorPicker from '@/components/video/DanmakuColorPicker.vue'
 
 // Props定义
 const props = defineProps({
@@ -672,6 +707,24 @@ const showVolumeHint = () => {
 // 添加新的响应式变量
 const showResumeTip = ref(false)
 const resumeTime = ref(0)
+
+// 弹幕输入控制
+const danmakuText = ref('')
+
+// 弹幕颜色
+const danmakuColor = ref('#FFFFFF')
+
+// 发送弹幕时包含颜色信息
+const sendDanmaku = () => {
+  if (danmakuText.value.trim()) {
+    // TODO: 实现发送弹幕的逻辑
+    console.log('发送弹幕:', {
+      text: danmakuText.value,
+      color: danmakuColor.value
+    })
+    danmakuText.value = ''
+  }
+}
 </script>
 
 <style lang="scss">
