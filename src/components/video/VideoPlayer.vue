@@ -140,17 +140,6 @@
               </el-button>
             </template>
           </el-input>
-          
-          <!-- 将弹幕按钮移到这里 -->
-          <el-tooltip
-            content="发送弹幕"
-            placement="top"
-            effect="dark"
-          >
-            <button class="control-btn danmaku-btn" @click="toggleDanmakuInput">
-              <DanmakuIcon />
-            </button>
-          </el-tooltip>
         </div>
 
         <div class="right-controls">
