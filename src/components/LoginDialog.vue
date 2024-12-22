@@ -358,7 +358,7 @@ const sendEmailCode = async () => {
   // 验证邮箱格式
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(registerForm.value.email)) {
-    return ElMessage.error('请输入正确的邮箱格式')
+    return ElMessagee.rror('请输入正确的邮箱格式')
   }
   
     // TODO: 调用发送验证码接口
