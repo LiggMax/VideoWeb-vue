@@ -98,7 +98,7 @@ import { ElMessage } from 'element-plus'
 import { ChatRound } from '@element-plus/icons-vue'
 import useUserInfoStore from '@/stores/userInfo'
 import { useRoute } from 'vue-router'
-import { getUserChatService, getChatHistoryService, markAsReadService, getUnreadCountService, getOnlineStatusService } from '@/api/Chat'  // 导入获取私信对象的接口
+import { getUserChatService, getChatHistoryService, markAsReadService, getUnreadCountService, getOnlineStatusService } from '@/api/chat'  // 导入获取私信对象的接口
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/zh-cn'

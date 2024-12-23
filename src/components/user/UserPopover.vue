@@ -92,7 +92,7 @@ import { User, VideoCamera, Star, Edit } from '@element-plus/icons-vue'
 import useUserInfoStore from '@/stores/userInfo'
 import { useTokenStore } from '@/stores/token'
 import { ElMessage } from 'element-plus'
-import { getUserInfoService } from "@/api/user"
+import {getUserInfoService, logoutService} from "@/api/user"
 import { useRouter } from 'vue-router'
 
 const userInfoStore = useUserInfoStore()
@@ -129,9 +129,9 @@ const handleLogout = () => {
   // 清除token
   tokenStore.removeToken()
   // 关闭弹窗
-  visible.value = false
+   visible.value = false
   // 跳转回首页
-  router.push('/')
+   router.push('/')
   // 提示退出成功
   ElMessage.success('退出成功')
 }

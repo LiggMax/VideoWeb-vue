@@ -108,7 +108,7 @@
                   size="large"
               />
             </el-form-item>
-            
+
             <!-- 添加邮箱输入框 -->
             <el-form-item prop="email">
               <el-input
@@ -118,7 +118,7 @@
                   size="large"
               />
             </el-form-item>
-            
+
             <!-- 添加验证码输入框和发送按钮 -->
             <el-form-item prop="code">
               <div class="code-input-group">
@@ -128,9 +128,9 @@
                     :prefix-icon="Key"
                     size="large"
                 />
-                <el-button 
-                    type="primary" 
-                    :disabled="isCountdown" 
+                <el-button
+                    type="primary"
+                    :disabled="isCountdown"
                     @click="sendEmailCode"
                     class="send-code-btn"
                 >
@@ -148,7 +148,7 @@
                   size="large"
               />
             </el-form-item>
-            
+
             <el-form-item prop="confirmPassword">
               <el-input
                   v-model="registerForm.confirmPassword"
@@ -158,7 +158,7 @@
                   size="large"
               />
             </el-form-item>
-            
+
             <el-button type="primary" class="submit-btn" @click="handleRegister">
               注册
             </el-button>
@@ -175,11 +175,11 @@
   </el-dialog>
 
   <!-- 重置密码弹窗 - 移到登录弹窗外部 -->
-  <reset-password 
-    v-if="showResetPassword"
-    v-model:visible="showResetPassword"
-    @switch-to-login="handleSwitchToLogin"
-    @close="handleResetClose"
+  <reset-password
+      v-if="showResetPassword"
+      v-model:visible="showResetPassword"
+      @switch-to-login="handleSwitchToLogin"
+      @close="handleResetClose"
   />
 </template>
 
@@ -317,47 +317,37 @@ const handleSmsLogin = () => {
 const handleLogin = async () => {
   if (!loginForm.value.username || !loginForm.value.password)
     return ElMessage.warning('请输入账号和密码')
-  
+
   //判断是否符合5~15字符
   if (loginForm.value.username.length < 5 || loginForm.value.username.length > 15 ||
       loginForm.value.password.length < 5 || loginForm.value.password.length > 15) {
     return ElMessage.error('用户或密码长度在5-15个字符')
   }
-  
-  try {
-    let result = await userLoginService(loginForm.value)
-    
-    // 把得到的token存储到pinia中
-    tokenStore.setToken(result.data)
-    
-    // 创建 WebSocket 连接
-    const ws = new WebSocketClient(
+  let result = await userLoginService(loginForm.value)
+
+  // 把得到的token存储到pinia中
+  tokenStore.setToken(result.data)
+
+  // 创建 WebSocket 连接
+  const ws = new WebSocketClient(
       'ws://127.0.0.1:8080/ws/chat',
       loginForm.value.username
-    )
-    ws.connect()
-    
-    ElMessage.success('登录成功')
-    
-    //关闭弹窗
-    closeDialog()
-  } catch (error) {
-    console.error('登录失败:', error)
-    ElMessage.error('登录失败，请重试')
-  }
+  )
+  ws.connect()
+
+  ElMessage.success('登录成功')
+
+  //关闭弹窗
+  closeDialog()
 }
 
 // 处理注册
 const handleRegister = async () => {
   if (!registerFormRef.value) return
-  try {
     await registerFormRef.value.validate()
     await userRegisterService(registerForm.value)
     ElMessage.success('注册成功')
     switchView('login')
-  } catch (error) {
-    console.error('注册失败:', error)
-  }
 }
 
 // 发送验证码
@@ -378,19 +368,19 @@ const sendEmailCode = async () => {
   if (!emailRegex.test(registerForm.value.email)) {
     return ElMessagee.rror('请输入正确的邮箱格式')
   }
-  
-    // TODO: 调用发送验证码接口
-    await sendEmailCodeService(registerForm.value.email)
-    ElMessage.success('验证码已发送，请注意查收')
-    
-    // 开始倒计时
-    countdown.value = 60
-    const timer = setInterval(() => {
-      countdown.value--
-      if (countdown.value <= 0) {
-        clearInterval(timer)
-      }
-    }, 1000)
+
+  // TODO: 调用发送验证码接口
+  await sendEmailCodeService(registerForm.value.email)
+  ElMessage.success('验证码已发送，请注意查收')
+
+  // 开始倒计时
+  countdown.value = 60
+  const timer = setInterval(() => {
+    countdown.value--
+    if (countdown.value <= 0) {
+      clearInterval(timer)
+    }
+  }, 1000)
 }
 
 // 添加状态控制
@@ -680,38 +670,38 @@ const handleResetClose = () => {
 
 /* 修改注册表单样式 */
 .register-form :deep(.el-input__wrapper) {
-  padding: 1px 12px;  /* 减小内边距 */
-  height: 40px;  /* 减小高度 */
+  padding: 1px 12px; /* 减小内边距 */
+  height: 40px; /* 减小高度 */
   box-shadow: 0 0 0 1px #dcdfe6;
 }
 
 .register-form :deep(.el-input__inner) {
-  font-size: 14px;  /* 减小字体大小 */
+  font-size: 14px; /* 减小字体大小 */
   height: 100%;
 }
 
 .register-form :deep(.el-form-item) {
-  margin-bottom: 16px;  /* 减小表单项间距 */
+  margin-bottom: 16px; /* 减小表单项间距 */
 }
 
 /* 调整验证码按钮样式 */
 .send-code-btn {
-  width: 110px;  /* 减小按钮宽度 */
-  font-size: 13px;  /* 减小按钮字体 */
-  height: 40px;  /* 匹配输入框高度 */
-  padding: 0 10px;  /* 减小按钮内边距 */
+  width: 110px; /* 减小按钮宽度 */
+  font-size: 13px; /* 减小按钮字体 */
+  height: 40px; /* 匹配输入框高度 */
+  padding: 0 10px; /* 减小按钮内边距 */
 }
 
 /* 调整注册按钮样式 */
 .register-form .submit-btn {
-  height: 40px;  /* 减小按钮高度 */
-  font-size: 15px;  /* 减小按钮字体 */
-  margin-top: 8px;  /* 调整顶部间距 */
+  height: 40px; /* 减小按钮高度 */
+  font-size: 15px; /* 减小按钮字体 */
+  margin-top: 8px; /* 调整顶部间距 */
 }
 
 /* 调整图标大小 */
 .register-form :deep(.el-input__prefix-inner svg) {
-  width: 16px;  /* 减小图标大小 */
+  width: 16px; /* 减小图标大小 */
   height: 16px;
   color: #909399;
 }

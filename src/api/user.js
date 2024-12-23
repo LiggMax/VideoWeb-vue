@@ -44,3 +44,7 @@ export const resetPasswordService = (resetData) => {
 export const updateUserInfoService = (data) => {
   return request.put('/user/updateUser', data)
 }
+//退出登录接口
+export const logoutService = () => {
+    return request.delete('/user/logout')
+}

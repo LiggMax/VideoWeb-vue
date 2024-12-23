@@ -19,7 +19,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
-import { getUnreadCountService, getOnlineStatusService } from '@/api/Chat'
+import { getUnreadCountService, getOnlineStatusService } from '@/api/chat'
 import { Clock, Collection, Star, Message } from "@element-plus/icons-vue"
 import UserPopover from "@/components/user/UserPopover.vue"
 import { useRouter } from "vue-router"
