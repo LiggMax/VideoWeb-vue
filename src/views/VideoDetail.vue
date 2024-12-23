@@ -117,10 +117,8 @@
           </div>
         </div>
 
-        <!-- 调整弹幕列表的margin -->
-        <div class="danmaku-section">
-          <DanmakuList :videoId="videoId" />
-        </div>
+        <!-- 添加弹幕列表 -->
+        <DanmakuList :videoId="videoId" />
 
         <h3 class="recommend-title">相关推荐</h3>
         <div class="recommend-list">
@@ -205,7 +203,7 @@ const formatPublishTime = (time) => {
 const route = useRoute()
 const router = useRouter()
 
-// 视频详情数模型
+// 视频详情数据模型
 const videoInfo = ref({
   id: 0,
   title: '',//视频标题
@@ -388,7 +386,7 @@ const goToChat = () => {
   })
 }
 
-// 判断是否是自己的视频
+// 判断是��是自己的视频
 const isSelfVideo = computed(() => {
   return videoInfo.value.username === userInfo.value.username
 })
@@ -590,7 +588,6 @@ const videoId = computed(() => route.params.id)
   font-size: 16px;
   font-weight: bold;
   color: #18191c;
-  margin-top: 8px;
 }
 
 .recommend-item {
@@ -663,7 +660,7 @@ const videoId = computed(() => route.params.id)
   background: #fff;
   border-radius: 8px;
   padding: 20px;
-  margin-bottom: 12px;
+  margin-bottom: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
@@ -855,16 +852,11 @@ const videoId = computed(() => route.params.id)
 .info-container {
   /* 现有样式 */
   
-  /* 弹幕列表区域样式 */
-  .danmaku-section {
-    margin-bottom: 12px;
-    
-    :deep(.danmaku-list-container) {
-      background: #fff;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    }
+  /* 调整弹幕列表容器样式 */
+  .danmaku-list-container {
+    margin: 16px 0;
+    border-radius: 8px;
+    overflow: hidden;
   }
 }
 </style> 
