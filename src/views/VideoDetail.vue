@@ -117,6 +117,11 @@
           </div>
         </div>
 
+        <!-- 调整弹幕列表的margin -->
+        <div class="danmaku-section">
+          <DanmakuList :videoId="videoId" />
+        </div>
+
         <h3 class="recommend-title">相关推荐</h3>
         <div class="recommend-list">
           <div v-for="video in recommendVideos" :key="video.id" class="recommend-item">
@@ -158,6 +163,7 @@ import 'dayjs/locale/zh-cn'
 import EmojiPicker from '@/components/EmojiPicker.vue'
 import { useTokenStore } from '@/stores/token'
 import eventBus from '@/utils/eventBus'
+import DanmakuList from '@/components/video/DanmakuList.vue'
 
 // 配置 dayjs
 dayjs.extend(relativeTime)
@@ -199,13 +205,13 @@ const formatPublishTime = (time) => {
 const route = useRoute()
 const router = useRouter()
 
-// 视频详情数据模型
+// 视频详情数模型
 const videoInfo = ref({
   id: 0,
   title: '',//视频标题
   cover: '',//封面地址
   videoUrl: '',//视频地址
-  viewCount: '',//播放量
+  viewCount: '',// 播放量
   createTime: '',//创建时间
   content: '',//视频简介
   commentCount: 0,//评论数
@@ -390,6 +396,9 @@ const isSelfVideo = computed(() => {
 // 添加 isLogin 计算属性
 const tokenStore = useTokenStore()
 const isLogin = computed(() => !!tokenStore.token)
+
+// 获取视频ID
+const videoId = computed(() => route.params.id)
 
 </script>
 
@@ -581,6 +590,7 @@ const isLogin = computed(() => !!tokenStore.token)
   font-size: 16px;
   font-weight: bold;
   color: #18191c;
+  margin-top: 8px;
 }
 
 .recommend-item {
@@ -653,7 +663,7 @@ const isLogin = computed(() => !!tokenStore.token)
   background: #fff;
   border-radius: 8px;
   padding: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
@@ -839,6 +849,22 @@ const isLogin = computed(() => !!tokenStore.token)
 
   .video-section :deep(.video-player) {
     min-height: auto;
+  }
+}
+
+.info-container {
+  /* 现有样式 */
+  
+  /* 弹幕列表区域样式 */
+  .danmaku-section {
+    margin-bottom: 12px;
+    
+    :deep(.danmaku-list-container) {
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
   }
 }
 </style> 

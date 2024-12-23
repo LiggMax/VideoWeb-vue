@@ -1,29 +1,29 @@
 <template>
   <div class="video-player"
-    @mousemove="showControls"
-    @mouseleave="startHideControlsTimer"
-    @click="handleVideoClick"
-    @dblclick="toggleFullscreen"
+       @mousemove="showControls"
+       @mouseleave="startHideControlsTimer"
+       @click="handleVideoClick"
+       @dblclick="toggleFullscreen"
   >
     <div class="video-title">
       {{ title }}
     </div>
-    
+
     <!-- 播放器主体 -->
     <video
-      ref="videoRef"
-      class="video-element"
-      :class="{ 'playing': isPlaying }"
-      :src="videoUrl"
-      :poster="poster"
-      @play="handlePlay"
-      @pause="handlePause"
-      @ended="handleEnded"
-      @timeupdate="handleTimeUpdate"
-      @loadedmetadata="handleLoadedMetadata"
-      @volumechange="handleVolumeChange"
-      @waiting="handleWaiting"
-      @canplay="handleCanPlay"
+        ref="videoRef"
+        class="video-element"
+        :class="{ 'playing': isPlaying }"
+        :src="videoUrl"
+        :poster="poster"
+        @play="handlePlay"
+        @pause="handlePause"
+        @ended="handleEnded"
+        @timeupdate="handleTimeUpdate"
+        @loadedmetadata="handleLoadedMetadata"
+        @volumechange="handleVolumeChange"
+        @waiting="handleWaiting"
+        @canplay="handleCanPlay"
     >
       您的浏览器不支持 HTML5 视频播放
     </video>
@@ -39,36 +39,36 @@
     </div>
 
     <!-- 在自定义控制栏之前添加 -->
-    <div class="float-play-btn" 
-      v-show="!isPlaying && !isEnded && isControlsVisible" 
-      @click="togglePlay"
+    <div class="float-play-btn"
+         v-show="!isPlaying && !isEnded && isControlsVisible"
+         @click="togglePlay"
     >
-      <svg 
-        xmlns="http://www.w3.org/2000/svg" 
-        height="60" 
-        width="60" 
-        viewBox="0 0 24 24"
+      <svg
+          xmlns="http://www.w3.org/2000/svg"
+          height="60"
+          width="60"
+          viewBox="0 0 24 24"
       >
-        <path 
-          d="M20 2H4C1.8 2 0 3.8 0 6v12c0 2.2 1.8 4 4 4h16c2.2 0 4-1.8 4-4V6c0-2.2-1.8-4-4-4zm-4.4 10.8L10.5 16c-.6.5-1.5 0-1.5-.8V8.8c0-.8.9-1.3 1.5-.8l5.1 3.2c.7.3.7 1.3 0 1.6z"
-          fill="currentColor"
+        <path
+            d="M20 2H4C1.8 2 0 3.8 0 6v12c0 2.2 1.8 4 4 4h16c2.2 0 4-1.8 4-4V6c0-2.2-1.8-4-4-4zm-4.4 10.8L10.5 16c-.6.5-1.5 0-1.5-.8V8.8c0-.8.9-1.3 1.5-.8l5.1 3.2c.7.3.7 1.3 0 1.6z"
+            fill="currentColor"
         />
       </svg>
     </div>
 
     <!-- 自定义控制栏 -->
-    <div class="custom-controls" 
-      v-show="isControlsVisible && !isEnded"
-      @mouseenter="showControls"
-      @mouseleave="startHideControlsTimer"
+    <div class="custom-controls"
+         v-show="isControlsVisible && !isEnded"
+         @mouseenter="showControls"
+         @mouseleave="startHideControlsTimer"
     >
       <!-- 进度条 -->
-      <div class="progress-bar" 
-        ref="progressRef"
-        @click="handleProgressClick"
-        @mousedown="startDragging"
-        @mousemove="isDragging ? handleDragging : handleProgressHover"
-        @mouseleave="hideTimeTooltip"
+      <div class="progress-bar"
+           ref="progressRef"
+           @click="handleProgressClick"
+           @mousedown="startDragging"
+           @mousemove="isDragging ? handleDragging : handleProgressHover"
+           @mouseleave="hideTimeTooltip"
       >
         <div class="progress-loaded" :style="{ width: loadedProgress + '%' }"></div>
         <div class="progress-current" :style="{ width: currentProgress + '%' }">
@@ -84,30 +84,30 @@
         <div class="left-controls">
           <!-- 播放/暂停按钮 -->
           <el-tooltip
-            :content="isPlaying ? '暂停' : '播放'"
-            placement="top"
-            effect="dark"
+              :content="isPlaying ? '暂停' : '播放'"
+              placement="top"
+              effect="dark"
           >
             <button class="control-btn play-btn" @click="togglePlay">
-              <PauseIcon v-if="isPlaying" />
-              <PlayIcon v-else />
+              <PauseIcon v-if="isPlaying"/>
+              <PlayIcon v-else/>
             </button>
           </el-tooltip>
 
           <!-- 音量控制 -->
           <div class="volume-control">
             <div class="volume-btn-wrapper"
-              @mouseenter="showVolumeSlider = true"
-              @mouseleave="showVolumeSlider = false"
+                 @mouseenter="showVolumeSlider = true"
+                 @mouseleave="showVolumeSlider = false"
             >
               <button class="control-btn volume-btn" @click="toggleMute">
-                <MuteIcon v-if="isMuted || volume === 0" />
-                <VolumeIcon v-else />
+                <MuteIcon v-if="isMuted || volume === 0"/>
+                <VolumeIcon v-else/>
               </button>
-              <div class="volume-slider" 
-                v-show="showVolumeSlider"
-                ref="volumeRef"
-                @click="handleVolumeClick"
+              <div class="volume-slider"
+                   v-show="showVolumeSlider"
+                   ref="volumeRef"
+                   @click="handleVolumeClick"
               >
                 <div class="volume-progress" :style="{ width: volume * 100 + '%' }"></div>
               </div>
@@ -124,17 +124,17 @@
         <div class="danmaku-input-area">
           <!-- 添加颜色选择器 -->
           <DanmakuColorPicker
-            v-model="danmakuColor"
-            class="danmaku-color-picker"
+              v-model="danmakuColor"
+              class="danmaku-color-picker"
           />
-          
-          <DanmakuToggle v-model="showDanmaku" />
-          
+
+          <DanmakuToggle v-model="showDanmaku"/>
+
           <el-input
-            v-model="danmakuText"
-            placeholder="发个友善的弹幕见证当下"
-            class="danmaku-input"
-            @keyup.enter="sendDanmaku"
+              v-model="danmakuText"
+              placeholder="发个友善的弹幕见证当下"
+              class="danmaku-input"
+              @keyup.enter="sendDanmaku"
           >
             <template #append>
               <el-button @click="sendDanmaku" type="primary">
@@ -152,9 +152,9 @@
             </button>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item v-for="rate in speedOptions" 
-                  :key="rate" 
-                  :command="rate"
+                <el-dropdown-item v-for="rate in speedOptions"
+                                  :key="rate"
+                                  :command="rate"
                 >
                   {{ rate }}x
                 </el-dropdown-item>
@@ -164,8 +164,8 @@
 
           <!-- 全屏按钮 -->
           <button class="control-btn fullscreen-btn" @click="toggleFullscreen">
-            <ExitFullscreenIcon v-if="isFullscreen" />
-            <FullscreenIcon v-else />
+            <ExitFullscreenIcon v-if="isFullscreen"/>
+            <FullscreenIcon v-else/>
           </button>
         </div>
       </div>
@@ -174,19 +174,19 @@
     <!-- 播放结束遮罩 -->
     <div class="end-overlay" v-if="isEnded" @click="replayVideo">
       <div class="replay-button">
-        <RefreshIcon />
+        <RefreshIcon/>
         重新播放
       </div>
     </div>
 
     <!-- 添加收缩按钮 -->
-    <div class="collapse-trigger" 
-      v-show="isControlsVisible"
-      @click="$emit('toggle-collapse')" 
-      :class="{ 'is-collapsed': isCollapsed }"
+    <div class="collapse-trigger"
+         v-show="isControlsVisible"
+         @click="$emit('toggle-collapse')"
+         :class="{ 'is-collapsed': isCollapsed }"
     >
       <div class="collapse-btn">
-        <CollapseIcon />
+        <CollapseIcon/>
       </div>
     </div>
 
@@ -194,8 +194,8 @@
     <div class="volume-indicator" v-show="showVolumeIndicator">
       <div class="volume-indicator-content">
         <div class="volume-icon">
-          <MuteIcon v-if="volume === 0" />
-          <VolumeIcon v-else />
+          <MuteIcon v-if="volume === 0"/>
+          <VolumeIcon v-else/>
         </div>
         <div class="volume-control-wrapper">
           <div class="volume-bar">
@@ -219,8 +219,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import {ref, onMounted, onUnmounted, watch, computed} from 'vue'
+import {useRoute} from 'vue-router'
 import VolumeIcon from '@/components/icons/VolumeIcon.vue'
 import MuteIcon from '@/components/icons/MuteIcon.vue'
 import PlayIcon from '@/components/icons/PlayIcon.vue'
@@ -231,6 +231,8 @@ import RefreshIcon from '@/components/icons/RefreshIcon.vue'
 import CollapseIcon from '@/components/icons/CollapseIcon.vue'
 import DanmakuColorPicker from '@/components/video/DanmakuColorPicker.vue'
 import DanmakuToggle from '@/components/video/DanmakuToggle.vue'
+import {sendBarrageService} from '@/api/barrage'
+import {ElMessage} from 'element-plus'
 
 // Props定义
 const props = defineProps({
@@ -322,21 +324,21 @@ const handleProgressClick = (e) => {
   const progressRect = progressRef.value.getBoundingClientRect()
   const offsetX = e.clientX - progressRect.left
   const progress = (offsetX / progressRect.width) * 100
-  
+
   // 更新进度条位置
   currentProgress.value = progress
-  
+
   // 更新视频时间
   const newTime = (duration.value * progress) / 100
   videoRef.value.currentTime = newTime
 }
 
 const handleProgressHover = (e) => {
-  if (isDragging.value) return // 如果正在拖动，不处理悬停
-  
+  if (isDragging.value) return // 如果正���拖动，不处理悬停
+
   const rect = progressRef.value.getBoundingClientRect()
   const offsetX = e.clientX - rect.left
-  
+
   // 更新tooltip位置和时间
   tooltipPosition.value = offsetX
   const hoverTime = (offsetX / rect.width) * duration.value
@@ -398,12 +400,12 @@ const handleTimeUpdate = () => {
   if (videoRef.value && !isDragging.value) {
     currentTime.value = videoRef.value.currentTime
     currentProgress.value = (currentTime.value / duration.value) * 100
-    
+
     // 更新已加载进度
     if (videoRef.value.buffered.length > 0) {
       loadedProgress.value = (videoRef.value.buffered.end(0) / duration.value) * 100
     }
-    
+
     // 每秒保存一次播放位置
     if (Math.floor(currentTime.value) % 1 === 0) {
       savePlayTime(currentTime.value)
@@ -446,7 +448,7 @@ const startDragging = (e) => {
   isDragging.value = true
   initialX.value = e.clientX
   initialProgress.value = currentProgress.value
-  
+
   // 添加全局事件监听
   document.addEventListener('mousemove', handleDragging)
   document.addEventListener('mouseup', stopDragging)
@@ -455,19 +457,19 @@ const startDragging = (e) => {
 // 拖动过程
 const handleDragging = (e) => {
   if (!isDragging.value) return
-  
+
   e.preventDefault()
-  
+
   const progressRect = progressRef.value.getBoundingClientRect()
   const progressWidth = progressRect.width
-  
+
   // 计算鼠标在进度条上的相对位置
   const offsetX = Math.max(0, Math.min(e.clientX - progressRect.left, progressWidth))
   const newProgress = (offsetX / progressWidth) * 100
-  
+
   // 更新进度条位置
   currentProgress.value = newProgress
-  
+
   // 同时更新当前时间显示，但不更新视频时间
   currentTime.value = (duration.value * newProgress) / 100
 }
@@ -478,7 +480,7 @@ const stopDragging = () => {
     // 更新视频时间
     const newTime = (duration.value * currentProgress.value) / 100
     videoRef.value.currentTime = newTime
-    
+
     // 重置拖动状态
     isDragging.value = false
     document.removeEventListener('mousemove', handleDragging)
@@ -498,7 +500,8 @@ onUnmounted(() => {
   if (videoRef.value) {
     videoRef.value.pause()
   }
-  document.removeEventListener('fullscreenchange', () => {})
+  document.removeEventListener('fullscreenchange', () => {
+  })
   document.removeEventListener('mousemove', handleDragging)
   document.removeEventListener('mouseup', stopDragging)
 })
@@ -668,7 +671,7 @@ const getLastPlayTime = () => {
 
 // 保存播放位置
 const savePlayTime = (time) => {
-  // 只有当播放进度在1%到95%之间时才保存
+  // 只有当播放进度在1%到95%之间时才保���
   if (duration.value) {
     const progress = time / duration.value * 100
     if (progress > 1 && progress < 95) {
@@ -705,17 +708,36 @@ const danmakuText = ref('')
 // 弹幕颜色
 const danmakuColor = ref('#FFFFFF')
 
-// 发送弹幕时包含颜色信息
-const sendDanmaku = () => {
-  if (danmakuText.value.trim()) {
-    // TODO: 实现发送弹幕的逻辑
-    console.log('发送弹幕:', {
-      text: danmakuText.value,
-      color: danmakuColor.value
-    })
-    danmakuText.value = ''
+// 修改发送弹幕的方法
+const sendDanmaku = async () =>
+{
+  if (!danmakuText.value.trim()) return
+
+  const danmakuData = {
+    videoId: videoId.value,
+    content: danmakuText.value.trim(),
+    color: danmakuColor.value,
+    timePoint: Math.floor(currentTime.value)
+  }
+  // 调用发送弹幕API
+  await sendBarrageService(danmakuData);
+  await ElMessage.success('弹幕发送成功')
+
+  // 发送成功后清空输入框
+  danmakuText.value = ''
+
+  // 如果WebSocket连接存在，发送弹幕消息
+  if (ws.value && ws.value.readyState === WebSocket.OPEN) {
+    const wsMessage = {
+      type: 'danmaku',
+      data: {
+        ...danmakuData
+      }
+    }
+    ws.value.send(JSON.stringify(wsMessage))
   }
 }
+
 
 // 添加新的响应式变量
 const showDanmaku = ref(true)
