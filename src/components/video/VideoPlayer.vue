@@ -5,6 +5,15 @@
        @click="handleVideoClick"
        @dblclick="toggleFullscreen"
   >
+    <!-- 弹幕画布 -->
+    <DanmakuCanvas
+      ref="danmakuCanvasRef"
+      :videoId="videoId"
+      :show="showDanmaku"
+      :opacity="0.8"
+      :currentTime="currentTime"
+    />
+
     <div class="video-title">
       {{ title }}
     </div>
@@ -233,6 +242,7 @@ import DanmakuColorPicker from '@/components/video/DanmakuColorPicker.vue'
 import DanmakuToggle from '@/components/video/DanmakuToggle.vue'
 import {sendBarrageService} from '@/api/barrage'
 import {ElMessage} from 'element-plus'
+import DanmakuCanvas from './DanmakuCanvas.vue'
 
 // Props定义
 const props = defineProps({
@@ -289,7 +299,7 @@ const formatTime = (seconds) => {
   return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`
 }
 
-// 播放控制
+// 播放��制
 const togglePlay = () => {
   if (videoRef.value) {
     if (isPlaying.value) {
@@ -334,7 +344,7 @@ const handleProgressClick = (e) => {
 }
 
 const handleProgressHover = (e) => {
-  if (isDragging.value) return // 如果正���拖动，不处理悬停
+  if (isDragging.value) return // 如果正在拖动，不处理悬停
 
   const rect = progressRef.value.getBoundingClientRect()
   const offsetX = e.clientX - rect.left
@@ -671,7 +681,7 @@ const getLastPlayTime = () => {
 
 // 保存播放位置
 const savePlayTime = (time) => {
-  // 只有当播放进度在1%到95%之间时才保���
+  // 只有当播放进度在1%到95%之间时才保存
   if (duration.value) {
     const progress = time / duration.value * 100
     if (progress > 1 && progress < 95) {
@@ -708,9 +718,11 @@ const danmakuText = ref('')
 // 弹幕颜色
 const danmakuColor = ref('#FFFFFF')
 
+// 添加弹幕画布引用
+const danmakuCanvasRef = ref(null)
+
 // 修改发送弹幕的方法
-const sendDanmaku = async () =>
-{
+const sendDanmaku = async () => {
   if (!danmakuText.value.trim()) return
 
   const danmakuData = {
@@ -719,25 +731,19 @@ const sendDanmaku = async () =>
     color: danmakuColor.value,
     timePoint: Math.floor(currentTime.value)
   }
-  // 调用发送弹幕API
-  await sendBarrageService(danmakuData);
-  await ElMessage.success('弹幕发送成功')
 
-  // 发送成功后清空输入框
-  danmakuText.value = ''
-
-  // 如果WebSocket连接存在，发送弹幕消息
-  if (ws.value && ws.value.readyState === WebSocket.OPEN) {
-    const wsMessage = {
-      type: 'danmaku',
-      data: {
-        ...danmakuData
-      }
-    }
-    ws.value.send(JSON.stringify(wsMessage))
+  try {
+    await sendBarrageService(danmakuData)
+    ElMessage.success('弹幕发送成功')
+    
+    // 立即在画布上显示弹幕
+    danmakuCanvasRef.value?.addDanmaku(danmakuData.content, danmakuData.color)
+    
+    danmakuText.value = ''
+  } catch (error) {
+    ElMessage.error('发送弹幕失败')
   }
 }
-
 
 // 添加新的响应式变量
 const showDanmaku = ref(true)
