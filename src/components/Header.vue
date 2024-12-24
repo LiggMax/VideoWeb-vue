@@ -3,7 +3,7 @@
     <div class="header-content">
       <!-- 左侧Logo和导航 -->
       <div class="left-section">
-        <div class="logo">
+        <div class="logo" @click="router.push('/')">
           <div class="tv-icon">
             <el-icon><Monitor /></el-icon>
           </div>
@@ -67,8 +67,8 @@ import {
 } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import eventBus from '@/utils/eventBus'
-
-const activeIndex = ref('/')
+//路由
+const router = useRouter()
 const isScrolled = ref(false)
 
 // 登录对话框显示状态
