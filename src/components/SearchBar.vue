@@ -1,6 +1,6 @@
 <template>
   <div class="search-container">
-    <div class="search-bar">
+    <div class="search-wrapper">
       <el-input
         v-model="searchText"
         placeholder="输入关键词搜索"
@@ -89,10 +89,9 @@ onUnmounted(() => {
   width: 100%;
 }
 
-.search-bar {
+.search-wrapper {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  position: relative;
 }
 
 .search-input {
@@ -101,25 +100,26 @@ onUnmounted(() => {
   
   :deep(.el-input__wrapper) {
     background-color: #f1f2f3;
-    border-radius: 8px;
-    padding: 4px 12px;
+    border-radius: 8px 0 0 8px;
+    padding: 0 12px;
     box-shadow: none !important;
     transition: all 0.3s;
+    height: 34px;
     
     &:hover {
       background-color: #fff;
-      border: 1px solid #e3e5e7;
+      box-shadow: 0 0 0 1px #e3e5e7 !important;
     }
   }
   
   &.is-focused :deep(.el-input__wrapper) {
     background-color: #fff;
-    border: 1px solid #c9ccd0;
+    box-shadow: 0 0 0 1px #c9ccd0 !important;
   }
   
   :deep(.el-input__inner) {
     font-size: 14px;
-    height: 36px;
+    height: 100%;
     
     &::placeholder {
       color: #9499a0;
@@ -130,6 +130,7 @@ onUnmounted(() => {
 .search-icon {
   font-size: 16px;
   color: #9499a0;
+  margin-right: 4px;
 }
 
 .clear-icon {
@@ -138,6 +139,7 @@ onUnmounted(() => {
   cursor: pointer;
   padding: 2px;
   border-radius: 50%;
+  margin-left: 4px;
   
   &:hover {
     background-color: #f1f2f3;
@@ -146,20 +148,23 @@ onUnmounted(() => {
 }
 
 .search-btn {
-  height: 36px;
+  height: 34px;
   width: 48px;
   padding: 0;
-  border-radius: 8px;
+  border-radius: 0 8px 8px 0;
   background-color: #fb7299;
   border-color: #fb7299;
+  position: relative;
+  left: -1px;
   
   &:hover {
     background-color: #fc8bab;
     border-color: #fc8bab;
+    z-index: 1;
   }
   
   .el-icon {
-    font-size: 18px;
+    font-size: 16px;
   }
 }
 
@@ -168,7 +173,7 @@ onUnmounted(() => {
   position: absolute;
   top: calc(100% + 2px);
   left: 0;
-  right: 56px;
+  right: 0;
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
