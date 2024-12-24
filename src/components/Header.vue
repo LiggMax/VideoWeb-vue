@@ -18,7 +18,7 @@
 
       <!-- 中间搜索框 -->
       <div class="center-section">
-        <SearchBar />
+        <SearchBar @search="handleSearch" v-model="searchText" />
       </div>
 
       <!-- 右侧用户区域 -->
@@ -116,6 +116,18 @@ const showLoginDialog = () => {
 eventBus.on('showLogin', () => {
   loginDialogVisible.value = true
 })
+
+const searchText = ref('')
+
+const handleSearch = () => {
+  if (!searchText.value.trim()) return
+  router.push({
+    path: '/search',
+    query: {
+      keyword: searchText.value.trim()
+    }
+  })
+}
 </script>
 
 <style scoped>

@@ -18,7 +18,7 @@
           <div class="video-stats">
             <span class="view-count">{{ videoInfo.viewCount }}:播放</span>
             <span class="bullet">·</span>
-            <span class="date">发布于 {{ formatPublishTime(videoInfo.createTime) }}</span>
+            <span class="date">发布于 {{ formatDate(videoInfo.createTime) }}</span>
           </div>
         </div>
 
@@ -75,7 +75,7 @@
                 </div>
                 <div class="comment-text">{{ comment.content }}</div>
                 <div class="comment-info">
-                  <span class="comment-time">{{ formatCommentTime(comment.createTime) }}</span>
+                  <span class="comment-time">{{ formatDate(comment.createTime) }}</span>
                   <div class="comment-actions">
                     <span class="action-item">
                       <el-icon><Thumb /></el-icon>
@@ -162,6 +162,7 @@ import EmojiPicker from '@/components/EmojiPicker.vue'
 import { useTokenStore } from '@/stores/token'
 import eventBus from '@/utils/eventBus'
 import DanmakuList from '@/components/video/DanmakuList.vue'
+import {formatDate} from "@/utils/format";
 
 // 配置 dayjs
 dayjs.extend(relativeTime)
@@ -181,25 +182,6 @@ const formatCommentTime = (time) => {
     return commentTime.format('YYYY-MM-DD')   // 显示完整日期
   }
 }
-
-// 格式化发布时间
-const formatPublishTime = (time) => {
-  if (!time) return ''
-  const publishTime = dayjs(time)
-  const now = dayjs()
-  const diffDays = now.diff(publishTime, 'day')
-
-  if (diffDays < 1) {
-    return publishTime.fromNow()  // 显示"几分钟前"、"几小时前"
-  } else if (diffDays < 7) {
-    return `${diffDays}天前`
-  } else if (diffDays < 30) {
-    return publishTime.format('MM-DD')  // 显示"月-日"
-  } else {
-    return publishTime.format('YYYY-MM-DD')  // 显示完整日期
-  }
-}
-
 const route = useRoute()
 const router = useRouter()
 

@@ -2,30 +2,31 @@
   <div class="search-container">
     <div class="search-wrapper">
       <el-input
-        v-model="searchText"
+        v-model="inputValue"
         placeholder="输入关键词搜索"
         class="search-input"
         :class="{ 'is-focused': isFocused }"
         @focus="isFocused = true"
         @blur="isFocused = false"
+        @keyup.enter="handleSearch"
       >
         <template #prefix>
           <el-icon class="search-icon"><Search /></el-icon>
         </template>
         <template #suffix>
-          <div class="search-suffix" v-if="searchText">
-            <el-icon class="clear-icon" @click="searchText = ''"><Close /></el-icon>
+          <div class="search-suffix" v-if="inputValue">
+            <el-icon class="clear-icon" @click="inputValue = ''"><Close /></el-icon>
           </div>
         </template>
       </el-input>
-      <el-button class="search-btn" type="primary">
+      <el-button class="search-btn" type="primary" @click="handleSearch">
         <el-icon><Search /></el-icon>
       </el-button>
     </div>
    
     <!-- 搜索建议下拉面板 -->
     <div class="search-dropdown" v-show="isFocused">
-      <div class="search-history" v-if="!searchText">
+      <div class="search-history" v-if="!inputValue">
         <div class="history-header">
           <span>搜索历史</span>
           <el-icon class="clear-history" @click="clearHistory"><Delete /></el-icon>
@@ -46,10 +47,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { Search, Close, Delete, Clock } from '@element-plus/icons-vue'
 
-const searchText = ref('')
+const props = defineProps({
+  modelValue: {
+    type: String,
+    default: ''
+  }
+})
+
+const emit = defineEmits(['update:modelValue', 'search'])
+
+const inputValue = ref(props.modelValue)
 const isFocused = ref(false)
 const searchHistory = ref([
   'Vue.js教程',
@@ -58,8 +68,16 @@ const searchHistory = ref([
   'Java编程'
 ])
 
+watch(() => props.modelValue, (newVal) => {
+  inputValue.value = newVal
+})
+
+watch(inputValue, (newVal) => {
+  emit('update:modelValue', newVal)
+})
+
 const selectHistory = (item) => {
-  searchText.value = item
+  inputValue.value = item
 }
 
 const clearHistory = () => {
@@ -81,6 +99,11 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
+
+const handleSearch = () => {
+  if (!inputValue.value.trim()) return
+  emit('search')
+}
 </script>
 
 <style lang="scss" scoped>
