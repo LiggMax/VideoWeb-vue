@@ -70,6 +70,7 @@
          v-show="isControlsVisible && !isEnded"
          @mouseenter="showControls"
          @mouseleave="startHideControlsTimer"
+         @click.stop
     >
       <!-- 进度条 -->
       <div class="progress-bar"
@@ -124,17 +125,19 @@
           </div>
 
           <!-- 时间显示 -->
-          <span class="time-display">
+          <span class="time-display" 
+                :class="{ 'hide-on-small': isSmallPlayer }"
+          >
             {{ formatTime(currentTime) }} / {{ formatTime(duration) }}
           </span>
         </div>
 
         <!-- 弹幕输入区域 -->
         <div class="danmaku-input-area">
-          <!-- 添加颜色选择器 -->
           <DanmakuColorPicker
-              v-model="danmakuColor"
-              class="danmaku-color-picker"
+            v-model="danmakuColor"
+            class="danmaku-color-picker"
+            :class="{ 'hide-on-small': isSmallPlayer }"
           />
 
           <DanmakuToggle v-model="showDanmaku"/>
@@ -143,7 +146,10 @@
               v-model="danmakuText"
               placeholder="发个友善的弹幕见证当下"
               class="danmaku-input"
+              :class="{ 'hide-on-small': isSmallPlayer }"
               @keyup.enter="sendDanmaku"
+              @focus="handleInputFocus"
+              @blur="handleInputBlur"
           >
             <template #append>
               <el-button @click="sendDanmaku" type="primary">
@@ -151,6 +157,11 @@
               </el-button>
             </template>
           </el-input>
+
+          <DanmakuSettings 
+            @update="updateDanmakuSettings"
+            :class="{ 'hide-on-small': isSmallPlayer }"
+          />
         </div>
 
         <div class="right-controls">
@@ -243,6 +254,8 @@ import DanmakuToggle from '@/components/video/DanmakuToggle.vue'
 import {sendBarrageService} from '@/api/barrage'
 import {ElMessage} from 'element-plus'
 import DanmakuCanvas from './DanmakuCanvas.vue'
+import { Setting } from '@element-plus/icons-vue'
+import DanmakuSettings from './DanmakuSettings.vue'
 
 // Props定义
 const props = defineProps({
@@ -299,7 +312,7 @@ const formatTime = (seconds) => {
   return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`
 }
 
-// 播放��制
+// 播放控制
 const togglePlay = () => {
   if (videoRef.value) {
     if (isPlaying.value) {
@@ -504,6 +517,8 @@ onMounted(() => {
   document.addEventListener('fullscreenchange', () => {
     isFullscreen.value = !!document.fullscreenElement
   })
+  checkPlayerSize()  // 初始检查
+  window.addEventListener('resize', handleResize)
 })
 
 onUnmounted(() => {
@@ -514,6 +529,7 @@ onUnmounted(() => {
   })
   document.removeEventListener('mousemove', handleDragging)
   document.removeEventListener('mouseup', stopDragging)
+  window.removeEventListener('resize', handleResize)
 })
 
 // 添加到现有的响应式变量中
@@ -539,10 +555,10 @@ const startHideControlsTimer = () => {
   if (hideControlsTimer.value) {
     clearTimeout(hideControlsTimer.value)
   }
-  // 设置5秒后隐藏
+  // 设置5秒后隐藏，但如果输入框被聚焦���不隐藏
   hideControlsTimer.value = setTimeout(() => {
-    // 只有在视频播放时才自动隐藏
-    if (isPlaying.value) {
+    // 只有在视频播放且输入框未被聚焦时才自动隐藏
+    if (isPlaying.value && !isInputFocused.value) {
       isControlsVisible.value = false
     }
   }, 5000)
@@ -572,12 +588,20 @@ onUnmounted(() => {
 // 定义事件
 defineEmits(['toggle-collapse'])
 
-// 添加点击事件处理
-const handleVideoClick = (e) => {
-  // 防止点击控制栏时触发
-  if (e.target.closest('.custom-controls') || e.target.closest('.float-play-btn') || e.target.closest('.collapse-trigger')) {
+// 修改点击事件处理函数
+const handleVideoClick = (event) => {
+  // 排除不应该触发播放/暂停的元素
+  const excludedElements = [
+    '.custom-controls',
+    '.float-play-btn',
+    '.collapse-trigger',
+    '.danmaku-canvas'
+  ]
+  
+  if (excludedElements.some(selector => event.target.closest(selector))) {
     return
   }
+  
   togglePlay()
 }
 
@@ -736,9 +760,15 @@ const sendDanmaku = async () => {
   ElMessage.success('弹幕发送成功')
 
   // 立即在画布上显示弹幕
-  danmakuCanvasRef.value?.addDanmaku(danmakuData.content, danmakuData.color)
+  danmakuCanvasRef.value?.addDanmaku(danmakuData.content, danmakuColor.value)
 
   danmakuText.value = ''
+
+  // 发送弹幕后让输入框失去焦点
+  const input = document.querySelector('.danmaku-input input')
+  if (input) {
+    input.blur()
+  }
 }
 
 // 添加新的响应式变量
@@ -748,6 +778,49 @@ const showDanmaku = ref(true)
 const toggleDanmaku = () => {
   showDanmaku.value = !showDanmaku.value
 }
+
+// 添加更新设置的方法
+const updateDanmakuSettings = (settings) => {
+  if (danmakuCanvasRef.value) {
+    danmakuCanvasRef.value.updateSettings(settings)
+  }
+}
+
+// 添加新的响应式变量
+const isInputFocused = ref(false)
+
+// 添加输入框焦点处理方法
+const handleInputFocus = () => {
+  isInputFocused.value = true
+  // 确保控制栏显示
+  isControlsVisible.value = true
+  // 清除隐藏定时器
+  if (hideControlsTimer.value) {
+    clearTimeout(hideControlsTimer.value)
+  }
+}
+
+const handleInputBlur = () => {
+  isInputFocused.value = false
+  // 重新开始隐藏计时
+  startHideControlsTimer()
+}
+
+// 添加播放器尺寸检测
+const isSmallPlayer = ref(false)
+
+// 检查播放器尺寸
+const checkPlayerSize = () => {
+  if (videoRef.value) {
+    const playerWidth = videoRef.value.offsetWidth
+    isSmallPlayer.value = playerWidth < 750  // 调整阈值为750px
+  }
+}
+
+// 监听窗口大小变化
+const handleResize = () => {
+  checkPlayerSize()
+}
 </script>
 
 <style lang="scss">
@@ -755,4 +828,53 @@ const toggleDanmaku = () => {
 @import '@/styles/components/video/controls';
 @import '@/styles/components/video/volume';
 @import '@/styles/components/video/loading';
+
+/* 更新弹幕输入区域样式 */
+.danmaku-input-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  .danmaku-input {
+    flex: 1;
+    transition: all 0.3s;
+    
+    &.hide-on-small {
+      @media screen and (max-width: 750px) {
+        display: none;
+      }
+    }
+  }
+  
+  .danmaku-color-picker,
+  .danmaku-settings-trigger {
+    transition: all 0.3s;
+    
+    &.hide-on-small {
+      @media screen and (max-width: 750px) {
+        display: none;
+      }
+    }
+  }
+}
+
+.time-display {
+  color: #fff;
+  font-size: 14px;
+  margin: 0 12px;
+  transition: opacity 0.3s;
+  
+  &.hide-on-small {
+    @media screen and (max-width: 750px) {
+      display: none;
+    }
+  }
+}
+
+/* 在小屏幕下调整弹幕开关按钮的样式 */
+@media screen and (max-width: 750px) {
+  .danmaku-toggle {
+    margin-left: auto; /* 将弹幕开关按钮推到右侧 */
+  }
+}
 </style> 

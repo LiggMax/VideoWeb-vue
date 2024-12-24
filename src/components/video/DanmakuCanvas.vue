@@ -55,18 +55,73 @@ const initCanvas = () => {
   window.addEventListener('resize', resize)
 }
 
+// 添加默认设置
+const settings = ref({
+  opacity: 0.8,
+  fontSize: 24,
+  speed: 2,
+  area: 'h50'  // 默认使用半屏
+})
+
+// 添加更新设置的方法
+const updateSettings = (newSettings) => {
+  settings.value = {
+    ...settings.value,
+    ...newSettings
+  }
+  
+  // 更新画布透明度
+  if (canvasRef.value) {
+    canvasRef.value.style.opacity = settings.value.opacity
+  }
+}
+
+// 从 localStorage 获取保存的设置
+const initSettings = () => {
+  const saved = localStorage.getItem('danmaku_settings')
+  if (saved) {
+    const savedSettings = JSON.parse(saved)
+    updateSettings({
+      opacity: savedSettings.opacity,
+      fontSize: {
+        small: 18,
+        medium: 24,
+        large: 30
+      }[savedSettings.size],
+      speed: {
+        slow: 1,
+        normal: 2,
+        fast: 3
+      }[savedSettings.speed],
+      area: savedSettings.area
+    })
+  }
+}
+
 // 弹幕类
 class Danmaku {
-  constructor(content, color, speed = 2, fontSize = 24) {
+  constructor(content, color) {
     const canvas = canvasRef.value
     this.content = content
     this.color = color
-    this.speed = speed
-    this.fontSize = fontSize
+    this.speed = settings.value.speed
+    this.fontSize = settings.value.fontSize
     this.x = canvas.width
-    this.y = Math.random() * (canvas.height - fontSize) + fontSize
+    this.y = this.calculateY()
     this.width = 0
     this.measured = false
+  }
+
+  calculateY() {
+    const canvas = canvasRef.value
+    const area = settings.value.area
+    let minY, maxY
+    
+    // 从顶部开始计算显示区域
+    minY = this.fontSize
+    maxY = canvas.height * (parseInt(area.replace('h', '')) / 100) - this.fontSize
+    
+    return Math.random() * (maxY - minY) + minY
   }
 
   measure(context) {
@@ -166,11 +221,13 @@ watch(() => props.currentTime, (newTime) => {
 
 // 暴露方法给父组件
 defineExpose({
-  addDanmaku
+  addDanmaku,
+  updateSettings
 })
 
 onMounted(async () => {
   initCanvas()
+  initSettings()  // 初始化设置
   await fetchDanmakus()
   render()
 })
