@@ -1,6 +1,6 @@
 <template>
   <div class="video-detail">
-    <div class="main-content" :class="{ 'collapsed': isCollapsed }">
+    <div class="main-content" :class="{ 'collapsed': isCollapsed || isAutoCollapsed }">
       <!-- 左侧视频区域 -->
       <div class="video-section">
         <!-- 视频播放器 -->
@@ -8,7 +8,7 @@
           :video-url="videoInfo.videoUrl"
           :poster="videoInfo.cover"
           :title="videoInfo.title"
-          :is-collapsed="isCollapsed"
+          :is-collapsed="isCollapsed || isAutoCollapsed"
           @toggle-collapse="toggleCollapse"
         />
 
@@ -94,7 +94,7 @@
       </div>
 
       <!-- 右侧推荐区域 -->
-      <div class="recommend-section" :class="{ 'is-collapsed': isCollapsed }">
+      <div class="recommend-section" :class="{ 'is-collapsed': isCollapsed || isAutoCollapsed }">
         <!-- UP主信息卡片 -->
         <div class="uploader-card">
           <div class="uploader-header">
@@ -386,7 +386,7 @@ const goToChat = () => {
   })
 }
 
-// 判断是��是自己的视频
+// 判断是否是自己的视频
 const isSelfVideo = computed(() => {
   return videoInfo.value.username === userInfo.value.username
 })
@@ -397,6 +397,24 @@ const isLogin = computed(() => !!tokenStore.token)
 
 // 获取视频ID
 const videoId = computed(() => route.params.id)
+
+// 添加自动收缩状态
+const isAutoCollapsed = ref(false)
+
+// 监听窗口大小变化
+const handleResize = () => {
+  isAutoCollapsed.value = window.innerWidth < 1200
+}
+
+// 组件挂载和卸载时添加/移除事件监听
+onMounted(() => {
+  handleResize() // 初始化状态
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+})
 
 </script>
 
@@ -420,6 +438,40 @@ const videoId = computed(() => route.params.id)
 
 .main-content.collapsed {
   grid-template-columns: 1fr 0;
+}
+
+/* 添加媒体查询 */
+@media screen and (max-width: 1200px) {
+  .main-content {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .recommend-section {
+    display: none;
+  }
+  
+  .video-section {
+    padding-right: 0;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .main-content {
+    padding: 0 10px;
+  }
+
+  .video-title {
+    font-size: 24px;
+  }
+
+  .comment-input-area {
+    flex-direction: column;
+  }
+
+  .input-avatar {
+    align-self: center;
+  }
 }
 
 /* 当屏幕宽度大于 1920px 时限制最大宽度 */
@@ -837,7 +889,7 @@ const videoId = computed(() => route.params.id)
   flex-shrink: 0;
 }
 
-/* 在小屏幕上调整最小尺寸 */
+/* 在���屏幕上调整最小尺寸 */
 @media screen and (max-width: 768px) {
   .video-section {
     min-width: 100%;
