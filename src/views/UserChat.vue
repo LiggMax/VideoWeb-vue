@@ -53,7 +53,10 @@
               :size="32" 
               :src="msg.isSelf ? userInfo.userPic : currentChat.userPic" 
             />
-            <div class="message-content">{{ msg.content }}</div>
+            <div class="message-wrapper">
+              <div class="message-content">{{ msg.content }}</div>
+              <div class="message-time">{{ formatTime(msg.sendTime) }}</div>
+            </div>
           </div>
         </div>
 
@@ -144,7 +147,7 @@ const getChatUser = async (username) => {
       // 创建新的聊天对象
       const newChat = {
         id: Date.now(),
-        username: userData.username || username, // 确保有用户名
+        username: userData.username || username, // 确保有���户名
         nickname: userData.nickname || username,
         userPic: userData.userPic || 'default-avatar.jpg',
         lastMessage: userData.message || '',
@@ -292,7 +295,7 @@ const handleReceivedMessage = async (message) => {
       // 标记消息为已读
       await markAsReadService(from, userInfo.value.username)
     } else {
-      // 如果不是当前聊天，增加未读消息数量
+      // 如果不是当前聊天，增加未���消息数量
       const chatIndex = chatList.value.findIndex(chat => chat.username === from)
       if (chatIndex !== -1) {
         chatList.value[chatIndex].unreadCount = (chatList.value[chatIndex].unreadCount || 0) + 1
@@ -335,13 +338,27 @@ const formatTime = (time) => {
   const messageTime = dayjs(time)
   const now = dayjs()
   const diffDays = now.diff(messageTime, 'day')
+  const diffYears = now.diff(messageTime, 'year')
 
+  // 今天的消息只显示时间
   if (diffDays < 1) {
     return messageTime.format('HH:mm')
-  } else if (diffDays < 7) {
+  }
+  // 昨天的消息显示"昨天 时:分"
+  else if (diffDays === 1) {
+    return `昨天 ${messageTime.format('HH:mm')}`
+  }
+  // 一周内的消息显示"星期几 时:分"
+  else if (diffDays < 7) {
     return messageTime.format('ddd HH:mm')
-  } else {
-    return messageTime.format('MM-DD')
+  }
+  // 今年的消息显示"月-日 时:分"
+  else if (diffYears < 1) {
+    return messageTime.format('MM-DD HH:mm')
+  }
+  // 更早的消息显示完整日期"年-月-日 时:分"
+  else {
+    return messageTime.format('YYYY-MM-DD HH:mm')
   }
 }
 
@@ -543,6 +560,16 @@ onUnmounted(() => {
   align-self: flex-end;
 }
 
+.message-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.message-bubble.self .message-wrapper {
+  align-items: flex-end;
+}
+
 .message-content {
   padding: 10px 16px;
   background: #f6f7f8;
@@ -555,6 +582,12 @@ onUnmounted(() => {
 .message-bubble.self .message-content {
   background: #fb7299;
   color: #fff;
+}
+
+.message-time {
+  font-size: 12px;
+  color: #9499a0;
+  padding: 0 4px;
 }
 
 .chat-input {
