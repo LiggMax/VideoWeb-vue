@@ -7,11 +7,11 @@
   >
     <!-- 弹幕画布 -->
     <DanmakuCanvas
-      ref="danmakuCanvasRef"
-      :videoId="videoId"
-      :show="showDanmaku"
-      :opacity="0.8"
-      :currentTime="currentTime"
+        ref="danmakuCanvasRef"
+        :videoId="videoId"
+        :show="showDanmaku"
+        :opacity="0.8"
+        :currentTime="currentTime"
     />
 
     <div class="video-title">
@@ -732,17 +732,13 @@ const sendDanmaku = async () => {
     timePoint: Math.floor(currentTime.value)
   }
 
-  try {
-    await sendBarrageService(danmakuData)
-    ElMessage.success('弹幕发送成功')
-    
-    // 立即在画布上显示弹幕
-    danmakuCanvasRef.value?.addDanmaku(danmakuData.content, danmakuData.color)
-    
-    danmakuText.value = ''
-  } catch (error) {
-    ElMessage.error('发送弹幕失败')
-  }
+  await sendBarrageService(danmakuData)
+  ElMessage.success('弹幕发送成功')
+
+  // 立即在画布上显示弹幕
+  danmakuCanvasRef.value?.addDanmaku(danmakuData.content, danmakuData.color)
+
+  danmakuText.value = ''
 }
 
 // 添加新的响应式变量
