@@ -2,8 +2,6 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useUserInfoStore } from '@/stores/userInfo'
 import { wsService } from '@/services/websocket'
-import { ElMessage } from 'element-plus'
-import { Picture, Location } from '@element-plus/icons-vue'
 
 // 获取当前用户信息
 const userInfoStore = useUserInfoStore()

@@ -487,14 +487,14 @@ const handleDragging = (e) => {
   const progressRect = progressRef.value.getBoundingClientRect()
   const progressWidth = progressRect.width
 
-  // 计算鼠标在进度条上的相对位置
+  // 计算鼠标在进度条上���相对位置
   const offsetX = Math.max(0, Math.min(e.clientX - progressRect.left, progressWidth))
   const newProgress = (offsetX / progressWidth) * 100
 
   // 更新进度条位置
   currentProgress.value = newProgress
 
-  // 同时更新当前时间显示，但不更新视频时间
+  // 同时更新当前时间显示，但不更新��频时间
   currentTime.value = (duration.value * newProgress) / 100
 }
 
@@ -543,7 +543,7 @@ const hideControlsTimer = ref(null)
 // 修改显示控制方法
 const showControls = () => {
   isControlsVisible.value = true
-  // 清除之前的定时器
+  // ���除之前的定时器
   if (hideControlsTimer.value) {
     clearTimeout(hideControlsTimer.value)
   }
@@ -704,7 +704,7 @@ const getLastPlayTime = () => {
   return time ? parseFloat(time) : 0
 }
 
-// 保存播放位置
+// 保��播放位置
 const savePlayTime = (time) => {
   // 只有当播放进度在1%到95%之间时才保存
   if (duration.value) {
@@ -716,7 +716,7 @@ const savePlayTime = (time) => {
   }
 }
 
-// 添加��的响应式变量
+// 添加新的响应式变量
 const showVolumeIndicator = ref(false)
 let volumeIndicatorTimer = null
 
@@ -772,7 +772,7 @@ const sendDanmaku = async () => {
   }
 }
 
-// 添��新的响应式变量
+// 添加新的响应式变量
 const showDanmaku = ref(true)
 
 // 切换弹幕开关
@@ -822,6 +822,40 @@ const checkPlayerSize = () => {
 const handleResize = () => {
   checkPlayerSize()
 }
+
+// 键盘事件处理
+const handleKeydown = (e) => {
+  // 如果焦点在输入框中，不处理快捷键
+  const isInputElement = e.target.tagName === 'INPUT' || 
+                        e.target.tagName === 'TEXTAREA' || 
+                        e.target.classList.contains('el-input__inner') ||
+                        e.target.getAttribute('contenteditable') === 'true'
+  
+  if (isInputElement || isInputFocused.value) return
+
+  switch (e.key.toLowerCase()) {
+    case ' ':  // 空格键控制播放/暂停
+      e.preventDefault() // 防止页面滚动
+      togglePlay()
+      break
+    case 'f':  // F 键切换全屏
+      toggleFullscreen()
+      break
+  }
+}
+
+// 在组件挂载时添加键盘事件监听
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+  checkPlayerSize()  // 初始检查
+  window.addEventListener('resize', handleResize)
+})
+
+// 在组件卸载时移除键盘事件监听
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown)
+  window.removeEventListener('resize', handleResize)
+})
 </script>
 
 <style lang="scss">
