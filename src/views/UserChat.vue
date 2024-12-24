@@ -14,13 +14,14 @@
           @click="selectChat(chat)"
         >
           <div class="avatar-wrapper">
-            <el-avatar :size="40" :src="chat.userPic" />
-            <div class="online-status" :class="{ 'online': chat.isOnline }"></div>
+            <div class="avatar-container">
+              <el-avatar :size="40" :src="chat.userPic" />
+              <div class="online-status" :class="{ 'online': chat.isOnline }"></div>
+            </div>
           </div>
           <div class="chat-info">
             <div class="chat-header">
               <span class="nickname">{{ chat.nickname }}</span>
-              <span class="online-text">{{ chat.isOnline ? '在线' : '离线' }}</span>
             </div>
             <div class="last-message">
               {{ chat.lastMessage }}
@@ -101,7 +102,7 @@ import { ElMessage } from 'element-plus'
 import { ChatRound } from '@element-plus/icons-vue'
 import useUserInfoStore from '@/stores/userInfo'
 import { useRoute } from 'vue-router'
-import { getUserChatService, getChatHistoryService, markAsReadService, getUnreadCountService, getOnlineStatusService } from '@/api/chat'  // 导入获取私信对象的接口
+import { getUserChatService, getChatHistoryService, markAsReadService, getUnreadCountService, getOnlineStatusService } from '@/api/chat'  // 导入获取私���对象的接口
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/zh-cn'
@@ -147,7 +148,7 @@ const getChatUser = async (username) => {
       // 创建新的聊天对象
       const newChat = {
         id: Date.now(),
-        username: userData.username || username, // 确保有���户名
+        username: userData.username || username, // 确保有用户名
         nickname: userData.nickname || username,
         userPic: userData.userPic || 'default-avatar.jpg',
         lastMessage: userData.message || '',
@@ -295,7 +296,7 @@ const handleReceivedMessage = async (message) => {
       // 标记消息为已读
       await markAsReadService(from, userInfo.value.username)
     } else {
-      // 如果不是当前聊天，增加未���消息数量
+      // 如果不是当前聊天，增加未读消息数量
       const chatIndex = chatList.value.findIndex(chat => chat.username === from)
       if (chatIndex !== -1) {
         chatList.value[chatIndex].unreadCount = (chatList.value[chatIndex].unreadCount || 0) + 1
@@ -658,29 +659,29 @@ onUnmounted(() => {
 
 .avatar-wrapper {
   position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.avatar-container {
+  position: relative;
+  width: 40px;
+  height: 40px;
 }
 
 .online-status {
   position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 10px;
-  height: 10px;
+  bottom: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background-color: #999;
+  background-color: #bbb;
   border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
 }
 
 .online-status.online {
-  background-color: #52c41a;
-}
-
-.online-text {
-  font-size: 12px;
-  color: #999;
-}
-
-.online-text.online {
-  color: #52c41a;
+  background-color: #00c853;
 }
 </style> 
