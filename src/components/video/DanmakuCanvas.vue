@@ -4,7 +4,7 @@
     class="danmaku-canvas"
     :style="{
       display: show ? 'block' : 'none',
-      opacity: opacity
+      opacity: settings.opacity
     }"
   ></canvas>
 </template>
@@ -29,6 +29,10 @@ const props = defineProps({
   currentTime: {
     type: Number,
     default: 0
+  },
+  isPlaying: {
+    type: Boolean,
+    default: true
   }
 })
 
@@ -110,6 +114,7 @@ class Danmaku {
     this.y = this.calculateY()
     this.width = 0
     this.measured = false
+    this.pausedX = null
   }
 
   calculateY() {
@@ -132,7 +137,19 @@ class Danmaku {
     }
   }
 
-  update() {
+  move() {
+    if (!props.isPlaying) {
+      if (this.pausedX === null) {
+        this.pausedX = this.x
+      }
+      return false
+    }
+    
+    if (this.pausedX !== null) {
+      this.x = this.pausedX
+      this.pausedX = null
+    }
+
     this.x -= this.speed
     return this.x + this.width > 0
   }
@@ -156,12 +173,12 @@ class Danmaku {
 
 // 渲染循环
 const render = () => {
-  if (!ctx.value || !canvasRef.value) return
+  if (!canvasRef.value || !ctx.value) return
   
   ctx.value.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height)
   
   activeDanmakus.value = activeDanmakus.value.filter(danmaku => {
-    const isVisible = danmaku.update()
+    const isVisible = danmaku.move()
     if (isVisible) {
       danmaku.draw(ctx.value)
     }
@@ -217,6 +234,23 @@ watch(() => props.currentTime, (newTime) => {
       addDanmaku(danmaku.content, danmaku.color)
     }
   })
+})
+
+// 监听播放状态变化
+watch(() => props.isPlaying, (newVal) => {
+  if (newVal) {
+    if (!animationFrame.value) {
+      render()
+    }
+  } else {
+    if (animationFrame.value) {
+      cancelAnimationFrame(animationFrame.value)
+      animationFrame.value = null
+    }
+    activeDanmakus.value.forEach(danmaku => {
+      danmaku.draw(ctx.value)
+    })
+  }
 })
 
 // 暴露方法给父组件

@@ -12,6 +12,7 @@
         :show="showDanmaku"
         :opacity="0.8"
         :currentTime="currentTime"
+        :isPlaying="isPlaying"
     />
 
     <div class="video-title">
@@ -555,7 +556,7 @@ const startHideControlsTimer = () => {
   if (hideControlsTimer.value) {
     clearTimeout(hideControlsTimer.value)
   }
-  // 设置5秒后隐藏，但如果输入框被聚焦���不隐藏
+  // 设置5秒后隐藏，但如果输入框被聚焦不隐藏
   hideControlsTimer.value = setTimeout(() => {
     // 只有在视频播放且输入框未被聚焦时才自动隐藏
     if (isPlaying.value && !isInputFocused.value) {
@@ -715,7 +716,7 @@ const savePlayTime = (time) => {
   }
 }
 
-// 添加新的响应式变量
+// 添加��的响应式变量
 const showVolumeIndicator = ref(false)
 let volumeIndicatorTimer = null
 
@@ -771,7 +772,7 @@ const sendDanmaku = async () => {
   }
 }
 
-// 添加新的响应式变量
+// 添��新的响应式变量
 const showDanmaku = ref(true)
 
 // 切换弹幕开关
