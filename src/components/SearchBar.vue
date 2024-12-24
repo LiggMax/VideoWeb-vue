@@ -9,6 +9,7 @@
         @focus="isFocused = true"
         @blur="isFocused = false"
         @keyup.enter="handleSearch"
+        @input="handleInput"
       >
         <template #prefix>
           <el-icon class="search-icon"><Search /></el-icon>
@@ -26,19 +27,33 @@
    
     <!-- 搜索建议下拉面板 -->
     <div class="search-dropdown" v-show="isFocused">
-      <div class="search-history" v-if="!inputValue">
-        <div class="history-header">
-          <span>搜索历史</span>
-          <el-icon class="clear-history" @click="clearHistory"><Delete /></el-icon>
-        </div>
-        <div class="history-list">
-          <div v-for="(item, index) in searchHistory" 
-               :key="index" 
-               class="history-item"
-               @click="selectHistory(item)"
+      <div class="search-header" v-if="!inputValue && searchHistory.length">
+        <span>搜索历史</span>
+        <span class="clear-btn" @click="clearHistory">清空</span>
+      </div>
+      <div class="search-list" v-if="!inputValue && searchHistory.length">
+        <div class="history-tags">
+          <div v-for="(item, index) in displayHistory" 
+                :key="index" 
+                class="history-tag"
+                @click="selectHistory(item)"
           >
             <el-icon><Clock /></el-icon>
             <span>{{ item }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 搜索建议列表 -->
+      <div class="search-list" v-else-if="inputValue && filteredHistory.length">
+        <div class="suggestion-list">
+          <div v-for="(item, index) in filteredHistory" 
+                :key="index" 
+                class="history-item"
+                @click="selectHistory(item)"
+          >
+            <el-icon><Search /></el-icon>
+            <span v-html="highlightKeyword(item)"></span>
           </div>
         </div>
       </div>
@@ -47,8 +62,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { Search, Close, Delete, Clock } from '@element-plus/icons-vue'
+import { getSearchHistory, addSearchHistory, clearSearchHistory } from '@/utils/searchHistory'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const props = defineProps({
   modelValue: {
@@ -61,12 +80,15 @@ const emit = defineEmits(['update:modelValue', 'search'])
 
 const inputValue = ref(props.modelValue)
 const isFocused = ref(false)
-const searchHistory = ref([
-  'Vue.js教程',
-  'Spring Boot实战',
-  '前端开发',
-  'Java编程'
-])
+const searchHistory = ref([])
+
+// 显示的历史记录数量
+const displayCount = ref(5)
+
+// 计算显示的历史记录
+const displayHistory = computed(() => {
+  return searchHistory.value.slice(0, displayCount.value)
+})
 
 watch(() => props.modelValue, (newVal) => {
   inputValue.value = newVal
@@ -78,9 +100,14 @@ watch(inputValue, (newVal) => {
 
 const selectHistory = (item) => {
   inputValue.value = item
+  isFocused.value = false
+  addSearchHistory(item)
+  searchHistory.value = getSearchHistory()
+  emit('search')
 }
 
 const clearHistory = () => {
+  clearSearchHistory()
   searchHistory.value = []
 }
 
@@ -92,18 +119,46 @@ const handleClickOutside = (e) => {
   }
 }
 
+const handleSearch = () => {
+  if (!inputValue.value.trim()) return
+  addSearchHistory(inputValue.value.trim())
+  searchHistory.value = getSearchHistory()
+  isFocused.value = false
+  emit('search')
+}
+
+// 过滤搜索历史
+const filteredHistory = computed(() => {
+  if (!inputValue.value) return []
+  const keyword = inputValue.value.toLowerCase()
+  return searchHistory.value.filter(item => 
+    item.toLowerCase().includes(keyword)
+  )
+})
+
+// 高亮关键词
+const highlightKeyword = (text) => {
+  if (!inputValue.value) return text
+  const keyword = inputValue.value
+  const regex = new RegExp(keyword, 'gi')
+  return text.replace(regex, match => `<span class="highlight">${match}</span>`)
+}
+
+// 输入处理
+const handleInput = () => {
+  if (!isFocused.value) {
+    isFocused.value = true
+  }
+}
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  searchHistory.value = getSearchHistory()
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
-
-const handleSearch = () => {
-  if (!inputValue.value.trim()) return
-  emit('search')
-}
 </script>
 
 <style lang="scss" scoped>
@@ -200,52 +255,105 @@ const handleSearch = () => {
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 12px 0;
   z-index: 1000;
 }
 
-.search-history {
-  .history-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 16px 8px;
-    color: #9499a0;
+.search-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f2f3;
+  
+  span {
     font-size: 12px;
-    border-bottom: 1px solid #f1f2f3;
+    color: #9499a0;
+  }
+  
+  .clear-btn {
+    cursor: pointer;
     
-    .clear-history {
+    &:hover {
+      color: #00aeec;
+    }
+  }
+}
+
+.search-list {
+  padding: 8px 16px;
+
+  .history-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    .history-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 12px;
+      background: #f6f7f8;
+      border-radius: 16px;
       cursor: pointer;
-      padding: 4px;
-      border-radius: 4px;
+      transition: all 0.3s;
+      border: 1px solid #e3e5e7;
+      
+      .el-icon {
+        font-size: 14px;
+        color: #9499a0;
+      }
+      
+      span {
+        font-size: 13px;
+        color: #18191c;
+      }
       
       &:hover {
         background-color: #f1f2f3;
-        color: #6d757a;
+        border-color: #00aeec;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        
+        span {
+          color: #00aeec;
+        }
+        
+        .el-icon {
+          color: #00aeec;
+        }
       }
     }
   }
-  
-  .history-list {
-    padding: 4px 0;
-  }
-  
-  .history-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    cursor: pointer;
-    color: #18191c;
-    font-size: 14px;
-    
-    .el-icon {
-      font-size: 16px;
-      color: #9499a0;
-    }
-    
-    &:hover {
-      background-color: #f1f2f3;
+
+  .suggestion-list {
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      
+      .el-icon {
+        font-size: 14px;
+        color: #9499a0;
+      }
+      
+      span {
+        font-size: 14px;
+        color: #18191c;
+      }
+      
+      &:hover {
+        background-color: #f1f2f3;
+        
+        span {
+          color: #00aeec;
+        }
+        
+        .el-icon {
+          color: #00aeec;
+        }
+      }
     }
   }
 }

@@ -18,7 +18,11 @@
 
       <!-- 中间搜索框 -->
       <div class="center-section">
-        <SearchBar @search="handleSearch" v-model="searchText" />
+        <SearchBar 
+          @search="handleSearch" 
+          v-model="searchText" 
+          ref="searchBarRef"
+        />
       </div>
 
       <!-- 右侧用户区域 -->
@@ -118,9 +122,12 @@ eventBus.on('showLogin', () => {
 })
 
 const searchText = ref('')
+const searchBarRef = ref(null)
 
 const handleSearch = () => {
   if (!searchText.value.trim()) return
+  
+  // 跳转到搜索页面
   router.push({
     path: '/search',
     query: {
