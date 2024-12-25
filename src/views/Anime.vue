@@ -8,6 +8,7 @@
         height="480px"
         trigger="click"
         @change="handleSlideChange"
+        :autoplay="false"
         ref="carouselRef"
       >
         <el-carousel-item v-for="(item, index) in bannerList" :key="index">
@@ -28,6 +29,11 @@
         >
           <img :src="item.cover" :alt="item.title">
           <div class="thumbnail-title">{{ item.title }}</div>
+          <div 
+            v-if="currentIndex === index" 
+            class="progress-bar"
+            :style="{ width: `${progress}%` }"
+          ></div>
         </div>
       </div>
     </div>
@@ -58,11 +64,14 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onUnmounted, onMounted } from 'vue'
 
 const activeTab = ref('recommended')
 const currentIndex = ref(0)
 const carouselRef = ref(null)
+const progress = ref(0)
+let progressTimer = null
+let autoplayTimer = null
 
 // 静态轮播图数据
 const bannerList = ref([
@@ -106,20 +115,58 @@ const bannerList = ref([
 // 处理轮播图切换
 const handleSlideChange = (index) => {
   currentIndex.value = index
+  resetProgress()
 }
 
 // 处理缩略图悬停
 const handleThumbnailHover = (index) => {
   currentIndex.value = index
-  // 设置轮播图到对应索引
   carouselRef.value?.setActiveItem(index)
+  resetProgress()
 }
+
+// 重置并开始进度条
+const resetProgress = () => {
+  progress.value = 0
+  clearInterval(progressTimer)
+  clearInterval(autoplayTimer)
+  
+  progressTimer = setInterval(() => {
+    progress.value += 2  // 每100ms增加2%，总共5000ms
+    if (progress.value >= 100) {
+      progress.value = 0
+      goToNextSlide()
+    }
+  }, 100)
+}
+
+// 切换到下一张图片
+const goToNextSlide = () => {
+  const nextIndex = (currentIndex.value + 1) % bannerList.value.length
+  handleThumbnailHover(nextIndex)
+}
+
+// 开始自动播放
+const startAutoplay = () => {
+  autoplayTimer = setInterval(() => {
+    goToNextSlide()
+  }, 5000)
+}
+
+// 组件挂载时启动自动播放
+onMounted(() => {
+  startAutoplay()
+  resetProgress()
+})
+
+// 组件卸载时清理定时器
+onUnmounted(() => {
+  clearInterval(progressTimer)
+  clearInterval(autoplayTimer)
+})
 </script>
 
 <style scoped>
-.anime {
-  padding: 20px;
-}
 
 .anime-grid {
   display: grid;
@@ -154,6 +201,8 @@ const handleThumbnailHover = (index) => {
 .banner-section {
   margin-bottom: 30px;
   position: relative;
+  overflow: hidden;
+  background-color: #f5f7fa;
 }
 
 .banner-content {
@@ -167,15 +216,34 @@ const handleThumbnailHover = (index) => {
   object-fit: cover;
 }
 
+/* 轮播图底部蒙版 */
+.banner-section::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 160px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(245, 247, 250, 0.4) 40%,
+    rgba(245, 247, 250, 0.95) 80%,
+    rgba(245, 247, 250, 1)
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
 /* 底部缩略图样式 */
 .thumbnail-list {
   display: flex;
   justify-content: center;
   gap: 15px;
-  margin-top: -60px;
+  margin-top: -80px;
   padding: 0 20px;
   position: relative;
-  z-index: 10;
+  z-index: 2;
 }
 
 .thumbnail-item {
@@ -186,34 +254,112 @@ const handleThumbnailHover = (index) => {
   border-radius: 8px;
   overflow: hidden;
   transform-origin: center bottom;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  border: 2px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 3px solid rgba(255, 255, 255, 0.8);
+  border-top-width: 0;
 }
 
 .thumbnail-item img {
   width: 100%;
   height: 90px;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: 4px;
   transition: all 0.3s ease;
+}
+
+.thumbnail-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.3),
+    transparent
+  );
+  z-index: 2;
+}
+
+.progress-bar {
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  height: 4px;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.95),
+    rgba(255, 255, 255, 0.8)
+  );
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  transition: width 0.1s ease-out;
+  z-index: 3;
 }
 
 .thumbnail-item.active {
   transform: translateY(-10px) scale(1.2);
-  box-shadow: 0 16px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   z-index: 2;
   border-color: #fff;
-  border-width: 3px;
+  border-top-width: 0;
+
+  &::before {
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.4),
+      transparent
+    );
+  }
+
+  .progress-bar {
+    height: 8px;
+    background: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 1),
+      rgba(255, 255, 255, 0.9)
+    );
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  }
 }
 
 .thumbnail-item:not(.active) {
   filter: brightness(0.8);
   transform: scale(0.95);
   border-color: rgba(255, 255, 255, 0.6);
+  border-top-width: 0;
+
+  &::before {
+    opacity: 0.8;
+  }
+
+  .progress-bar {
+    opacity: 0.9;
+    background: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0.8),
+      rgba(255, 255, 255, 0.6)
+    );
+  }
 }
 
 .thumbnail-item:hover:not(.active) {
   border-color: rgba(255, 255, 255, 0.9);
+  border-top-width: 0;
+
+  &::before {
+    opacity: 0.9;
+  }
+
+  .progress-bar {
+    opacity: 1;
+    background: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0.9),
+      rgba(255, 255, 255, 0.7)
+    );
+  }
 }
 
 .thumbnail-title {
@@ -224,11 +370,17 @@ const handleThumbnailHover = (index) => {
   padding: 8px;
   font-size: 12px;
   color: #fff;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(0, 0, 0, 0.5) 30%,
+    rgba(0, 0, 0, 0.8)
+  );
   text-align: center;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   transition: all 0.3s ease;
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
+  z-index: 2;
 }
 </style>
