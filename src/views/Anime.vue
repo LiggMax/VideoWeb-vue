@@ -51,19 +51,19 @@
       </div>
 
       <div class="hot-anime-list">
-        <div v-for="(item, index) in hotAnimeList"
+        <div v-for="(anime, index) in hotAnimeList"
           :key="index"
           class="hot-anime-item"
         >
           <div class="anime-cover">
-            <img :src="item.coverImage" :alt="item.title">
-            <div class="score">{{ item.score }}</div>
+            <img :src="anime.images.webp.large_image_url" :alt="anime.titles[0].title">
+            <div class="score">{{ anime.score }}</div>
           </div>
           <div class="anime-info">
             <div class="rank-number">{{ index + 1 }}</div>
             <div class="info-content">
-              <div class="title">{{ item.title }}</div>
-              <div class="desc">{{ item.currentEpisode }}</div>
+              <div class="title">{{ anime.titles[0].title }}</div>
+              <div class="desc">{{ anime.synopsis }}</div>
             </div>
           </div>
         </div>
@@ -75,6 +75,7 @@
 <script setup>
 import { ref, onUnmounted, onMounted } from 'vue'
 import {getBannerService} from "@/api/anime";
+import {getHotService} from "@/api/bangumi/bangumi";
 
 const activeTab = ref('recommended')
 const currentIndex = ref(0)
@@ -88,20 +89,7 @@ const bannerList = ref([
 
 ])
 // 热播榜数据
-const hotAnimeList = ref([
-  {
-    title: '夏目友人帐 第七��',
-    currentEpisode: '浪漫之旅的起点',
-    score: '9.9',
-    coverImage: 'https://play.xfvod.pro/images/hb/ddd.webp'
-  },
-  {
-    title: '夏目友人帐 第七季',
-    currentEpisode: '浪漫之旅的起点',
-    score: '9.9',
-    coverImage: 'https://play.xfvod.pro/images/hb/ddd.webp'
-  }
-])
+const hotAnimeList = ref([])
 
 // 处理轮播图切换
 const handleSlideChange = (index) => {
@@ -164,7 +152,12 @@ getBannerList()
 
 
 // 获取热播榜数据
-
+const getHotAnimeList = async () => {
+  const res = await getHotService()
+  // 处理返回的数据结构
+  hotAnimeList.value = res.data.data;
+}
+getHotAnimeList()
 </script>
 
 <style scoped>
