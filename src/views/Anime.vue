@@ -13,24 +13,24 @@
       >
         <el-carousel-item v-for="(item, index) in bannerList" :key="index">
           <div class="banner-content">
-            <img :src="item.cover" :alt="item.title" class="banner-image">
+            <img :src="item.coverImage" :alt="item.title" class="banner-image">
           </div>
         </el-carousel-item>
       </el-carousel>
-      
+
       <!-- 底部缩略图 -->
       <div class="thumbnail-list">
-        <div 
-          v-for="(item, index) in bannerList" 
+        <div
+          v-for="(item, index) in bannerList"
           :key="index"
           class="thumbnail-item"
           :class="{ 'active': currentIndex === index }"
           @mouseenter="handleThumbnailHover(index)"
         >
-          <img :src="item.cover" :alt="item.title">
+          <img :src="item.coverImage" :alt="item.title">
           <div class="thumbnail-title">{{ item.title }}</div>
-          <div 
-            v-if="currentIndex === index" 
+          <div
+            v-if="currentIndex === index"
             class="progress-bar"
             :style="{ width: `${progress}%` }"
           ></div>
@@ -38,33 +38,43 @@
       </div>
     </div>
 
-    <el-tabs v-model="activeTab" class="anime-tabs">
-      <el-tab-pane label="推荐" name="recommended">
-        <div class="anime-grid">
-          <el-card v-for="n in 12" :key="n" class="anime-card">
-            <div class="anime-cover"></div>
-            <div class="anime-title">番剧标题 {{ n }}</div>
-            <div class="anime-info">
-              <span>更新至第12话</span>
-              <span>9.2分</span>
-            </div>
-          </el-card>
+    <!-- 番剧热播榜 -->
+    <div class="hot-anime-section">
+      <div class="section-header">
+        <div class="title">
+          <img class="title-icon" src="http://sowl9rtuo.hn-bkt.clouddn.com/huohua.png" alt="hot">
+          番剧热播榜
         </div>
-      </el-tab-pane>
-      
-      <el-tab-pane label="连载动画" name="series">
-        连载动画内容
-      </el-tab-pane>
-      
-      <el-tab-pane label="完结动画" name="finished">
-        完结动画内容
-      </el-tab-pane>
-    </el-tabs>
+        <div class="more">
+          查看全部 <i class="el-icon-arrow-right"></i>
+        </div>
+      </div>
+
+      <div class="hot-anime-list">
+        <div v-for="(item, index) in hotAnimeList"
+          :key="index"
+          class="hot-anime-item"
+        >
+          <div class="anime-cover">
+            <img :src="item.coverImage" :alt="item.title">
+            <div class="score">{{ item.score }}</div>
+          </div>
+          <div class="anime-info">
+            <div class="rank-number">{{ index + 1 }}</div>
+            <div class="info-content">
+              <div class="title">{{ item.title }}</div>
+              <div class="desc">{{ item.currentEpisode }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onUnmounted, onMounted } from 'vue'
+import {getBannerService} from "@/api/anime";
 
 const activeTab = ref('recommended')
 const currentIndex = ref(0)
@@ -73,42 +83,23 @@ const progress = ref(0)
 let progressTimer = null
 let autoplayTimer = null
 
-// 静态轮播图数据
+// 轮播图数据
 const bannerList = ref([
+
+])
+// 热播榜数据
+const hotAnimeList = ref([
   {
-    title: '神之塔 工房战',
-    description: '第4话 酷炫的战斗场景，精彩的剧情发展',
-    cover: 'https://play.xfvod.pro/images/hb/img_kv-02.webp'
+    title: '夏目友人帐 第七��',
+    currentEpisode: '浪漫之旅的起点',
+    score: '9.9',
+    coverImage: 'https://play.xfvod.pro/images/hb/ddd.webp'
   },
   {
     title: '夏目友人帐 第七季',
-    description: '温暖人心的故事继续',
-    cover: 'https://play.xfvod.pro/images/hb/lx.jpg'
-  },
-  {
-    title: '咒术回战 第二季',
-    description: '五条悟的过去篇章',
-    cover: 'https://play.xfvod.pro/images/hb/ddd.webp'
-  },
-  {
-    title: '青之源流',
-    description: '全新原创动画',
-    cover: 'https://play.xfvod.pro/images/hb/re02.jpg'
-  },
-  {
-    title: '坂本日常',
-    description: '日常生活中的搞笑故事',
-    cover: 'https://play.xfvod.pro/images/hb/wtdhz.png'
-  },
-  {
-    title: '盾之勇者成名录',
-    description: '第三季正在热播中',
-    cover: 'https://play.xfvod.pro/images/hb/baiquan.jpg'
-  },
-  {
-    title: '精灵幻想记',
-    description: '奇幻冒险启程',
-    cover: 'https://play.xfvod.pro/images/hb/img_kv-02.webp'
+    currentEpisode: '浪漫之旅的起点',
+    score: '9.9',
+    coverImage: 'https://play.xfvod.pro/images/hb/ddd.webp'
   }
 ])
 
@@ -130,7 +121,7 @@ const resetProgress = () => {
   progress.value = 0
   clearInterval(progressTimer)
   clearInterval(autoplayTimer)
-  
+
   progressTimer = setInterval(() => {
     progress.value += 2  // 每100ms增加2%，总共5000ms
     if (progress.value >= 100) {
@@ -164,23 +155,22 @@ onUnmounted(() => {
   clearInterval(progressTimer)
   clearInterval(autoplayTimer)
 })
+//获取轮播图内容
+const getBannerList = async () => {
+    const res = await getBannerService()
+    bannerList.value = res.data
+}
+getBannerList()
+
+
+// 获取热播榜数据
+
 </script>
 
 <style scoped>
 
-.anime-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 20px;
-  margin-top: 20px;
-}
-
-.anime-card {
-  margin-bottom: 15px;
-}
-
 .anime-cover {
-  height: 150px;
+  height: 250px;
   background-color: #f5f5f5;
   margin-bottom: 8px;
 }
@@ -389,8 +379,171 @@ onUnmounted(() => {
   z-index: 2;
 }
 
-/* 调整轮播图高度 */
+/* 整轮播图高度 */
 :deep(.el-carousel) {
   height: 520px;
+}
+
+/* 番剧热播榜样式 */
+.hot-anime-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-header .title {
+  font-size: 24px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #333;
+}
+
+.section-header .more {
+  color: #666;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  font-size: 14px;
+}
+
+.section-header .more:hover {
+  color: #ff6b6b;
+}
+
+.hot-anime-list {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 20px;
+}
+
+.hot-anime-item {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.rank-number {
+  font-size: 28px;
+  font-weight: 600;
+  color: #ff6b6b;
+  line-height: 1;
+  z-index: 1;
+  min-width: 32px;
+  text-align: center;
+}
+
+.info-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.anime-cover {
+  position: relative;
+  height: 240px;
+  overflow: hidden;
+  border-radius: 8px 8px 0 0;
+  aspect-ratio: 3/4;
+}
+
+.anime-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.score {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  color: #fff;
+  font-size: 24px;
+  font-weight: bold;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.anime-info {
+  padding: 16px;
+  background: #fff;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.anime-info .title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.anime-info .desc {
+  font-size: 14px;
+  color: #999;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.hot-anime-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.hot-anime-item:hover img {
+  transform: scale(1.05);
+}
+
+/* 前三名特殊样式 */
+.hot-anime-item:nth-child(1) .rank-number {
+  font-size: 28px;
+  color: #ff6b6b;
+}
+
+.hot-anime-item:nth-child(2) .rank-number {
+  color: #047edf;
+}
+
+.hot-anime-item:nth-child(3) .rank-number {
+  color: #7c4dff;
+}
+
+/* 添加图片遮罩 */
+.anime-cover::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(0, 0, 0, 0.4)
+  );
+  pointer-events: none;
+}
+
+.title-icon {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  vertical-align: middle;
 }
 </style>
