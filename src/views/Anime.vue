@@ -229,13 +229,13 @@ getHotAnimeList()
   left: 0;
   right: 0;
   bottom: 0;
-  height: 25%;
+  height: 35%;
   background: linear-gradient(
     to bottom,
     transparent,
-    rgba(245, 247, 250, 0.4) 40%,
-    rgba(245, 247, 250, 0.95) 80%,
-    rgba(245, 247, 250, 1)
+    rgba(245, 247, 250, 0.2) 30%,
+    rgba(245, 247, 250, 0.6) 60%,
+    rgba(245, 247, 250, 0.95)
   );
   pointer-events: none;
   z-index: 1;
@@ -246,7 +246,7 @@ getHotAnimeList()
   display: flex;
   justify-content: center;
   gap: 15px;
-  margin-top: min(-80px, -10%);
+  margin-top: min(-70px, -8%);
   padding: 0 20px;
   position: relative;
   z-index: 2;
