@@ -5,7 +5,7 @@
       <el-carousel 
         :interval="5000" 
         arrow="never"
-        height="480px"
+        :height="bannerHeight"
         trigger="click"
         @change="handleSlideChange"
         :autoplay="false"
@@ -91,6 +91,24 @@ const bannerList = ref([
 // 热播榜数据
 const hotAnimeList = ref([])
 
+// 计算轮播图高度
+const bannerHeight = ref('520px')
+
+// 更新轮播图高度
+const updateBannerHeight = () => {
+  const width = window.innerWidth
+  // 根据屏幕宽度计算合适的高度，保持16:9的比例
+  const height = Math.floor((width * 9) / 16)
+  // 设置最小和最大高度限制
+  const finalHeight = Math.max(400, Math.min(height, 720))
+  bannerHeight.value = `${finalHeight}px`
+}
+
+// 监听窗口大小变化
+const handleResize = () => {
+  updateBannerHeight()
+}
+
 // 处理轮播图切换
 const handleSlideChange = (index) => {
   currentIndex.value = index
@@ -136,12 +154,15 @@ const startAutoplay = () => {
 onMounted(() => {
   startAutoplay()
   resetProgress()
+  updateBannerHeight()
+  window.addEventListener('resize', handleResize)
 })
 
 // 组件卸载时清理定时器
 onUnmounted(() => {
   clearInterval(progressTimer)
   clearInterval(autoplayTimer)
+  window.removeEventListener('resize', handleResize)
 })
 //获取轮播图内容
 const getBannerList = async () => {
@@ -186,12 +207,13 @@ getHotAnimeList()
   position: relative;
   overflow: hidden;
   background-color: #f5f7fa;
-  min-height: 520px;
+  width: 100%;
 }
 
 .banner-content {
   position: relative;
   height: 100%;
+  width: 100%;
 }
 
 .banner-image {
@@ -200,14 +222,14 @@ getHotAnimeList()
   object-fit: cover;
 }
 
-/* 轮播图底部蒙版 */
+/* 修改轮播图底部蒙版 */
 .banner-section::after {
   content: '';
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 180px;
+  height: 25%;
   background: linear-gradient(
     to bottom,
     transparent,
@@ -224,7 +246,7 @@ getHotAnimeList()
   display: flex;
   justify-content: center;
   gap: 15px;
-  margin-top: -80px;
+  margin-top: min(-80px, -10%);
   padding: 0 20px;
   position: relative;
   z-index: 2;
@@ -372,16 +394,38 @@ getHotAnimeList()
   z-index: 2;
 }
 
-/* 整轮播图高度 */
-:deep(.el-carousel) {
-  height: 520px;
+/* 响应式调整 */
+@media screen and (max-width: 1200px) {
+  .thumbnail-item {
+    width: 180px;
+  }
+  
+  .thumbnail-item img {
+    height: 100px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .thumbnail-item {
+    width: 140px;
+  }
+  
+  .thumbnail-item img {
+    height: 80px;
+  }
+  
+  .thumbnail-title {
+    font-size: 12px;
+    padding: 6px;
+  }
 }
 
 /* 番剧热播榜样式 */
 .hot-anime-section {
-  max-width: 1200px;
+  width: 100%;
+  max-width: 1800px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 20px 40px;
 }
 
 .section-header {
@@ -413,7 +457,7 @@ getHotAnimeList()
 
 .hot-anime-list {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 20px;
 }
 
@@ -424,6 +468,7 @@ getHotAnimeList()
   transition: all 0.3s ease;
   background: #fff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  width: 100%;
 }
 
 .rank-number {
@@ -443,10 +488,10 @@ getHotAnimeList()
 
 .anime-cover {
   position: relative;
-  height: 240px;
   overflow: hidden;
   border-radius: 8px 8px 0 0;
   aspect-ratio: 3/4;
+  width: 100%;
 }
 
 .anime-cover img {
@@ -538,5 +583,17 @@ getHotAnimeList()
   height: 30px;
   object-fit: contain;
   vertical-align: middle;
+}
+
+@media screen and (max-width: 1600px) {
+  .hot-anime-section {
+    padding: 20px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .hot-anime-list {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
 }
 </style>
