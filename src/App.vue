@@ -2,11 +2,13 @@
   <div class="app">
     <Header />
     <router-view></router-view>
+<!--    <Calendar/>-->
   </div>
 </template>
 
 <script setup>
 import Header from '@/components/Header.vue'
+import Calendar from "@/views/Calendar.vue";
 </script>
 
 <style>

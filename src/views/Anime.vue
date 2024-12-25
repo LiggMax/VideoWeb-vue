@@ -2,14 +2,14 @@
   <div class="anime">
     <!-- 轮播图区域 -->
     <div class="banner-section">
-      <el-carousel 
-        :interval="5000" 
-        arrow="never"
-        :height="bannerHeight"
-        trigger="click"
-        @change="handleSlideChange"
-        :autoplay="false"
-        ref="carouselRef"
+      <el-carousel
+          :interval="5000"
+          arrow="never"
+          :height="bannerHeight"
+          trigger="click"
+          @change="handleSlideChange"
+          :autoplay="false"
+          ref="carouselRef"
       >
         <el-carousel-item v-for="(item, index) in bannerList" :key="index">
           <div class="banner-content">
@@ -21,18 +21,18 @@
       <!-- 底部缩略图 -->
       <div class="thumbnail-list">
         <div
-          v-for="(item, index) in bannerList"
-          :key="index"
-          class="thumbnail-item"
-          :class="{ 'active': currentIndex === index }"
-          @mouseenter="handleThumbnailHover(index)"
+            v-for="(item, index) in bannerList"
+            :key="index"
+            class="thumbnail-item"
+            :class="{ 'active': currentIndex === index }"
+            @mouseenter="handleThumbnailHover(index)"
         >
           <img :src="item.coverImage" :alt="item.title">
           <div class="thumbnail-title">{{ item.title }}</div>
           <div
-            v-if="currentIndex === index"
-            class="progress-bar"
-            :style="{ width: `${progress}%` }"
+              v-if="currentIndex === index"
+              class="progress-bar"
+              :style="{ width: `${progress}%` }"
           ></div>
         </div>
       </div>
@@ -52,8 +52,8 @@
 
       <div class="hot-anime-list">
         <div v-for="(anime, index) in hotAnimeList"
-          :key="index"
-          class="hot-anime-item"
+             :key="index"
+             class="hot-anime-item"
         >
           <div class="anime-cover">
             <img :src="anime.images.webp.large_image_url" :alt="anime.titles[0].title">
@@ -81,32 +81,42 @@
           查看全部 <i class="el-icon-arrow-right"></i>
         </div>
       </div>
-      
+
       <div class="schedule-content">
         <div class="weekday-tabs">
           <div v-for="(day, index) in weekdays"
-            :key="index"
-            :class="['weekday-tab', { active: currentDay === index }]"
-            @click="currentDay = index"
+               :key="index"
+               :class="['weekday-tab', { active: currentDay === day.id }]"
+               @click="currentDay = day.id"
           >
-            {{ day }}
+            {{ day.cn }}
           </div>
         </div>
-        
-        <div class="schedule-scroll-wrapper" ref="scrollWrapper" @mousedown="startDrag" @mousemove="onDrag" @mouseup="stopDrag" @mouseleave="stopDrag">
+
+        <div class="schedule-scroll-wrapper" ref="scrollWrapper" @mousedown="startDrag" @mousemove="onDrag"
+             @mouseup="stopDrag" @mouseleave="stopDrag">
           <div class="anime-schedule-list">
-            <div v-for="(anime, index) in scheduleList" 
-              :key="index" 
-              class="schedule-item"
+            <div v-if="scheduleList.length === 0" class="no-data">
+              当天暂无更新
+            </div>
+            <div v-for="(anime, index) in scheduleList"
+                 :key="index"
+                 class="schedule-item"
             >
-              <div class="time">{{ anime.time }}</div>
+              <div class="time">{{ anime.air_time }}</div>
               <div class="schedule-cover">
-                <img :src="anime.coverImage" :alt="anime.title">
-                <div class="score">{{ anime.score }}</div>
+                <img 
+                  :src="anime.images" 
+                  :alt="anime.title"
+                  @error="e => e.target.src = 'default-image.jpg'"
+                >
+                <div class="score" v-if="anime.score">{{ anime.score }}</div>
               </div>
               <div class="schedule-info">
                 <div class="title">{{ anime.title }}</div>
-                <div class="episode">更新至第{{ anime.episode }}话</div>
+                <div class="episode">
+                  {{ anime.eps ? `更新至第${anime.eps}话` : '暂无更新' }}
+                </div>
               </div>
             </div>
           </div>
@@ -117,9 +127,10 @@
 </template>
 
 <script setup>
-import { ref, onUnmounted, onMounted, computed } from 'vue'
+import {ref, onUnmounted, onMounted, computed} from 'vue'
 import {getBannerService} from "@/api/anime";
-import {getHotService} from "@/api/bangumi/bangumi";
+import {getBangumiService, getHotService} from "@/api/bangumi/bangumi";
+import {formatCount} from '@/utils/format'
 
 const activeTab = ref('recommended')
 const currentIndex = ref(0)
@@ -129,9 +140,7 @@ let progressTimer = null
 let autoplayTimer = null
 
 // 轮播图数据
-const bannerList = ref([
-
-])
+const bannerList = ref([])
 // 热播榜数据
 const hotAnimeList = ref([])
 
@@ -210,8 +219,8 @@ onUnmounted(() => {
 })
 //获取轮播图内容
 const getBannerList = async () => {
-    const res = await getBannerService()
-    bannerList.value = res.data
+  const res = await getBannerService()
+  bannerList.value = res.data
 }
 getBannerList()
 
@@ -225,168 +234,47 @@ const getHotAnimeList = async () => {
 getHotAnimeList()
 
 // 新番时间表数据
-const weekdays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
-const currentDay = ref(0)
-const allScheduleList = ref({
-  0: [ // 周一
-     {
-       time: '18:30',
-       title: '青之驱魔师 雪之宗教篇',
-       episode: '12',
-       coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
-     },
-   ],
-  1: [ // 周二
-     {
-       time: '16:00',
-       title: '香格里拉边境 第二季',
-       episode: '8',
-       coverImage: 'https://cdn.myanimelist.net/images/anime/1722/139814l.jpg'
-     },
-     {
-       time: '18:30',
-       title: '魔法使的新娘 第二季',
-       episode: '12',
-       coverImage: 'https://cdn.myanimelist.net/images/anime/1890/137803l.jpg'
-     },
-     {
-       time: '21:00',
-       title: '间谍过家家 第二季',
-       episode: '15',
-       coverImage: 'https://cdn.myanimelist.net/images/anime/1111/127508l.jpg'
-     },
-     {
-       time: '22:30',
-       title: '葬送的��莉莲',
-       episode: '20',
-       coverImage: 'https://cdn.myanimelist.net/images/anime/1015/138006l.jpg'
-     },
-     {
-       time: '23:00',
-       title: '迷宫饭',
-       episode: '10',
-       coverImage: 'https://cdn.myanimelist.net/images/anime/1752/139314l.jpg'
-     },
-     {
-       time: '23:30',
-       title: '16bit的感动 ANOTHER LAYER',
-       episode: '8',
-       coverImage: 'https://cdn.myanimelist.net/images/anime/1188/138185l.jpg'
-     }
-   ],
-  2: [ // 周三
-     {
-       time: '00:30',
-       title: '精灵幻记',
-       episode: '10',
-       coverImage: 'https://cdn.myanimelist.net/images/anime/1722/139814l.jpg'
-     },
-   ],
-  3: [ // 周四
-     {
-       time: '23:00',
-       title: '依赖部编辑部',
-       episode: '9',
-       coverImage: 'https://cdn.myanimelist.net/images/anime/1722/139814l.jpg'
-     },
-   ],
-  4: [], // 周五
-  5: [], // 周六
-  6: [], // 周日
-})
+const weekdays = [
+  { id: 1, en: 'Mon', cn: '周一' },
+  { id: 2, en: 'Tue', cn: '周二' },
+  { id: 3, en: 'Wed', cn: '周三' },
+  { id: 4, en: 'Thu', cn: '周四' },
+  { id: 5, en: 'Fri', cn: '周五' },
+  { id: 6, en: 'Sat', cn: '周六' },
+  { id: 7, en: 'Sun', cn: '周日' }
+]
+const currentDay = ref(1) // 默认显示周一
+const allScheduleList = ref([])
 
 // 计算当前显示的列表
 const scheduleList = computed(() => {
-  return allScheduleList.value[currentDay.value] || []
+  // 获取当前选中日期的数据
+  const currentDayData = allScheduleList.value?.[currentDay.value - 1] || {}
+  const items = currentDayData.items || []
+
+  return items.map(item => ({
+    ...item,
+    // 格式化时间
+    air_time: item.air_date?.split(' ')[1] || '',
+    // 格式化评分
+    score: item.rating?.score ? Number(item.rating.score).toFixed(1) : null,
+    // 使用中文名优先
+    title: item.name_cn || item.name || '',
+    // 图片地址
+    images: item.images?.large || ''
+  }))
 })
 
 // 获取新番时间表数据
 const getScheduleList = async () => {
-  // TODO: 替换为实际的API调用
-  allScheduleList.value = {
-    0: [
-      {
-        time: '18:30',
-        title: '青之驱魔师 雪之宗教篇',
-        episode: '12',
-        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
-      },
-      {
-        time: '18:30',
-        title: '青之驱魔师 雪之宗教篇',
-        episode: '12',
-        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
-      },{
-        time: '18:30',
-        title: '青之驱魔师 �����之宗教篇',
-        episode: '12',
-        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
-      },
-      // ... 更多周一的数据
-    ],
-    1: [
-      // 周二的数据
-      {
-        time: '18:30',
-        title: '青之驱魔师 雪之宗教篇',
-        episode: '12',
-        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
-      },
-      {
-        time: '18:30',
-        title: '青之驱魔师 雪之宗教篇',
-        episode: '12',
-        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
-      },{
-        time: '18:30',
-        title: '青之驱魔师 雪之宗教篇',
-        episode: '12',
-        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
-      },
-      {
-        time: '18:30',
-        title: '青之驱魔师 雪之宗教篇',
-        episode: '12',
-        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
-      },{
-        time: '18:30',
-        title: '青之驱魔师 雪之宗教篇',
-        episode: '12',
-        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
-      },
-      {
-        time: '18:30',
-        title: '青之驱魔师 雪之宗教篇',
-        episode: '12',
-        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
-      },{
-        time: '18:30',
-        title: '青之驱魔师 雪之宗教篇',
-        episode: '12',
-        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
-      },{
-        time: '18:30',
-        title: '青之驱魔师 雪之宗教篇',
-        episode: '12',
-        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
-      },{
-        time: '18:30',
-        title: '青之驱魔师 雪之宗教篇',
-        episode: '12',
-        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
-      },{
-        time: '18:30',
-        title: '青之驱魔师 雪之宗教篇',
-        episode: '12',
-        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
-      },{
-        time: '18:30',
-        title: '青之驱魔师 雪之宗教篇',
-        episode: '12',
-        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
-      },
-    ],
-    // ... 其他天的数据
+  try {
+    const res = await getBangumiService()
+    if (res && Array.isArray(res.data)) {
+      allScheduleList.value = res.data
+    }
+  } catch (error) {
+    console.error('获取新番时间表失败:', error)
+    allScheduleList.value = []
   }
 }
 
@@ -413,7 +301,7 @@ const startDrag = (e) => {
 const onDrag = (e) => {
   if (!isDragging.value) return
   e.preventDefault()
-  
+
   const deltaX = e.pageX - lastX.value
   scrollWrapper.value.scrollLeft -= deltaX
   lastX.value = e.pageX
@@ -422,7 +310,10 @@ const onDrag = (e) => {
 // 停止拖动
 const stopDrag = () => {
   isDragging.value = false
+
+
 }
+
 </script>
 
 <style scoped>
@@ -466,7 +357,7 @@ const stopDrag = () => {
   object-fit: cover;
 }
 
-/* 修改轮播图底部蒙版 */
+/* 修改播图底部蒙 */
 .banner-section::after {
   content: '';
   position: absolute;
@@ -475,11 +366,11 @@ const stopDrag = () => {
   bottom: 0;
   height: 35%;
   background: linear-gradient(
-    to bottom,
-    transparent,
-    rgba(245, 247, 250, 0.2) 30%,
-    rgba(245, 247, 250, 0.6) 60%,
-    rgba(245, 247, 250, 0.95)
+      to bottom,
+      transparent,
+      rgba(245, 247, 250, 0.2) 30%,
+      rgba(245, 247, 250, 0.6) 60%,
+      rgba(245, 247, 250, 0.95)
   );
   pointer-events: none;
   z-index: 1;
@@ -525,9 +416,9 @@ const stopDrag = () => {
   right: 0;
   height: 20px;
   background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.3),
-    transparent
+      to bottom,
+      rgba(0, 0, 0, 0.3),
+      transparent
   );
   z-index: 2;
 }
@@ -539,9 +430,9 @@ const stopDrag = () => {
   right: -3px;
   height: 4px;
   background: linear-gradient(
-    to right,
-    rgba(255, 255, 255, 0.95),
-    rgba(255, 255, 255, 0.8)
+      to right,
+      rgba(255, 255, 255, 0.95),
+      rgba(255, 255, 255, 0.8)
   );
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   transition: width 0.1s ease-out;
@@ -557,18 +448,18 @@ const stopDrag = () => {
 
   &::before {
     background: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.4),
-      transparent
+        to bottom,
+        rgba(0, 0, 0, 0.4),
+        transparent
     );
   }
 
   .progress-bar {
     height: 8px;
     background: linear-gradient(
-      to right,
-      rgba(255, 255, 255, 1),
-      rgba(255, 255, 255, 0.9)
+        to right,
+        rgba(255, 255, 255, 1),
+        rgba(255, 255, 255, 0.9)
     );
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   }
@@ -591,9 +482,9 @@ const stopDrag = () => {
   .progress-bar {
     opacity: 0.9;
     background: linear-gradient(
-      to right,
-      rgba(255, 255, 255, 0.8),
-      rgba(255, 255, 255, 0.6)
+        to right,
+        rgba(255, 255, 255, 0.8),
+        rgba(255, 255, 255, 0.6)
     );
   }
 }
@@ -609,9 +500,9 @@ const stopDrag = () => {
   .progress-bar {
     opacity: 1;
     background: linear-gradient(
-      to right,
-      rgba(255, 255, 255, 0.9),
-      rgba(255, 255, 255, 0.7)
+        to right,
+        rgba(255, 255, 255, 0.9),
+        rgba(255, 255, 255, 0.7)
     );
   }
 }
@@ -625,10 +516,10 @@ const stopDrag = () => {
   font-size: 14px;
   color: #fff;
   background: linear-gradient(
-    to bottom,
-    transparent,
-    rgba(0, 0, 0, 0.5) 30%,
-    rgba(0, 0, 0, 0.8)
+      to bottom,
+      transparent,
+      rgba(0, 0, 0, 0.5) 30%,
+      rgba(0, 0, 0, 0.8)
   );
   text-align: center;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
@@ -643,7 +534,7 @@ const stopDrag = () => {
   .thumbnail-item {
     width: 180px;
   }
-  
+
   .thumbnail-item img {
     height: 100px;
   }
@@ -653,11 +544,11 @@ const stopDrag = () => {
   .thumbnail-item {
     width: 140px;
   }
-  
+
   .thumbnail-item img {
     height: 80px;
   }
-  
+
   .thumbnail-title {
     font-size: 12px;
     padding: 6px;
@@ -815,9 +706,9 @@ const stopDrag = () => {
   right: 0;
   height: 50%;
   background: linear-gradient(
-    to bottom,
-    transparent,
-    rgba(0, 0, 0, 0.4)
+      to bottom,
+      transparent,
+      rgba(0, 0, 0, 0.4)
   );
   pointer-events: none;
 }
@@ -841,7 +732,7 @@ const stopDrag = () => {
   }
 }
 
-/* 新番时间表样式 */
+/* 新番��间表样式 */
 .schedule-section {
   width: 100%;
   max-width: 1800px;
@@ -947,6 +838,7 @@ const stopDrag = () => {
   transition: all 0.3s ease;
   overflow: hidden;
   position: relative;
+  height: 340px; /* 固定高度 */
 }
 
 .time {
@@ -966,7 +858,7 @@ const stopDrag = () => {
 
 .schedule-cover {
   width: 100%;
-  height: 260px;
+  height: 280px;
   border-radius: 4px;
   overflow: hidden;
   position: relative;
@@ -994,12 +886,15 @@ const stopDrag = () => {
   font-size: 16px;
   font-weight: bold;
   z-index: 2;
+  min-width: 45px;
+  text-align: center;
 }
 
 .schedule-info {
   padding: 12px;
   background: #fff;
   border-top: 1px solid #f5f5f5;
+  height: 60px; /* 固定信息区域高度 */
 }
 
 .schedule-info .title {
@@ -1022,7 +917,7 @@ const stopDrag = () => {
   .schedule-section {
     padding: 20px;
   }
-  
+
   .anime-schedule-list {
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   }
@@ -1032,17 +927,17 @@ const stopDrag = () => {
   .anime-schedule-list {
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   }
-  
+
   .schedule-item {
     padding: 10px;
     height: 100px;
   }
-  
+
   .schedule-cover {
     width: 70px;
     height: 70px;
   }
-  
+
   .time {
     font-size: 14px;
     min-width: 50px;
@@ -1059,5 +954,24 @@ const stopDrag = () => {
 .anime-schedule-list,
 .schedule-item {
   pointer-events: auto;
+}
+
+.no-data {
+  width: 100%;
+  text-align: center;
+  padding: 40px 0;
+  color: #999;
+  font-size: 14px;
+}
+
+.schedule-info .title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.4;
+  max-width: 100%;
 }
 </style>
