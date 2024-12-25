@@ -42,7 +42,7 @@
     <div class="hot-anime-section">
       <div class="section-header">
         <div class="title">
-          <img class="title-icon" src="http://sowl9rtuo.hn-bkt.clouddn.com/huohua.png" alt="hot">
+          <img class="title-icon" src="../assets/imge/huohua.png" alt="hot">
           番剧热播榜
         </div>
         <div class="more">
@@ -69,11 +69,55 @@
         </div>
       </div>
     </div>
+
+    <!-- 新番时间表 -->
+    <div class="schedule-section">
+      <div class="section-header">
+        <div class="title">
+          <img class="title-icon" src="../assets/imge/naozhong.png" alt="schedule">
+          新番时间表
+        </div>
+        <div class="more">
+          查看全部 <i class="el-icon-arrow-right"></i>
+        </div>
+      </div>
+      
+      <div class="schedule-content">
+        <div class="weekday-tabs">
+          <div v-for="(day, index) in weekdays"
+            :key="index"
+            :class="['weekday-tab', { active: currentDay === index }]"
+            @click="currentDay = index"
+          >
+            {{ day }}
+          </div>
+        </div>
+        
+        <div class="schedule-scroll-wrapper" ref="scrollWrapper" @mousedown="startDrag" @mousemove="onDrag" @mouseup="stopDrag" @mouseleave="stopDrag">
+          <div class="anime-schedule-list">
+            <div v-for="(anime, index) in scheduleList" 
+              :key="index" 
+              class="schedule-item"
+            >
+              <div class="time">{{ anime.time }}</div>
+              <div class="schedule-cover">
+                <img :src="anime.coverImage" :alt="anime.title">
+                <div class="score">{{ anime.score }}</div>
+              </div>
+              <div class="schedule-info">
+                <div class="title">{{ anime.title }}</div>
+                <div class="episode">更新至第{{ anime.episode }}话</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onUnmounted, onMounted } from 'vue'
+import { ref, onUnmounted, onMounted, computed } from 'vue'
 import {getBannerService} from "@/api/anime";
 import {getHotService} from "@/api/bangumi/bangumi";
 
@@ -179,6 +223,206 @@ const getHotAnimeList = async () => {
   hotAnimeList.value = res.data.data;
 }
 getHotAnimeList()
+
+// 新番时间表数据
+const weekdays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+const currentDay = ref(0)
+const allScheduleList = ref({
+  0: [ // 周一
+     {
+       time: '18:30',
+       title: '青之驱魔师 雪之宗教篇',
+       episode: '12',
+       coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
+     },
+   ],
+  1: [ // 周二
+     {
+       time: '16:00',
+       title: '香格里拉边境 第二季',
+       episode: '8',
+       coverImage: 'https://cdn.myanimelist.net/images/anime/1722/139814l.jpg'
+     },
+     {
+       time: '18:30',
+       title: '魔法使的新娘 第二季',
+       episode: '12',
+       coverImage: 'https://cdn.myanimelist.net/images/anime/1890/137803l.jpg'
+     },
+     {
+       time: '21:00',
+       title: '间谍过家家 第二季',
+       episode: '15',
+       coverImage: 'https://cdn.myanimelist.net/images/anime/1111/127508l.jpg'
+     },
+     {
+       time: '22:30',
+       title: '葬送的��莉莲',
+       episode: '20',
+       coverImage: 'https://cdn.myanimelist.net/images/anime/1015/138006l.jpg'
+     },
+     {
+       time: '23:00',
+       title: '迷宫饭',
+       episode: '10',
+       coverImage: 'https://cdn.myanimelist.net/images/anime/1752/139314l.jpg'
+     },
+     {
+       time: '23:30',
+       title: '16bit的感动 ANOTHER LAYER',
+       episode: '8',
+       coverImage: 'https://cdn.myanimelist.net/images/anime/1188/138185l.jpg'
+     }
+   ],
+  2: [ // 周三
+     {
+       time: '00:30',
+       title: '精灵幻记',
+       episode: '10',
+       coverImage: 'https://cdn.myanimelist.net/images/anime/1722/139814l.jpg'
+     },
+   ],
+  3: [ // 周四
+     {
+       time: '23:00',
+       title: '依赖部编辑部',
+       episode: '9',
+       coverImage: 'https://cdn.myanimelist.net/images/anime/1722/139814l.jpg'
+     },
+   ],
+  4: [], // 周五
+  5: [], // 周六
+  6: [], // 周日
+})
+
+// 计算当前显示的列表
+const scheduleList = computed(() => {
+  return allScheduleList.value[currentDay.value] || []
+})
+
+// 获取新番时间表数据
+const getScheduleList = async () => {
+  // TODO: 替换为实际的API调用
+  allScheduleList.value = {
+    0: [
+      {
+        time: '18:30',
+        title: '青之驱魔师 雪之宗教篇',
+        episode: '12',
+        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
+      },
+      {
+        time: '18:30',
+        title: '青之驱魔师 雪之宗教篇',
+        episode: '12',
+        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
+      },{
+        time: '18:30',
+        title: '青之驱魔师 �����之宗教篇',
+        episode: '12',
+        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
+      },
+      // ... 更多周一的数据
+    ],
+    1: [
+      // 周二的数据
+      {
+        time: '18:30',
+        title: '青之驱魔师 雪之宗教篇',
+        episode: '12',
+        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
+      },
+      {
+        time: '18:30',
+        title: '青之驱魔师 雪之宗教篇',
+        episode: '12',
+        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
+      },{
+        time: '18:30',
+        title: '青之驱魔师 雪之宗教篇',
+        episode: '12',
+        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
+      },
+      {
+        time: '18:30',
+        title: '青之驱魔师 雪之宗教篇',
+        episode: '12',
+        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
+      },{
+        time: '18:30',
+        title: '青之驱魔师 雪之宗教篇',
+        episode: '12',
+        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
+      },
+      {
+        time: '18:30',
+        title: '青之驱魔师 雪之宗教篇',
+        episode: '12',
+        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
+      },{
+        time: '18:30',
+        title: '青之驱魔师 雪之宗教篇',
+        episode: '12',
+        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
+      },{
+        time: '18:30',
+        title: '青之驱魔师 雪之宗教篇',
+        episode: '12',
+        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
+      },{
+        time: '18:30',
+        title: '青之驱魔师 雪之宗教篇',
+        episode: '12',
+        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
+      },{
+        time: '18:30',
+        title: '青之驱魔师 雪之宗教篇',
+        episode: '12',
+        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
+      },{
+        time: '18:30',
+        title: '青之驱魔师 雪之宗教篇',
+        episode: '12',
+        coverImage: 'https://cdn.myanimelist.net/images/anime/3/88469l.webp'
+      },
+    ],
+    // ... 其他天的数据
+  }
+}
+
+onMounted(() => {
+  getScheduleList()
+})
+
+// 拖动相关状态
+const scrollWrapper = ref(null)
+const isDragging = ref(false)
+const startX = ref(0)
+const scrollLeft = ref(0)
+const lastX = ref(0)
+
+// 开始拖动
+const startDrag = (e) => {
+  isDragging.value = true
+  startX.value = e.pageX
+  lastX.value = e.pageX
+  scrollLeft.value = scrollWrapper.value.scrollLeft
+}
+
+// 拖动中
+const onDrag = (e) => {
+  if (!isDragging.value) return
+  e.preventDefault()
+  
+  const deltaX = e.pageX - lastX.value
+  scrollWrapper.value.scrollLeft -= deltaX
+  lastX.value = e.pageX
+}
+
+// 停止拖动
+const stopDrag = () => {
+  isDragging.value = false
+}
 </script>
 
 <style scoped>
@@ -562,7 +806,7 @@ getHotAnimeList()
   color: #7c4dff;
 }
 
-/* 添加图片遮罩 */
+/* 加图片遮罩 */
 .anime-cover::after {
   content: '';
   position: absolute;
@@ -595,5 +839,225 @@ getHotAnimeList()
   .hot-anime-list {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   }
+}
+
+/* 新番时间表样式 */
+.schedule-section {
+  width: 100%;
+  max-width: 1800px;
+  margin: 30px auto 0;
+  padding: 20px 40px;
+}
+
+.weekday-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e5e5e5;
+  padding-bottom: 10px;
+  padding-left: 10px;
+}
+
+.weekday-tab {
+  padding: 6px 20px;
+  cursor: pointer;
+  font-size: 16px;
+  color: #666;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  min-width: 80px;
+  text-align: center;
+  position: relative;
+}
+
+.weekday-tab.active {
+  background: #1890ff;
+  color: #fff;
+  font-weight: 500;
+}
+
+.weekday-tab:hover:not(.active) {
+  background: rgba(24, 144, 255, 0.1);
+  color: #1890ff;
+}
+
+.weekday-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 3px;
+  background: #1890ff;
+  border-radius: 2px;
+}
+
+.schedule-content {
+  position: relative;
+}
+
+.schedule-scroll-wrapper {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 10px 0;
+  cursor: grab;
+  user-select: none;
+}
+
+.schedule-scroll-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.schedule-scroll-wrapper:active {
+  cursor: grabbing;
+}
+
+.schedule-scroll-wrapper * {
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.anime-schedule-list {
+  display: flex;
+  gap: 20px;
+  position: relative;
+  padding-top: 20px;
+  will-change: transform;
+}
+
+.anime-schedule-list::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #f0f0f0;
+  z-index: 1;
+}
+
+.schedule-item {
+  width: 200px;
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+.time {
+  font-size: 16px;
+  color: #666;
+  text-align: center;
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+}
+
+.schedule-cover {
+  width: 100%;
+  height: 260px;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.schedule-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.schedule-item:hover img {
+  transform: scale(1.05);
+}
+
+.schedule-cover .score {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  z-index: 2;
+}
+
+.schedule-info {
+  padding: 12px;
+  background: #fff;
+  border-top: 1px solid #f5f5f5;
+}
+
+.schedule-info .title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.schedule-info .episode {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+}
+
+@media screen and (max-width: 1600px) {
+  .schedule-section {
+    padding: 20px;
+  }
+  
+  .anime-schedule-list {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .anime-schedule-list {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+  
+  .schedule-item {
+    padding: 10px;
+    height: 100px;
+  }
+  
+  .schedule-cover {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .time {
+    font-size: 14px;
+    min-width: 50px;
+  }
+}
+
+/* 确保图片和文字不会影响拖动 */
+.schedule-item * {
+  pointer-events: none;
+}
+
+/* 允许容器本身接收鼠标事件 */
+.schedule-scroll-wrapper,
+.anime-schedule-list,
+.schedule-item {
+  pointer-events: auto;
 }
 </style>

@@ -3,7 +3,6 @@ import Home from '@/views/Home.vue'
 import Anime from '@/views/Anime.vue'
 import UserCenter from '@/components/user/UserCenter.vue'
 import { useTokenStore } from '@/stores/token'
-import SearchResult from '@/views/SearchResult.vue'
 
 const routes = [
   {
@@ -37,11 +36,6 @@ const routes = [
     name: 'Chat',
     component: () => import('@/views/UserChat.vue'),
     meta: { requiresAuth: true }
-  },
-  {
-    path: '/search',
-    name: 'search',
-    component: SearchResult
   }
 ]
 
