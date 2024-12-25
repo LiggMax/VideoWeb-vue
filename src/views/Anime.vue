@@ -203,6 +203,7 @@ onUnmounted(() => {
   position: relative;
   overflow: hidden;
   background-color: #f5f7fa;
+  min-height: 520px;
 }
 
 .banner-content {
@@ -223,7 +224,7 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 160px;
+  height: 180px;
   background: linear-gradient(
     to bottom,
     transparent,
@@ -247,7 +248,7 @@ onUnmounted(() => {
 }
 
 .thumbnail-item {
-  width: 160px;
+  width: 200px;
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
@@ -261,7 +262,7 @@ onUnmounted(() => {
 
 .thumbnail-item img {
   width: 100%;
-  height: 90px;
+  height: 112px;
   object-fit: cover;
   border-radius: 4px;
   transition: all 0.3s ease;
@@ -322,6 +323,10 @@ onUnmounted(() => {
     );
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   }
+
+  .thumbnail-title {
+    font-weight: 500;
+  }
 }
 
 .thumbnail-item:not(.active) {
@@ -368,7 +373,7 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   padding: 8px;
-  font-size: 12px;
+  font-size: 14px;
   color: #fff;
   background: linear-gradient(
     to bottom,
@@ -382,5 +387,10 @@ onUnmounted(() => {
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
   z-index: 2;
+}
+
+/* 调整轮播图高度 */
+:deep(.el-carousel) {
+  height: 520px;
 }
 </style>
