@@ -42,7 +42,7 @@ const carouselItems = ref([
   {
     id: 1,
     title: '推荐内容2',
-    description: '这是一段视频介绍文字，简单描述视频的主要内容...',
+    description: '这是一段视频介绍文字，简单描述视���的主要内容...',
     image: 'https://play.xfvod.pro/images/hb/baiquan.jpg',
     link: '/video/1'
   },
@@ -63,7 +63,7 @@ const carouselItems = ref([
 ])
 
 // 计算轮播图高度
-const carouselHeight = ref('500px')
+const carouselHeight = ref('800px')
 
 // 更新轮播图高度的函数
 const updateCarouselHeight = () => {
@@ -71,14 +71,18 @@ const updateCarouselHeight = () => {
   let height
   
   if (width >= 1920) {
-    height = width * 0.3 // 30% of viewport width for large screens
+    height = width * 0.45 // 45% for large screens
   } else if (width >= 1440) {
-    height = width * 0.35 // 35% for medium-large screens
+    height = width * 0.5 // 50% for medium-large screens
   } else if (width >= 768) {
-    height = width * 0.4 // 40% for medium screens
+    height = width * 0.55 // 55% for medium screens
   } else {
-    height = width * 0.5 // 50% for mobile screens
+    height = width * 0.6 // 60% for mobile screens
   }
+  
+  // 设置最小和最大高度限制
+  height = Math.max(height, 700) // 最小高度 700px
+  height = Math.min(height, 1080) // 最大高度 1080px
   
   carouselHeight.value = `${height}px`
 }
