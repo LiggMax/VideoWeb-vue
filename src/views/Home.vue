@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import {getVideoListService} from "@/api/video";
 import { VideoPlay, CaretTop, ArrowUp, Refresh } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
@@ -62,6 +62,27 @@ const carouselItems = ref([
   }
 ])
 
+// 计算轮播图高度
+const carouselHeight = ref('500px')
+
+// 更新轮播图高度的函数
+const updateCarouselHeight = () => {
+  const width = window.innerWidth
+  let height
+  
+  if (width >= 1920) {
+    height = width * 0.3 // 30% of viewport width for large screens
+  } else if (width >= 1440) {
+    height = width * 0.35 // 35% for medium-large screens
+  } else if (width >= 768) {
+    height = width * 0.4 // 40% for medium screens
+  } else {
+    height = width * 0.5 // 50% for mobile screens
+  }
+  
+  carouselHeight.value = `${height}px`
+}
+
 //调用获取视频列表数据接口
 const getVideoList = async () => {
   const res = await getVideoListService()
@@ -85,13 +106,28 @@ const handleVideoClick = (video) => {
 const handleRefresh = () => {
   window.location.reload()
 }
+
+// 监听窗口大小变化
+onMounted(() => {
+  updateCarouselHeight()
+  window.addEventListener('resize', updateCarouselHeight)
+})
+
+// 组件卸载时移除事件监听
+onUnmounted(() => {
+  window.removeEventListener('resize', updateCarouselHeight)
+})
 </script>
 
 <template>
   <div class="home">
     <!-- 轮播图区域 -->
     <div class="carousel-wrapper">
-      <el-carousel height="500px" class="carousel-container" :interval="4000">
+      <el-carousel 
+        :height="carouselHeight" 
+        class="carousel-container" 
+        :interval="4000"
+      >
         <el-carousel-item v-for="item in carouselItems" :key="item.id" class="carousel-item">
           <div class="carousel-content">
             <img :src="item.image" :alt="item.title" class="carousel-image">
@@ -646,4 +682,4 @@ const handleRefresh = () => {
     padding: 80px 20px 30px;
   }
 }
-</style> 
+</style>
