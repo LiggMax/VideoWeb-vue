@@ -42,7 +42,7 @@ const carouselItems = ref([
   {
     id: 1,
     title: '推荐内容2',
-    description: '这是一段视频介绍文字，简单描述视频的主要内容...',
+    description: '这是一段视频介绍文字，简单描述视频的主要��容...',
     image: 'https://play.xfvod.pro/images/hb/baiquan.jpg',
     link: '/video/1'
   },
@@ -164,29 +164,27 @@ const handleRefresh = () => {
   margin-bottom: 20px;
   background-color: #f6f7f8;
   padding: 20px 0;
-  max-width: 1600px;
   margin: 0 auto;
 }
 
 .carousel-container {
   overflow: hidden;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  max-width: 1600px;
   margin: 0 auto;
   border-radius: 12px;
 }
 
 .carousel-item {
-  overflow: hidden;
-  border-radius: 12px;
+  overflow: visible;
+  border-radius: 0;
 }
 
 .carousel-content {
   position: relative;
   height: 100%;
   transition: transform 0.3s ease;
-  overflow: hidden;
-  border-radius: 12px;
+  overflow: visible;
+  border-radius: 0;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
@@ -196,7 +194,6 @@ const handleRefresh = () => {
   object-fit: cover;
   transition: transform 0.3s ease;
   object-position: center center;
-  border-radius: 12px;
 }
 
 .content-section {
@@ -339,8 +336,6 @@ const handleRefresh = () => {
     rgba(0, 0, 0, 0.85) 100%
   );
   color: #fff;
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 12px;
   padding-top: 100px;
 }
 
@@ -379,6 +374,12 @@ const handleRefresh = () => {
 
 :deep(.el-carousel__indicators) {
   bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1600px;
+  max-width: 100%;
+  padding: 0 40px;
+  box-sizing: border-box;
 }
 
 :deep(.el-carousel__button) {
@@ -394,12 +395,22 @@ const handleRefresh = () => {
 }
 
 :deep(.el-carousel__arrow) {
-  background-color: rgba(0, 0, 0, 0.3);
-  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
   width: 44px;
   height: 44px;
-  font-size: 20px;
-  transition: all 0.3s ease;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  z-index: 10;
+
+  &.el-carousel__arrow--left {
+    left: 40px;
+  }
+
+  &.el-carousel__arrow--right {
+    right: 40px;
+  }
 }
 
 :deep(.el-carousel__arrow:hover) {
@@ -544,7 +555,7 @@ const handleRefresh = () => {
   }
 
   .carousel-overlay {
-    padding: 80px 30px 30px;
+    padding: 80px 20px 30px;
   }
 }
 
@@ -609,6 +620,30 @@ const handleRefresh = () => {
   :deep(.el-backtop) {
     width: 40px;
     height: 40px;
+  }
+}
+
+.carousel-content-wrapper {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 40px;
+  position: relative;
+  z-index: 2;
+}
+
+@media screen and (max-width: 768px) {
+  :deep(.el-carousel__arrow) {
+    &.el-carousel__arrow--left {
+      left: 20px;
+    }
+
+    &.el-carousel__arrow--right {
+      right: 20px;
+    }
+  }
+
+  .carousel-overlay {
+    padding: 80px 20px 30px;
   }
 }
 </style> 
