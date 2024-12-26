@@ -152,7 +152,7 @@ const updateBannerHeight = () => {
   const width = window.innerWidth
   // 根据屏幕宽度计算合适的高度，保持16:9的比例
   const height = Math.floor((width * 9) / 16)
-  // 设置最小和最大高��限制
+  // 设置最小和最大高度限制
   const finalHeight = Math.max(400, Math.min(height, 720))
   bannerHeight.value = `${finalHeight}px`
 }
@@ -211,7 +211,7 @@ onMounted(() => {
   window.addEventListener('resize', handleResize)
 })
 
-// 组件卸载时清理定时器
+// 组件卸载���清理定时器
 onUnmounted(() => {
   clearInterval(progressTimer)
   clearInterval(autoplayTimer)
@@ -338,42 +338,44 @@ const stopDrag = () => {
 
 /* 轮播图区域样式 */
 .banner-section {
-  margin-bottom: 30px;
-  position: relative;
-  overflow: hidden;
-  background-color: #f5f7fa;
   width: 100%;
+  position: relative;
+  margin-top: -64px; /* 向上偏移导航栏的高度 */
 }
 
-.banner-content {
-  position: relative;
-  height: 100%;
+.el-carousel {
   width: 100%;
+  overflow: hidden;
 }
 
 .banner-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
 }
 
-/* 修改播图底部蒙 */
-.banner-section::after {
+.banner-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* 添加渐变遮罩，确保导航栏文字清晰可见 */
+.banner-content::before {
   content: '';
   position: absolute;
+  top: 0;
   left: 0;
   right: 0;
-  bottom: 0;
-  height: 35%;
+  height: 120px;
   background: linear-gradient(
-      to bottom,
-      transparent,
-      rgba(245, 247, 250, 0.2) 30%,
-      rgba(245, 247, 250, 0.6) 60%,
-      rgba(245, 247, 250, 0.95)
+    to bottom,
+    rgba(0, 0, 0, 0.5) 0%,
+    transparent 100%
   );
-  pointer-events: none;
   z-index: 1;
+  pointer-events: none;
 }
 
 /* 底部缩略图样式 */
@@ -385,6 +387,7 @@ const stopDrag = () => {
   padding: 0 20px;
   position: relative;
   z-index: 2;
+  padding-top: 64px; /* 添加顶部内边距，为导航栏留出空间 */
 }
 
 .thumbnail-item {
@@ -552,6 +555,14 @@ const stopDrag = () => {
   .thumbnail-title {
     font-size: 12px;
     padding: 6px;
+  }
+
+  .banner-content::before {
+    height: 100px;
+  }
+  
+  .thumbnail-list {
+    padding-top: 48px;
   }
 }
 
