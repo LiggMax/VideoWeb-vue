@@ -65,9 +65,10 @@
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { Search, Close, Delete, Clock } from '@element-plus/icons-vue'
 import { getSearchHistory, addSearchHistory, clearSearchHistory } from '@/utils/searchHistory'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
 
 const props = defineProps({
   modelValue: {
@@ -103,6 +104,11 @@ const selectHistory = (item) => {
   isFocused.value = false
   addSearchHistory(item)
   searchHistory.value = getSearchHistory()
+  // 跳转到搜索结果页面
+  router.push({
+    path: '/search',
+    query: { keyword: item }
+  })
   emit('search')
 }
 
@@ -121,10 +127,15 @@ const handleClickOutside = (e) => {
 
 const handleSearch = () => {
   if (!inputValue.value.trim()) return
-  addSearchHistory(inputValue.value.trim())
+  const keyword = inputValue.value.trim()
+  addSearchHistory(keyword)
   searchHistory.value = getSearchHistory()
   isFocused.value = false
-  emit('search')
+  // 跳转到搜索结果页面
+  router.push({
+    path: '/search',
+    query: { keyword }
+  })
 }
 
 // 过滤搜索历史
@@ -154,6 +165,17 @@ const handleInput = () => {
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
   searchHistory.value = getSearchHistory()
+  // 如果当前在搜索页面，设置搜索框的值
+  if (route.path === '/search' && route.query.keyword) {
+    inputValue.value = route.query.keyword
+  }
+})
+
+// 监听路由变化
+watch(() => route.query.keyword, (newKeyword) => {
+  if (route.path === '/search' && newKeyword) {
+    inputValue.value = newKeyword
+  }
 })
 
 onUnmounted(() => {
@@ -357,4 +379,4 @@ onUnmounted(() => {
     }
   }
 }
-</style> 
+</style>

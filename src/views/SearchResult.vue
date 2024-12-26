@@ -119,9 +119,13 @@ import {Picture, VideoPlay, ChatDotRound, Clock} from '@element-plus/icons-vue'
 import {formatCount, formatDuration, formatDate} from '@/utils/format.js'
 import {getSearchResult} from '@/api/Search'
 import {ElMessage} from 'element-plus'
+import {getSearchHistory, addSearchHistory} from '@/utils/searchHistory'
 
 const route = useRoute()
 const router = useRouter()
+
+// 搜索历史
+const searchHistory = ref([])
 
 // 搜索导航项
 const navItems = [
@@ -140,6 +144,15 @@ const pageSize = ref(20)
 const total = ref(0)
 const loading = ref(false)
 
+// 点击搜索历史
+const handleHistoryClick = (keyword) => {
+  addSearchHistory(keyword)
+  router.push({
+    path: '/search',
+    query: { keyword }
+  })
+}
+
 // 切换分类
 const switchType = (type) => {
   currentType.value = type
@@ -152,26 +165,32 @@ const fetchSearchResults = async () => {
   if (!route.query.keyword) return
 
   loading.value = true
-  const res = await getSearchResult({
-    keyword: route.query.keyword,
-    pageNum: currentPage.value,
-    pageSize: pageSize.value
-  })
-  searchResults.value = res.data.items.map(item => ({
-    id: item.id,
-    title: item.title,
-    content: item.content,
-    cover: item.cover,
-    userId: item.userId,
-    nickname: item.nickname,
-    userPic: item.userPic,
-    username: item.username,
-    introduction: item.introduction,
-    videoUrl: item.videoUrl,
-    createTime: item.createTime,
-    updateTime: item.updateTime
-  }))
-  total.value = res.data.total
+  try {
+    const res = await getSearchResult({
+      keyword: route.query.keyword,
+      pageNum: currentPage.value,
+      pageSize: pageSize.value
+    })
+    searchResults.value = res.data.items.map(item => ({
+      id: item.id,
+      title: item.title,
+      content: item.content,
+      cover: item.cover,
+      userId: item.userId,
+      nickname: item.nickname,
+      userPic: item.userPic,
+      username: item.username,
+      introduction: item.introduction,
+      videoUrl: item.videoUrl,
+      createTime: item.createTime,
+      updateTime: item.updateTime
+    }))
+    total.value = res.data.total
+  } catch (error) {
+    ElMessage.error('获取搜索结果失败')
+  } finally {
+    loading.value = false
+  }
 }
 
 // 监听路由参数变化
@@ -197,6 +216,8 @@ onMounted(() => {
   if (route.query.keyword) {
     fetchSearchResults()
   }
+  // 获取搜索历史
+  searchHistory.value = getSearchHistory()
 })
 </script>
 
@@ -425,33 +446,33 @@ onMounted(() => {
       height: 32px;
       line-height: 32px;
       border-radius: 4px;
-      
+
       &:hover {
         color: #00aeec;
         border-color: #00aeec;
       }
-      
+
       &.is-disabled {
         color: #c0c4cc;
         border-color: #dcdfe6;
         cursor: not-allowed;
       }
     }
-    
+
     .el-pagination__prev {
       &::before {
         content: "上一页";
         font-size: 14px;
       }
     }
-    
+
     .el-pagination__next {
       &::before {
         content: "下一页";
         font-size: 14px;
       }
     }
-    
+
     .el-pager {
       li {
         min-width: 32px;
@@ -460,18 +481,18 @@ onMounted(() => {
         border: 1px solid #dcdfe6;
         margin: 0 4px;
         border-radius: 4px;
-        
+
         &:hover {
           color: #00aeec;
           border-color: #00aeec;
         }
-        
+
         &.active {
           background-color: #00aeec;
           color: #fff;
           border-color: #00aeec;
         }
-        
+
         &.is-active {
           background-color: #00aeec;
           color: #fff;
@@ -491,4 +512,4 @@ onMounted(() => {
   background: #f5f5f5;
   color: #999;
 }
-</style> 
+</style>

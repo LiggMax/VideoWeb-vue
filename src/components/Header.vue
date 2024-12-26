@@ -138,19 +138,28 @@ const handleSearch = () => {
 </script>
 
 <style scoped>
+:root {
+  --text-color: #18191c;
+}
+
 .header {
   position: fixed;
   top: 0;
   width: 100%;
   z-index: 1000;
   transition: all 0.3s ease;
-  background-color: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(8px);
+  background-color: transparent;
+  backdrop-filter: none;
 }
 
 .header-scrolled {
-  background-color: rgba(255, 255, 255, 0.95);
+  background-color: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(8px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header:not(.header-scrolled) {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, transparent 100%);
 }
 
 .header-content {
@@ -210,6 +219,18 @@ const handleSearch = () => {
   height: 50px;
 }
 
+.header:not(.header-scrolled) .user-avatar {
+  border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+.header:not(.header-scrolled) .user-avatar:hover {
+  background-color: rgba(241, 242, 243, 0.1);
+}
+
+.header-scrolled .user-avatar:hover {
+  background-color: #f1f2f3;
+}
+
 .user-icons {
   display: flex;
   align-items: center;
@@ -226,10 +247,20 @@ const handleSearch = () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--text-color);
+}
+
+.header:not(.header-scrolled) .user-icons .el-icon {
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .user-icons .el-icon:hover {
   color: #00aeec;
+  background-color: rgba(241, 242, 243, 0.1);
+}
+
+.header-scrolled .user-icons .el-icon:hover {
   background-color: #f1f2f3;
 }
 
@@ -248,6 +279,13 @@ const handleSearch = () => {
   border-radius: 6px;
   font-size: 14px;
   font-weight: normal;
+  background-color: rgba(251, 114, 153, 0.9);
+  border-color: transparent;
+  backdrop-filter: blur(4px);
+}
+
+.header-scrolled .upload-btn {
+  background-color: #fb7299;
 }
 
 .message-badge :deep(.el-badge__content) {
@@ -289,19 +327,15 @@ const handleSearch = () => {
 .logo-text {
   font-size: 20px;
   font-weight: bold;
-  color: #18191c;
+  color: var(--text-color);
   font-family: "Microsoft YaHei", sans-serif;
   text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
-}
-
-.logo:hover .tv-icon {
-  background-color: #fc8bab;
-  transition: background-color 0.3s ease;
-}
-
-.logo:hover .logo-text {
-  color: #fb7299;
   transition: color 0.3s ease;
+}
+
+.header:not(.header-scrolled) .logo-text {
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .nav-links {
@@ -313,7 +347,7 @@ const handleSearch = () => {
 
 .nav-item {
   font-size: 14px;
-  color: #18191c;
+  color: var(--text-color);
   text-decoration: none;
   font-weight: 500;
   height: 64px;
@@ -321,6 +355,11 @@ const handleSearch = () => {
   padding: 0 12px;
   position: relative;
   transition: all 0.3s ease;
+}
+
+.header:not(.header-scrolled) .nav-item {
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .nav-item:hover {
@@ -343,7 +382,7 @@ const handleSearch = () => {
 
 .user-avatar:hover {
   transform: scale(1.05);
-  background-color: #f1f2f3;
+  background-color: rgba(241, 242, 243, 0.1);
 }
 
 :deep(.el-menu--horizontal > .el-menu-item.is-active) {
@@ -404,4 +443,4 @@ const handleSearch = () => {
     display: none; /* 隐藏最后两个图标 */
   }
 }
-</style> 
+</style>
