@@ -344,6 +344,8 @@ const handleSearch = () => {
   align-items: center;
   margin-left: 40px;
   gap: 30px;
+  height: 64px;
+  overflow: hidden;
 }
 
 .nav-item {
@@ -356,6 +358,7 @@ const handleSearch = () => {
   padding: 0 12px;
   position: relative;
   transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
 .header:not(.header-scrolled) .nav-item {
@@ -379,6 +382,7 @@ const handleSearch = () => {
   width: 100%;
   height: 2px;
   background-color: #fb7299;
+  transform: translateY(-1px);
 }
 
 .user-avatar:hover {
@@ -386,10 +390,18 @@ const handleSearch = () => {
   background-color: rgba(241, 242, 243, 0.1);
 }
 
+:deep(.el-menu--horizontal > .el-menu-item) {
+  height: 64px;
+  line-height: 64px;
+  border-bottom: none;
+  box-sizing: border-box;
+}
+
 :deep(.el-menu--horizontal > .el-menu-item.is-active) {
   border-bottom: 2px solid #fb7299;
   color: #fb7299;
   font-weight: bold;
+  transform: translateY(-1px);
 }
 
 :deep(.el-button--primary) {
