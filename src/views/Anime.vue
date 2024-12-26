@@ -152,7 +152,7 @@ const updateBannerHeight = () => {
   const width = window.innerWidth
   // 根据屏幕宽度计算合适的高度，保持16:9的比例
   const height = Math.floor((width * 9) / 16)
-  // 设置最小和最大高度限制
+  // 设置最小和最大高��限制
   const finalHeight = Math.max(400, Math.min(height, 720))
   bannerHeight.value = `${finalHeight}px`
 }
@@ -732,7 +732,7 @@ const stopDrag = () => {
   }
 }
 
-/* 新番��间表样式 */
+/* 新番时间表样式 */
 .schedule-section {
   width: 100%;
   max-width: 1800px;
@@ -879,15 +879,11 @@ const stopDrag = () => {
   position: absolute;
   bottom: 8px;
   right: 8px;
-  background: rgba(0, 0, 0, 0.6);
   color: #fff;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 16px;
+  font-size: 24px;
   font-weight: bold;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
   z-index: 2;
-  min-width: 45px;
-  text-align: center;
 }
 
 .schedule-info {
@@ -973,5 +969,22 @@ const stopDrag = () => {
   white-space: nowrap;
   line-height: 1.4;
   max-width: 100%;
+}
+
+/* 统一评分遮罩效果 */
+.anime-cover::after,
+.schedule-cover::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(0, 0, 0, 0.4)
+  );
+  pointer-events: none;
 }
 </style>
