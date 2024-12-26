@@ -29,7 +29,7 @@
       <div class="right-section">
         <div class="user-info">
           <UserPopover v-if="isLogin" />
-          <div v-else class="user-avatar" @click="showLoginDialog">
+          <div v-else class="user-avatar" :class="{ 'logged-in': isLogin }" @click="showLoginDialog">
             <el-avatar :size="42" src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" />
           </div>
           <div class="user-icons">
@@ -165,7 +165,7 @@ const handleSearch = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: var(--header-text-color, #fff);
+  color: #fff;
   transition: color 0.3s ease;
 }
 
@@ -218,10 +218,18 @@ const handleSearch = () => {
   border-radius: 50%;
   width: 50px;
   height: 50px;
+  position: relative;
+  overflow: hidden;
 }
 
-.header:not(.header-scrolled) .user-avatar {
-  border: 2px solid rgba(255, 255, 255, 0.8);
+/* 未登录状态的头像样式 */
+.user-avatar:not(.logged-in) {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(4px);
+}
+
+.header-scrolled .user-avatar:not(.logged-in) {
+  background: #f1f2f3;
 }
 
 .header:not(.header-scrolled) .user-avatar:hover {
@@ -248,7 +256,7 @@ const handleSearch = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-color);
+  color: #fff;
 }
 
 .header:not(.header-scrolled) .user-icons .el-icon {
@@ -283,6 +291,7 @@ const handleSearch = () => {
   background-color: rgba(251, 114, 153, 0.9);
   border-color: transparent;
   backdrop-filter: blur(4px);
+  color: #fff;
 }
 
 .header-scrolled .upload-btn {
@@ -328,7 +337,7 @@ const handleSearch = () => {
 .logo-text {
   font-size: 20px;
   font-weight: bold;
-  color: var(--text-color);
+  color: #fff;
   font-family: "Microsoft YaHei", sans-serif;
   text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
   transition: color 0.3s ease;
@@ -350,7 +359,7 @@ const handleSearch = () => {
 
 .nav-item {
   font-size: 14px;
-  color: var(--text-color);
+  color: #fff;
   text-decoration: none;
   font-weight: 500;
   height: 64px;
@@ -416,8 +425,9 @@ const handleSearch = () => {
 }
 
 :deep(.el-avatar) {
-  border: 2px solid #fff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
 }
 
 /* 添加响应式布局 */
@@ -494,5 +504,9 @@ const handleSearch = () => {
 /* 用户头像边框适配 */
 .header-scrolled :deep(.el-avatar) {
   border-color: #f1f2f3;
+}
+
+.header-scrolled .nav-item {
+  color: var(--text-color, #18191c);
 }
 </style>

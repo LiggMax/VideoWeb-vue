@@ -9,25 +9,6 @@ const router = useRouter()
 
 // 视频列表数据模型
 const videos = ref([
-  {
-    id: 1,
-    title: '示例视频标题1',
-    cover: 'https://example.com/cover1.jpg',
-    nickname: 'UP主1',
-    playCount: 12000,
-    createTime: '2024-03-20'
-  },
-  {
-    id: 1,
-    title: '示例视频标题1',
-    cover: 'https://example.com/cover1.jpg',
-    uploader: {
-      id: 1,
-      nickname: 'UP主1'
-    },
-    playCount: 12000,
-    createTime: '2024-03-20'
-  }
 ])
 
 // 轮播图数据模型
@@ -41,23 +22,23 @@ const carouselItems = ref([
   },
   {
     id: 1,
-    title: '推荐内容2',
+    title: '败犬女主太多了',
     description: '这是一段视频介绍文字，简单描述视���的主要内容...',
     image: 'https://play.xfvod.pro/images/hb/baiquan.jpg',
     link: '/video/1'
   },
   {
     id: 1,
-    title: '推荐内容3',
+    title: '青之箱',
     description: '这是另一段视频介绍文字，帮助用户了解视频内容...',
     image: 'https://play.xfvod.pro/images/hb/lx.jpg',
     link: '/video/1'
   },
   {
     id: 1,
-    title: '推荐内容4',
+    title: '缘结甘神家',
     description: '这是另一段视频介绍文字，帮助用户了解视频内容...',
-    image: 'https://play.xfvod.pro/images/hb/lx.jpg',
+    image: 'https://picgg.cycimg.me/banner/GXehBtTbYAALPbN-up2x.webp',
     link: '/video/1'
   }
 ])
