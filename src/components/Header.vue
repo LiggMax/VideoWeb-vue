@@ -145,31 +145,32 @@ const handleSearch = () => {
 .header {
   position: fixed;
   top: 0;
+  left: 0;
   width: 100%;
   z-index: 1000;
+  background: transparent;
   transition: all 0.3s ease;
-  background-color: transparent;
-  backdrop-filter: none;
 }
 
 .header-scrolled {
-  background-color: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(8px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.header:not(.header-scrolled) {
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, transparent 100%);
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .header-content {
-  max-width: 1400px;
+  max-width: 1800px;
   margin: 0 auto;
+  padding: 0 40px;
   height: 64px;
   display: flex;
   align-items: center;
-  padding: 0 24px;
-  gap: 40px;
+  justify-content: space-between;
+  color: var(--header-text-color, #fff);
+  transition: color 0.3s ease;
+}
+
+.header-scrolled .header-content {
+  --header-text-color: #18191c;
 }
 
 /* 左侧区域 */
@@ -442,5 +443,44 @@ const handleSearch = () => {
   .user-icons .el-icon:nth-last-child(-n+2) {
     display: none; /* 隐藏最后两个图标 */
   }
+}
+
+/* 修改导航链接颜色 */
+.nav-links a {
+  color: var(--header-text-color, #fff);
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  background-color: var(--header-hover-bg, rgba(255, 255, 255, 0.2));
+}
+
+.header-scrolled .nav-links a:hover,
+.header-scrolled .nav-links a.active {
+  --header-hover-bg: rgba(0, 0, 0, 0.05);
+}
+
+/* 搜索框样式适配 */
+.header-scrolled :deep(.search-input .el-input__inner) {
+  background: #f1f2f3;
+  color: #18191c;
+}
+
+.header-scrolled :deep(.search-input .el-input__inner::placeholder) {
+  color: #9499a0;
+}
+
+/* Logo 文字颜色适配 */
+.header-scrolled .logo-text {
+  color: #18191c;
+}
+
+/* 用户头像边框适配 */
+.header-scrolled :deep(.el-avatar) {
+  border-color: #f1f2f3;
 }
 </style>

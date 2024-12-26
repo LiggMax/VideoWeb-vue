@@ -42,7 +42,7 @@ const carouselItems = ref([
   {
     id: 1,
     title: '推荐内容2',
-    description: '这是一段视频介绍文字，简单描述视频的主要��容...',
+    description: '这是一段视频介绍文字，简单描述视频的主要内容...',
     image: 'https://play.xfvod.pro/images/hb/baiquan.jpg',
     link: '/video/1'
   },
@@ -90,7 +90,7 @@ const getVideoList = async () => {
 }
 getVideoList()
 
-// 添加视频点击处理函数
+// 添加视频点击处函数
 const handleVideoClick = (video) => {
   router.push({
     path: `/video/${video.id}`,
@@ -127,6 +127,7 @@ onUnmounted(() => {
         :height="carouselHeight" 
         class="carousel-container" 
         :interval="4000"
+        :indicator-position="'none'"
       >
         <el-carousel-item v-for="item in carouselItems" :key="item.id" class="carousel-item">
           <div class="carousel-content">
@@ -146,23 +147,29 @@ onUnmounted(() => {
       </el-carousel>
     </div>
 
-    <!-- 主要内容区域 -->
-    <div class="content-section">
-      <!-- 视频列表 -->
-      <div class="video-grid">
-        <el-card v-for="video in videos" :key="video.id" class="video-card" @click="handleVideoClick(video)">
-          <div class="video-thumbnail">
-            <img :src="video.cover" :alt="video.title" class="cover-image">
-          </div>
-          <div class="video-title">{{ video.title }}</div>
-          <div class="video-info">
-            <span class="uploader">
-              <span class="up-tag">UP：</span>
-              {{ video.nickname }}
-            </span>
-            <span class="play-count">播放: 10000 万</span>
-          </div>
-        </el-card>
+    <div class="main-content">
+      <!-- 主要内容区域 -->
+      <div class="content-section">
+        <div class="section-title">
+          <el-icon><VideoPlay /></el-icon>
+          热门推荐
+        </div>
+        <!-- 视频列表 -->
+        <div class="video-grid">
+          <el-card v-for="video in videos" :key="video.id" class="video-card" @click="handleVideoClick(video)">
+            <div class="video-thumbnail">
+              <img :src="video.cover" :alt="video.title" class="cover-image">
+            </div>
+            <div class="video-title">{{ video.title }}</div>
+            <div class="video-info">
+              <span class="uploader">
+                <span class="up-tag">UP：</span>
+                {{ video.nickname }}
+              </span>
+              <span class="play-count">播放: 10000 万</span>
+            </div>
+          </el-card>
+        </div>
       </div>
     </div>
 
@@ -193,21 +200,22 @@ onUnmounted(() => {
   padding-bottom: 20px;
   width: 100%;
   min-height: 100vh;
+  padding-top: 0;
 }
 
 .carousel-wrapper {
   width: 100%;
-  margin-bottom: 20px;
-  background-color: #f6f7f8;
-  padding: 20px 0;
   margin: 0 auto;
+  position: relative;
+  margin-top: -64px;
+  overflow: hidden;
 }
 
 .carousel-container {
   overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   margin: 0 auto;
-  border-radius: 12px;
+  position: relative;
+  z-index: 1;
 }
 
 .carousel-item {
@@ -233,7 +241,7 @@ onUnmounted(() => {
 }
 
 .content-section {
-  margin-top: 20px;
+  margin-top: 0;
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
@@ -241,8 +249,18 @@ onUnmounted(() => {
   box-sizing: border-box;
 }
 
+.section-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #18191c;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .video-grid {
-  margin-top: 20px;
+  margin-top: 30px;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
@@ -364,6 +382,7 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   padding: 40px;
+  padding-bottom: 120px;
   background: linear-gradient(
     transparent 0%,
     rgba(0, 0, 0, 0.2) 20%,
@@ -372,7 +391,7 @@ onUnmounted(() => {
     rgba(0, 0, 0, 0.85) 100%
   );
   color: #fff;
-  padding-top: 100px;
+  padding-top: 160px;
 }
 
 .carousel-title {
@@ -406,28 +425,6 @@ onUnmounted(() => {
   background-color: #fc8bab;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(251, 114, 153, 0.4);
-}
-
-:deep(.el-carousel__indicators) {
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 1600px;
-  max-width: 100%;
-  padding: 0 40px;
-  box-sizing: border-box;
-}
-
-:deep(.el-carousel__button) {
-  width: 24px;
-  height: 3px;
-  background-color: rgba(255, 255, 255, 0.7);
-  border-radius: 2px;
-  transition: all 0.3s ease;
-}
-
-:deep(.el-carousel__indicator.is-active .el-carousel__button) {
-  background-color: #fb7299;
 }
 
 :deep(.el-carousel__arrow) {
@@ -591,7 +588,7 @@ onUnmounted(() => {
   }
 
   .carousel-overlay {
-    padding: 80px 20px 30px;
+    padding: 120px 20px 100px;
   }
 }
 
@@ -638,7 +635,7 @@ onUnmounted(() => {
   font-size: 20px;
 }
 
-/* 修改返回顶部按钮位置 */
+/* 修改返回顶部按钮置 */
 :deep(.el-backtop) {
   position: static;
   transform: none;
@@ -679,7 +676,33 @@ onUnmounted(() => {
   }
 
   .carousel-overlay {
-    padding: 80px 20px 30px;
+    padding: 120px 20px 100px;
   }
+}
+
+.main-content {
+  position: relative;
+  z-index: 2;
+  margin-top: -80px;
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  padding: 40px 0 20px;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* 优化轮播图渐变效果 */
+.carousel-content::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 200px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
+  pointer-events: none;
 }
 </style>
