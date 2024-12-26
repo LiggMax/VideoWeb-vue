@@ -24,7 +24,8 @@
 
         <!-- 视频简介 -->
         <div class="video-desc">
-          <div class="desc-content">{{ videoInfo.content }}</div>
+          <h2>{{ videoInfo.title }}</h2>
+          <div class="desc-content">简介：{{ videoInfo.content }}</div>
         </div>
 
         <!-- 评论区 -->

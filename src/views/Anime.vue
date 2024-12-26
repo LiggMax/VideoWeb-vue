@@ -152,7 +152,7 @@ const updateBannerHeight = () => {
   const width = window.innerWidth
   // 根据屏幕宽度计算合适的高度，保持16:9的比例
   const height = Math.floor((width * 9) / 16)
-  // 设置最小和最大高度限制
+  // 设置最小和最大高��限制
   const finalHeight = Math.max(400, Math.min(height, 720))
   bannerHeight.value = `${finalHeight}px`
 }
@@ -211,7 +211,7 @@ onMounted(() => {
   window.addEventListener('resize', handleResize)
 })
 
-// 组件卸载���清理定时器
+// 组件卸载清理定时器
 onUnmounted(() => {
   clearInterval(progressTimer)
   clearInterval(autoplayTimer)
@@ -340,12 +340,14 @@ const stopDrag = () => {
 .banner-section {
   width: 100%;
   position: relative;
-  margin-top: -64px; /* 向上偏移导航栏的高度 */
+  margin-top: -64px;
+  overflow: visible;
 }
 
 .el-carousel {
   width: 100%;
   overflow: hidden;
+  position: relative;
 }
 
 .banner-image {
@@ -359,23 +361,26 @@ const stopDrag = () => {
   position: relative;
   width: 100%;
   height: 100%;
+  overflow: visible;
 }
 
-/* 添加渐变遮罩，确保导航栏文字清晰可见 */
-.banner-content::before {
+/* 修改底部渐变遮罩 */
+.banner-content::after {
   content: '';
   position: absolute;
-  top: 0;
   left: 0;
   right: 0;
-  height: 120px;
+  bottom: 0;
+  height: 300px; /* 增加渐变高度 */
   background: linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0.5) 0%,
-    transparent 100%
+    transparent 0%,
+    rgba(245, 247, 250, 0.2) 40%,
+    rgba(245, 247, 250, 0.6) 70%,
+    rgba(245, 247, 250, 0.98) 100%
   );
-  z-index: 1;
   pointer-events: none;
+  z-index: 1;
 }
 
 /* 底部缩略图样式 */
@@ -383,7 +388,7 @@ const stopDrag = () => {
   display: flex;
   justify-content: center;
   gap: 15px;
-  margin-top: min(-70px, -8%);
+  margin-top: min(-100px, -10%); /* 增加上移距离 */
   padding: 0 20px;
   position: relative;
   z-index: 2;
@@ -398,9 +403,10 @@ const stopDrag = () => {
   border-radius: 8px;
   overflow: hidden;
   transform-origin: center bottom;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 3px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.9);
   border-top-width: 0;
+  backdrop-filter: blur(4px);
 }
 
 .thumbnail-item img {
@@ -545,7 +551,7 @@ const stopDrag = () => {
 
 @media screen and (max-width: 768px) {
   .thumbnail-item {
-    width: 140px;
+    width: 160px;
   }
 
   .thumbnail-item img {
@@ -557,12 +563,13 @@ const stopDrag = () => {
     padding: 6px;
   }
 
-  .banner-content::before {
-    height: 100px;
+  .banner-content::after {
+    height: 250px;
   }
   
   .thumbnail-list {
-    padding-top: 48px;
+    margin-top: min(-80px, -9%);
+    gap: 10px;
   }
 }
 
@@ -956,7 +963,7 @@ const stopDrag = () => {
   pointer-events: none;
 }
 
-/* 允许容器本身接收鼠标事件 */
+/* 允许容���本身接收鼠标事件 */
 .schedule-scroll-wrapper,
 .anime-schedule-list,
 .schedule-item {
