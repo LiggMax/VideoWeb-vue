@@ -50,7 +50,7 @@ const carouselHeight = ref('800px')
 const updateCarouselHeight = () => {
   const width = window.innerWidth
   let height
-  
+
   if (width >= 1920) {
     height = width * 0.45 // 45% for large screens
   } else if (width >= 1440) {
@@ -60,11 +60,11 @@ const updateCarouselHeight = () => {
   } else {
     height = width * 0.6 // 60% for mobile screens
   }
-  
+
   // 设置最小和最大高度限制
   height = Math.max(height, 700) // 最小高度 700px
   height = Math.min(height, 1080) // 最大高度 1080px
-  
+
   carouselHeight.value = `${height}px`
 }
 
@@ -108,9 +108,9 @@ onUnmounted(() => {
   <div class="home">
     <!-- 轮播图区域 -->
     <div class="carousel-wrapper">
-      <el-carousel 
-        :height="carouselHeight" 
-        class="carousel-container" 
+      <el-carousel
+        :height="carouselHeight"
+        class="carousel-container"
         :interval="4000"
         :indicator-position="'none'"
       >
@@ -149,6 +149,7 @@ onUnmounted(() => {
             <div class="video-info">
               <span class="uploader">
                 <span class="up-tag">UP：</span>
+                <el-avatar :size="24" :src="video.userPic" />
                 {{ video.nickname }}
               </span>
               <span class="play-count">播放: 10000 万</span>
@@ -164,11 +165,11 @@ onUnmounted(() => {
       <div class="action-button refresh-btn" @click="handleRefresh">
         <el-icon><Refresh /></el-icon>
       </div>
-      
+
       <!-- 返回顶部按钮 -->
-      <el-backtop 
-        :right="40" 
-        :bottom="100" 
+      <el-backtop
+        :right="40"
+        :bottom="100"
         :visibility-height="400"
         class="back-to-top"
       >
@@ -451,7 +452,7 @@ onUnmounted(() => {
   .video-grid {
     grid-template-columns: repeat(5, 1fr);
   }
-  
+
   .content-section {
     padding: 0 30px;
   }
@@ -461,7 +462,7 @@ onUnmounted(() => {
   .video-grid {
     grid-template-columns: repeat(4, 1fr);
   }
-  
+
   .content-section {
     padding: 0 30px;
   }
@@ -472,7 +473,7 @@ onUnmounted(() => {
     grid-template-columns: repeat(3, 1fr);
     gap: 16px;
   }
-  
+
   .content-section {
     padding: 0 20px;
   }
@@ -482,7 +483,7 @@ onUnmounted(() => {
   .video-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .content-section {
     padding: 0 16px;
   }
@@ -493,7 +494,7 @@ onUnmounted(() => {
     grid-template-columns: repeat(1, 1fr);
     gap: 12px;
   }
-  
+
   .content-section {
     padding: 0 12px;
   }

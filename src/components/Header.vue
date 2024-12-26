@@ -29,7 +29,7 @@
       <div class="right-section">
         <div class="user-info">
           <UserPopover v-if="isLogin" />
-          <div v-else class="user-avatar" :class="{ 'logged-in': isLogin }" @click="showLoginDialog">
+          <div v-else class="user-avatar" @click="showLoginDialog">
             <el-avatar :size="42" src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" />
           </div>
           <div class="user-icons">
@@ -218,18 +218,10 @@ const handleSearch = () => {
   border-radius: 50%;
   width: 50px;
   height: 50px;
-  position: relative;
-  overflow: hidden;
 }
 
-/* 未登录状态的头像样式 */
-.user-avatar:not(.logged-in) {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(4px);
-}
-
-.header-scrolled .user-avatar:not(.logged-in) {
-  background: #f1f2f3;
+.header:not(.header-scrolled) .user-avatar {
+  border: 2px solid rgba(255, 255, 255, 0.8);
 }
 
 .header:not(.header-scrolled) .user-avatar:hover {
@@ -425,9 +417,8 @@ const handleSearch = () => {
 }
 
 :deep(.el-avatar) {
-  width: 100%;
-  height: 100%;
-  background-color: transparent;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* 添加响应式布局 */
