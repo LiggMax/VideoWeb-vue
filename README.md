@@ -49,7 +49,7 @@
 - **前端**：Vue3+  + Pinia+ElementPlus
 - **后端**：Spring Boot+Mybatis+ThradLocal
 - **数据库**：MySQL
-- **缓存**：Redis
+- **缓存**：[Redis](https://github.com/tporadowski/redis/releases)
 - **邮箱服务**：163 网易邮箱服务
 
 ------
