@@ -66,7 +66,8 @@
 
 **Mysql：8**
 
-**Redis：3.21**
+**Redis：3.21**[Uploading Redis-x64-3.2.100.zip…]()
+
 
 **vue：3**
 
