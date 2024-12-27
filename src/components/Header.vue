@@ -152,9 +152,31 @@ const handleSearch = () => {
   transition: all 0.3s ease;
 }
 
+/* 添加顶部渐变遮罩 */
+.header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: linear-gradient(to bottom,
+    rgba(0, 0, 0, 0.4) 0%,
+    rgba(0, 0, 0, 0.2) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: -1;
+}
+
 .header-scrolled {
-  background: rgba(255, 255, 255, 1);
+  background: rgba(255, 255, 255, 0.98);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* 滚动后移除渐变遮罩 */
+.header-scrolled::before {
+  display: none;
 }
 
 .header-content {
@@ -166,11 +188,13 @@ const handleSearch = () => {
   align-items: center;
   justify-content: space-between;
   color: #fff;
-  transition: color 0.3s ease;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
 }
 
 .header-scrolled .header-content {
-  --header-text-color: #18191c;
+  color: var(--text-color, #18191c);
+  text-shadow: none;
 }
 
 /* 左侧区域 */
@@ -249,6 +273,7 @@ const handleSearch = () => {
   align-items: center;
   justify-content: center;
   color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 .header:not(.header-scrolled) .user-icons .el-icon {
@@ -331,7 +356,7 @@ const handleSearch = () => {
   font-weight: bold;
   color: #fff;
   font-family: "Microsoft YaHei", sans-serif;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
   transition: color 0.3s ease;
 }
 
@@ -360,6 +385,7 @@ const handleSearch = () => {
   position: relative;
   transition: all 0.3s ease;
   box-sizing: border-box;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 .header:not(.header-scrolled) .nav-item {
