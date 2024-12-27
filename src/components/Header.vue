@@ -244,10 +244,6 @@ const handleSearch = () => {
   height: 50px;
 }
 
-.header:not(.header-scrolled) .user-avatar {
-  border: 2px solid rgba(255, 255, 255, 0.8);
-}
-
 .header:not(.header-scrolled) .user-avatar:hover {
   background-color: rgba(241, 242, 243, 0.1);
 }
