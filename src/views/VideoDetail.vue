@@ -540,7 +540,7 @@ onUnmounted(() => {
   display: flex;
   gap: 16px;
   padding: 16px 0;
-  border-bottom: 1px solid #e3e5e7;
+  border-bottom: 1px solid #f0f1f2;
 }
 
 .comment-avatar {
@@ -561,12 +561,16 @@ onUnmounted(() => {
 
 .comment-user {
   font-size: 14px;
-  font-weight: 500;
-  color: #18191c;
+  color: #fb7299;
   margin-bottom: 6px;
   display: flex;
   align-items: center;
   gap: 4px;
+  transition: color 0.3s ease;
+}
+
+.comment-user:hover {
+  color: #fc8bab;
 }
 
 .comment-text {
@@ -872,7 +876,7 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-/* 在���屏幕上调整最小尺寸 */
+/* 在屏幕上调整最小尺寸 */
 @media screen and (max-width: 768px) {
   .video-section {
     min-width: 100%;
@@ -893,5 +897,12 @@ onUnmounted(() => {
     border-radius: 8px;
     overflow: hidden;
   }
+}
+
+/* UP主标识样式 */
+:deep(.uploader-icon) {
+  margin-left: 4px;
+  transform: scale(0.8);
+  color: #fb7299;
 }
 </style> 
