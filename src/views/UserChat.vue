@@ -102,7 +102,7 @@ import { ElMessage } from 'element-plus'
 import { ChatRound } from '@element-plus/icons-vue'
 import useUserInfoStore from '@/stores/userInfo'
 import { useRoute } from 'vue-router'
-import { getUserChatService, getChatHistoryService, markAsReadService, getUnreadCountService, getOnlineStatusService } from '@/api/chat'  // 导入获取私���对象的接口
+import { getUserChatService, getChatHistoryService, markAsReadService, getUnreadCountService, getOnlineStatusService } from '@/api/chat'  // 导入获取私信对象的接口
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/zh-cn'
@@ -198,7 +198,7 @@ const loadUnreadCounts = async () => {
   }
 }
 
-// 修改选择聊天的方法
+// 修改选择聊天的方���
 const selectChat = async (chat) => {
   currentChat.value = chat
   // 清除未读消息数量
@@ -241,10 +241,12 @@ const loadMessages = async (chatId) => {
 }
 
 // 发送消息
-const sendMessage = () => {
-  if (!messageContent.value.trim()) return
+const sendMessage = async () => {
+  if (!messageContent.value.trim()) {
+    ElMessage.warning('消息不能为空')
+    return
+  }
   
-  // 检查是否有当前聊天对象
   if (!currentChat.value || !currentChat.value.username) {
     ElMessage.warning('请选择聊天对象')
     return
@@ -253,13 +255,11 @@ const sendMessage = () => {
   const message = {
     type: 'chat',
     data: {
-      to: currentChat.value.username,  // 确保这里有值
+      to: currentChat.value.username,
       content: messageContent.value.trim(),
       time: dayjs().format('YYYY-MM-DD HH:mm:ss')
     }
   }
-  
-  console.log('Sending message:', message) // 添加日志
   
   // 发送消息到服务器
   ws.sendMessage(message)
@@ -269,14 +269,27 @@ const sendMessage = () => {
     id: Date.now(),
     content: messageContent.value,
     isSelf: true,
-    time: dayjs().format('HH:mm')
+    time: message.data.time
   })
+  
+  // 更新当前聊天的最后消息
+  if (currentChat.value) {
+    currentChat.value.lastMessage = messageContent.value.trim()
+    currentChat.value.lastTime = message.data.time
+    
+    // 将当前聊天移到顶部
+    const chatIndex = chatList.value.findIndex(chat => chat.username === currentChat.value.username)
+    if (chatIndex > 0) {
+      const chat = chatList.value[chatIndex]
+      chatList.value.splice(chatIndex, 1)
+      chatList.value.unshift(chat)
+    }
+  }
   
   messageContent.value = ''
   
-  nextTick(() => {
-    scrollToBottom()
-  })
+  await nextTick()
+  scrollToBottom()
 }
 
 // 修改消息接收处理方法
@@ -284,13 +297,24 @@ const handleReceivedMessage = async (message) => {
   if (message.type === 'chat') {
     const { from, content, time } = message.data
     
+    // 检查消息是否已存在（防止重复）
+    const isDuplicate = messageList.value.some(msg => 
+      msg.content === content && 
+      msg.time === time && 
+      !msg.isSelf
+    )
+    
+    if (isDuplicate) {
+      return
+    }
+    
     // 如果是当前聊天的消息，添加到消息列表并标记为已读
     if (currentChat.value && from === currentChat.value.username) {
       messageList.value.push({
         id: Date.now(),
         content: content,
         isSelf: false,
-        time: dayjs(time).format('HH:mm')
+        time: time
       })
       
       // 标记消息为已读
