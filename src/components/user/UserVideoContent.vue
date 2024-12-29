@@ -91,8 +91,8 @@
             list-type="picture-card"
             :show-file-list="false"
             :auto-upload="true"
-            action="/api/upload"
-            name="file"
+            action="/api/file/uploadImage"
+            name="image"
             :headers="{'Authorization': tokenStore.token}"
             :on-success="uploadSuccess"
           >
@@ -106,7 +106,7 @@
           <el-upload
             class="video-uploader"
             :auto-upload="true"
-            action="/api/uploadVideo"
+            action="/api/file/uploadVideo"
             :on-success="handleVideoSuccess"
             :before-upload="beforeVideoUpload"
             :headers="{'Authorization': tokenStore.token}"

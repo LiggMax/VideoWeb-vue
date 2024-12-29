@@ -14,11 +14,12 @@
       <el-form-item label="头像" prop="userPic">
         <el-upload
           class="avatar-uploader"
-          action="/api/upload"
+          action="/api/file/uploadImage"
           :headers="{'Authorization': tokenStore.token}"
           :show-file-list="false"
           :on-success="handleAvatarSuccess"
           :before-upload="beforeAvatarUpload"
+          name="image"
         >
           <img v-if="form.userPic" :src="form.userPic" class="avatar-preview" alt="头像加载失败"/>
           <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
@@ -104,9 +105,9 @@ const handleAvatarSuccess = (response) => {
 }
 
 // 头像上传前的验证
-const beforeAvatarUpload = (file) => {
-  const isJPGOrPNG = ['image/jpeg', 'image/png'].includes(file.type)
-  const isLt2M = file.size / 1024 / 1024 < 2
+const beforeAvatarUpload = (image) => {
+  const isJPGOrPNG = ['image/jpeg', 'image/png'].includes(image.type)
+  const isLt2M = image.size / 1024 / 1024 < 2
 
   if (!isJPGOrPNG) {
     ElMessage.error('头像只能是 JPG 或 PNG 格式!')
