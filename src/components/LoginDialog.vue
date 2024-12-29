@@ -345,9 +345,10 @@ const handleLogin = async () => {
 const handleRegister = async () => {
   if (!registerFormRef.value) return
     await registerFormRef.value.validate()
-    await userRegisterService(registerForm.value)
+    let result = await userRegisterService(registerForm.value)
+    tokenStore.setToken(result.data)
     ElMessage.success('注册成功')
-    switchView('login')
+    closeDialog()
 }
 
 // 发送验证码
