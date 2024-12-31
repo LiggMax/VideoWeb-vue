@@ -5,11 +5,12 @@
         v-model="inputValue"
         placeholder="输入关键词搜索"
         class="search-input"
-        :class="{ 'is-focused': isFocused }"
+        :class="{ 'is-focused': isFocused, 'is-mobile': isMobile }"
         @focus="isFocused = true"
         @blur="isFocused = false"
         @keyup.enter="handleSearch"
         @input="handleInput"
+        ref="inputRef"
       >
         <template #prefix>
           <el-icon class="search-icon"><Search /></el-icon>
@@ -20,7 +21,7 @@
           </div>
         </template>
       </el-input>
-      <el-button class="search-btn" type="primary" @click="handleSearch">
+      <el-button v-if="!isMobile" class="search-btn" type="primary" @click="handleSearch">
         <el-icon><Search /></el-icon>
       </el-button>
     </div>
@@ -74,6 +75,10 @@ const props = defineProps({
   modelValue: {
     type: String,
     default: ''
+  },
+  isMobile: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -162,6 +167,17 @@ const handleInput = () => {
   }
 }
 
+const inputRef = ref(null)
+
+// 提供聚焦方法给父组件
+const focus = () => {
+  inputRef.value?.focus()
+}
+
+defineExpose({
+  focus
+})
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
   searchHistory.value = getSearchHistory()
@@ -191,10 +207,12 @@ onUnmounted(() => {
 
 .search-wrapper {
   display: flex;
-  position: relative;
+  align-items: stretch;
+  width: 100%;
 }
 
 .search-input {
+  width: 100%;
   flex: 1;
   transition: all 0.3s;
   
@@ -205,6 +223,7 @@ onUnmounted(() => {
     box-shadow: none !important;
     transition: all 0.3s;
     height: 34px;
+    border-right: none;
     
     &:hover {
       background-color: #fff;
@@ -254,18 +273,20 @@ onUnmounted(() => {
   border-radius: 0 8px 8px 0;
   background-color: #fb7299;
   border-color: #fb7299;
-  position: relative;
-  left: -1px;
   
   &:hover {
     background-color: #fc8bab;
     border-color: #fc8bab;
-    z-index: 1;
   }
   
   .el-icon {
     font-size: 16px;
   }
+}
+
+/* 当搜索框获得焦点时，保持按钮的边框颜色 */
+.search-input.is-focused + .search-btn {
+  border-color: var(--el-input-focus-border-color, #409eff);
 }
 
 /* 搜索下拉面板 */
@@ -377,6 +398,37 @@ onUnmounted(() => {
         }
       }
     }
+  }
+}
+
+/* 移动端样式 */
+.search-input.is-mobile :deep(.el-input__inner) {
+  height: 40px;
+  font-size: 14px;
+  border-radius: 20px;
+  padding-left: 16px;
+  background: #f6f7f8;
+}
+
+.search-input.is-mobile :deep(.el-input__prefix) {
+  left: 12px;
+}
+
+.search-input.is-mobile :deep(.el-input__suffix) {
+  right: 12px;
+}
+
+@media screen and (max-width: 768px) {
+  .search-dropdown {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    right: 0;
+    max-height: calc(100vh - 56px);
+    overflow-y: auto;
+    border-radius: 0;
+    box-shadow: none;
+    border-top: 1px solid #f1f2f3;
   }
 }
 </style>

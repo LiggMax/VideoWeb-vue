@@ -1,5 +1,18 @@
 <template>
   <div class="header" :class="{ 'header-scrolled': isScrolled }">
+    <!-- 移动端搜索框 -->
+    <div class="mobile-search" v-if="showMobileSearch && isMobile">
+      <div class="mobile-search-header">
+        <el-icon class="back-icon" @click="showMobileSearch = false"><ArrowLeft /></el-icon>
+        <SearchBar 
+          @search="handleMobileSearch" 
+          v-model="searchText"
+          :is-mobile="true"
+          ref="mobileSearchBarRef"
+        />
+      </div>
+    </div>
+
     <div class="header-content">
       <!-- 左侧Logo和导航 -->
       <div class="left-section">
@@ -9,7 +22,11 @@
           </div>
           <span class="logo-text">哔哩哔哩</span>
         </div>
-        <div class="nav-links">
+        <!-- 移动端菜单按钮 -->
+        <div v-if="isMobile" class="mobile-menu-btn" @click="showMobileMenu = true">
+          <el-icon><Menu /></el-icon>
+        </div>
+        <div v-if="!isMobile" class="nav-links">
           <router-link to="/" class="nav-item" active-class="active">首页</router-link>
           <router-link to="/anime" class="nav-item" active-class="active">番剧</router-link>
           <router-link to="/live" class="nav-item" active-class="active">直播</router-link>
@@ -17,7 +34,7 @@
       </div>
 
       <!-- 中间搜索框 -->
-      <div class="center-section">
+      <div v-if="!isMobile" class="center-section">
         <SearchBar 
           @search="handleSearch" 
           v-model="searchText" 
@@ -27,19 +44,23 @@
 
       <!-- 右侧用户区域 -->
       <div class="right-section">
+        <!-- 移动端搜索按钮 -->
+        <div v-if="isMobile" class="mobile-search-btn" @click="openMobileSearch">
+          <el-icon><Search /></el-icon>
+        </div>
         <div class="user-info">
           <UserPopover v-if="isLogin" />
           <div v-else class="user-avatar" @click="showLoginDialog">
             <el-avatar :size="42" src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" />
           </div>
-          <div class="user-icons">
+          <div v-if="!isMobile" class="user-icons">
             <el-icon><Message /></el-icon>
             <el-icon><Star /></el-icon>
             <el-icon><Collection /></el-icon>
             <el-icon><Clock /></el-icon>
           </div>
         </div>
-        <div class="upload-section">
+        <div class="upload-section" v-if="!isMobile">
           <el-button class="upload-btn" type="primary">
             <el-icon class="camera-icon"><VideoCamera /></el-icon>
             <span class="btn-text">投稿</span>
@@ -47,6 +68,41 @@
         </div>
       </div>
     </div>
+
+    <!-- 移动端菜单抽屉 -->
+    <el-drawer
+      v-model="showMobileMenu"
+      direction="ltr"
+      size="80%"
+      :with-header="false"
+      class="mobile-menu-drawer"
+      :show-close="false"
+    >
+      <div class="mobile-menu-content">
+        <div class="drawer-header">
+          <el-icon class="close-icon" @click="showMobileMenu = false"><Close /></el-icon>
+        </div>
+        <div class="mobile-user-info" v-if="isLogin">
+          <UserPopover />
+        </div>
+        <div class="mobile-user-info" v-else @click="showLoginDialog">
+          <el-avatar :size="50" src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" />
+          <span>点击登录</span>
+        </div>
+        <div class="mobile-nav-links">
+          <router-link 
+            v-for="(item, index) in mobileNavItems" 
+            :key="index"
+            :to="item.path" 
+            class="mobile-nav-item" 
+            @click="showMobileMenu = false"
+          >
+            <el-icon><component :is="item.icon" /></el-icon>
+            <span>{{ item.name }}</span>
+          </router-link>
+        </div>
+      </div>
+    </el-drawer>
   </div>
 
   <!-- 添加登录对话框组件 -->
@@ -54,7 +110,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
 import SearchBar from '@/components/SearchBar.vue'
 import LoginDialog from '@/components/LoginDialog.vue'
 import UserPopover from '@/components/user/UserPopover.vue'
@@ -67,7 +123,13 @@ import {
   Star, 
   Collection, 
   Clock,
-  Monitor
+  Monitor,
+  Menu,
+  HomeFilled,
+  VideoPlay,
+  Search,
+  ArrowLeft,
+  Close
 } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import eventBus from '@/utils/eventBus'
@@ -102,12 +164,22 @@ const handleScroll = () => {
   isScrolled.value = window.scrollY > 0
 }
 
+const showMobileMenu = ref(false)
+const isMobile = ref(window.innerWidth <= 768)
+
+// 监听窗口大小变化
+const handleResize = () => {
+  isMobile.value = window.innerWidth <= 768
+}
+
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
+  window.addEventListener('resize', handleResize)
 })
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  window.removeEventListener('resize', handleResize)
   eventBus.off('showLogin')
 })
 
@@ -135,6 +207,30 @@ const handleSearch = () => {
     }
   })
 }
+
+const showMobileSearch = ref(false)
+const mobileSearchBarRef = ref(null)
+
+const openMobileSearch = () => {
+  showMobileSearch.value = true
+  nextTick(() => {
+    mobileSearchBarRef.value?.focus()
+  })
+}
+
+const handleMobileSearch = () => {
+  handleSearch()
+  showMobileSearch.value = false
+}
+
+// 移动端导航项配置
+const mobileNavItems = [
+  { name: '首页', path: '/', icon: 'HomeFilled' },
+  { name: '番剧', path: '/anime', icon: 'VideoPlay' },
+  { name: '直播', path: '/live', icon: 'VideoCamera' },
+  { name: '消息', path: '/messages', icon: 'Message' },
+  { name: '收藏', path: '/favorites', icon: 'Star' }
+]
 </script>
 
 <style scoped>
@@ -478,6 +574,40 @@ const handleSearch = () => {
   .user-icons .el-icon:nth-last-child(-n+2) {
     display: none; /* 隐藏最后两个图标 */
   }
+
+  .mobile-search-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-right: 8px;
+    cursor: pointer;
+    color: var(--text-color, #18191c);
+  }
+
+  .mobile-search {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    padding: 8px 16px;
+    z-index: 1002;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .mobile-search-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .back-icon {
+    font-size: 24px;
+    cursor: pointer;
+    color: #18191c;
+  }
 }
 
 /* 修改导航链接颜色 */
@@ -521,5 +651,131 @@ const handleSearch = () => {
 
 .header-scrolled .nav-item {
   color: var(--text-color, #18191c);
+}
+
+/* 添加移动端样式 */
+.mobile-menu-btn {
+  display: none;
+  font-size: 24px;
+  cursor: pointer;
+  margin-left: 16px;
+}
+
+@media screen and (max-width: 768px) {
+  .header-content {
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .mobile-search-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    color: var(--text-color, #18191c);
+    margin-right: 8px;
+  }
+
+  .logo-text {
+    display: none;
+  }
+
+  .left-section {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+  }
+
+  .right-section {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+  }
+}
+
+/* 移动端菜单样式 */
+.mobile-menu-content {
+  padding: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer-header {
+  padding: 16px;
+  display: flex;
+  justify-content: flex-end;
+  border-bottom: 1px solid #f1f2f3;
+}
+
+.close-icon {
+  font-size: 24px;
+  cursor: pointer;
+  color: #18191c;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.3s;
+}
+
+.close-icon:hover {
+  background-color: #f1f2f3;
+}
+
+.mobile-user-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border-bottom: 1px solid #f1f2f3;
+}
+
+.mobile-nav-links {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mobile-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  color: #18191c;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.3s;
+  
+  .el-icon {
+    font-size: 20px;
+  }
+  
+  &:hover {
+    background-color: #f6f7f8;
+  }
+  
+  &.router-link-active {
+    color: #fb7299;
+    background-color: #fff1f5;
+    
+    .el-icon {
+      color: #fb7299;
+    }
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .mobile-menu-btn {
+    display: block;
+    margin-left: 16px;
+  }
+  
+  :deep(.el-drawer) {
+    background-color: #fff;
+  }
 }
 </style>
