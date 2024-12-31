@@ -128,7 +128,7 @@
 
 <script setup>
 import {ref, onUnmounted, onMounted, computed} from 'vue'
-import {getBannerService} from "@/api/anime";
+import {getBannerService} from "@/api/anime/anime";
 import {getBangumiService, getHotService} from "@/api/bangumi/bangumi";
 import {formatCount} from '@/utils/format'
 

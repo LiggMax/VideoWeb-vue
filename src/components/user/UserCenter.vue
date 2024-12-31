@@ -66,8 +66,13 @@
             <edit-profile-content />
           </template>
 
+          <!-- 番剧管理内容 -->
+          <template v-if="currentNav === 'anime'">
+            <anime-manage-content />
+          </template>
+
           <!-- 其他导航内容的空状态 -->
-          <div class="empty-state" v-if="currentNav !== 'videos' && currentNav !== 'edit-profile'">
+          <div class="empty-state" v-if="currentNav !== 'videos' && currentNav !== 'edit-profile' && currentNav !== 'anime'">
             <el-empty :description="getEmptyText">
               <template #description>
                 <p class="empty-text">{{ getEmptyText }}</p>
@@ -93,7 +98,8 @@ import {
   MoreFilled,
   Delete,
   Plus,
-  CircleCheckFilled
+  CircleCheckFilled,
+  Film
 } from '@element-plus/icons-vue'
 import useUserInfoStore from '@/stores/userInfo'
 import {ElMessage, ElMessageBox} from "element-plus";
@@ -102,6 +108,7 @@ import {deleteVideoService, editVideoService, getUserVideoService, publishVideoS
 import {getUserInfoService} from "@/api/user";
 import EditProfileContent from '@/components/user/EditUserInformation.vue'
 import UserVideoContent from '@/components/user/UserVideoContent.vue'
+import AnimeManageContent from '@/components/user/AnimeManageContent.vue'
 
 const router = useRouter()
 const userInfoStore = useUserInfoStore()
@@ -115,7 +122,7 @@ const hasContent = computed(() => {
   return videos.value.length > 0;
 });
 
-const navItems = [
+const baseNavItems = [
   {name: 'videos', label: '视频', icon: 'VideoCamera', count: 0},
   {name: 'favorites', label: '收藏', icon: 'Collection', count: 0},
   {name: 'likes', label: '点赞', icon: 'Star', count: 0},
@@ -123,6 +130,19 @@ const navItems = [
   {name: 'comments', label: '评论', icon: 'ChatDotRound', count: 0},
   {name: 'edit-profile', label: '编辑资料', icon: 'Edit'}
 ]
+
+// 根据用户角色动态计算导航项
+const navItems = computed(() => {
+  if (userInfo.value?.role === 'admin') {
+    // 在视频菜单后插入番剧管理菜单
+    return [
+      ...baseNavItems.slice(0, 1),
+      {name: 'anime', label: '番剧管理', icon: 'Film', count: 0},
+      ...baseNavItems.slice(1)
+    ]
+  }
+  return baseNavItems
+})
 
 const userStats = [
   {num: 301, label: '关注'},
@@ -134,6 +154,7 @@ const userStats = [
 const getEmptyText = computed(() => {
   const texts = {
     videos: '还没有发布过视频哦',
+    anime: '还没有发布过番剧哦',
     favorites: '还没有收藏任何内容',
     likes: '还没有点赞过内容',
     articles: '还没有发布过专栏文章',
@@ -604,21 +625,29 @@ const handleNavClick = (item) => {
   cursor: pointer;
   border-radius: 4px;
   transition: all 0.3s;
-  background: #fff; /* 默认背景色设置为白色 */
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* 添加轻微阴影 */
-}
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  
+  .el-icon {
+    font-size: 18px; /* 增大图标尺寸 */
+  }
 
-.nav-item:hover {
-  background: #f6f7f8; /* 悬停时背景色 */
-  color: #fb7299; /* 悬停时文字颜色 */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 悬停时阴影 */
-}
+  &:hover {
+    background: #f6f7f8;
+    color: #fb7299;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
 
-.nav-item.active {
-  background: #fff1f5; /* 激活时背景色 */
-  color: #fb7299; /* 激活时文字颜色 */
-  font-weight: 500; /* 激活时字体加粗 */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 激活时阴影 */
+  &.active {
+    background: #fff1f5;
+    color: #fb7299;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    
+    .el-icon {
+      color: #fb7299; /* 激活状态下图标颜色 */
+    }
+  }
 }
 
 .count {
