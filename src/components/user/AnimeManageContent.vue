@@ -39,7 +39,26 @@
         <el-table-column prop="title" label="标题" min-width="200">
           <template #default="scope">
             <div class="anime-info">
-              <div class="title">{{ scope.row.title }}</div>
+              <div class="info-header">
+                <div class="title">{{ scope.row.title }}</div>
+                <el-dropdown trigger="click" @command="(command) => handleCommand(command, scope.row)">
+                  <div class="more-btn">
+                    <el-icon><MoreFilled /></el-icon>
+                  </div>
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <el-dropdown-item command="edit">
+                        <el-icon><Edit /></el-icon>
+                        编辑信息
+                      </el-dropdown-item>
+                      <el-dropdown-item command="delete" divided>
+                        <el-icon><Delete /></el-icon>
+                        <span class="text-danger">删除番剧</span>
+                      </el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
+              </div>
               <div class="description">{{ scope.row.description || '暂无简介' }}</div>
               <div class="meta-info">
                 <span class="release-date">首播: {{ formatDate(scope.row.releaseDate) || '未设置' }}</span>
@@ -50,45 +69,35 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="100" fixed="right">
           <template #default="scope">
             <div class="action-group">
-              <el-tooltip 
-                content="添加剧集" 
-                placement="top" 
-                :show-after="500"
-              >
-                <div class="action-item" @click="handleAddEpisode(scope.row)">
-                  <el-icon><VideoCamera /></el-icon>
+              <el-dropdown trigger="click" @command="(command) => handleCommand(command, scope.row)">
+                <div class="action-item">
+                  <el-icon><MoreFilled /></el-icon>
                 </div>
-              </el-tooltip>
-              <el-tooltip 
-                content="编辑信息" 
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item command="edit">
+                      <el-icon><Edit /></el-icon>
+                      编辑信息
+                    </el-dropdown-item>
+                    <el-dropdown-item command="delete" divided>
+                      <el-icon><Delete /></el-icon>
+                      <span class="text-danger">删除番剧</span>
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+              <el-tooltip
+                content="添加剧集"
                 placement="top"
                 :show-after="500"
               >
-                <div class="action-item" @click="handleEdit(scope.row)">
-                  <el-icon><Edit /></el-icon>
+                <div class="action-item add" @click="handleAddEpisode(scope.row)">
+                  <el-icon><VideoCamera /></el-icon>
                 </div>
               </el-tooltip>
-              <el-popconfirm
-                title="确定要删除这部番剧吗？"
-                confirm-button-text="确定"
-                cancel-button-text="取消"
-                @confirm="handleDelete(scope.row)"
-              >
-                <template #reference>
-                  <el-tooltip 
-                    content="删除番剧" 
-                    placement="top"
-                    :show-after="500"
-                  >
-                    <div class="action-item delete">
-                      <el-icon><Delete /></el-icon>
-                    </div>
-                  </el-tooltip>
-                </template>
-              </el-popconfirm>
             </div>
           </template>
         </el-table-column>
@@ -225,12 +234,13 @@
 <script setup>
 import {ref, onMounted} from 'vue'
 import {
-  Plus, 
-  Upload, 
-  CircleCheckFilled, 
+  Plus,
+  Upload,
+  CircleCheckFilled,
   VideoCamera,
   Edit,
-  Delete
+  Delete,
+  MoreFilled
 } from '@element-plus/icons-vue'
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {useTokenStore} from "@/stores/token"
@@ -430,6 +440,25 @@ const handleCurrentChange = (val) => {
   getAnimeList()
 }
 
+// 处理下拉菜单命令
+const handleCommand = async (command, row) => {
+  switch (command) {
+    case 'edit':
+      handleEdit(row)
+      break
+    case 'delete':
+      try {
+        await ElMessageBox.confirm('确定要删除这部番剧吗？', '警告', {
+          type: 'warning',
+          confirmButtonText: '确定',
+          cancelButtonText: '取消'
+        })
+        await handleDelete(row)
+      } catch {}
+      break
+  }
+}
+
 onMounted(() => {
   getAnimeList()
 })
@@ -513,6 +542,7 @@ onMounted(() => {
 
 .action-group {
   display: flex;
+  flex-direction: column;
   gap: 12px;
   align-items: center;
   justify-content: center;
@@ -540,10 +570,10 @@ onMounted(() => {
     transform: translateY(-1px);
   }
 
-  &.delete {
+  &.add {
     &:hover {
-      background-color: #fff1f0;
-      color: #ff4d4f;
+      background-color: #f0f9eb;
+      color: #67c23a;
     }
   }
 }
@@ -556,11 +586,13 @@ onMounted(() => {
 }
 
 :deep(.el-table__row) {
-  transition: background-color 0.3s;
-}
+  transition: all 0.3s;
 
-:deep(.el-table__row:hover) {
-  background-color: #f8f9fa;
+  &:hover {
+    background-color: #fff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  }
 }
 
 :deep(.el-button--primary.is-plain) {
@@ -678,7 +710,7 @@ onMounted(() => {
   .el-pager li {
     background-color: #fff;
     border: 1px solid #dcdfe6;
-    
+
     &:hover {
       color: #fb7299;
     }
@@ -688,7 +720,7 @@ onMounted(() => {
     background-color: #fb7299;
     border-color: #fb7299;
     color: #fff;
-    
+
     &:hover {
       color: #fff;
     }
@@ -710,5 +742,21 @@ onMounted(() => {
       display: none;
     }
   }
+}
+
+:deep(.el-dropdown-menu__item) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+
+  .el-icon {
+    margin-right: 4px;
+    font-size: 16px;
+  }
+}
+
+.text-danger {
+  color: #f56c6c;
 }
 </style> 
