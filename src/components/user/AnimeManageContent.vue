@@ -136,7 +136,7 @@
               :on-success="uploadSuccess"
               accept="image/*"
           >
-            <img v-if="animeForm.coverImage" :src="animeForm.coverImage" class="uploaded-cover"/>
+            <img v-if="animeForm.coverImage" :src="animeForm.coverImage" class="uploaded-cover" alt=""/>
             <el-icon v-else class="upload-icon">
               <Plus/>
             </el-icon>
@@ -178,7 +178,9 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="animeDialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="submitAnimeForm">确定</el-button>
+          <el-button type="primary" @click="submitAnimeForm">
+            {{ isEdit ? '修改' : '确定' }}
+          </el-button>
         </span>
       </template>
     </el-dialog>
@@ -252,7 +254,7 @@ import {
   addEpisodeService,
   uploadVideoService
 } from "@/api/anime/anime"
-import {formatCount, formatDate} from "@/utils/format";
+import { formatDate} from "@/utils/format";
 
 const animeList = ref([])
 const animeDialogVisible = ref(false)
@@ -343,7 +345,13 @@ const showAddAnimeDialog = () => {
 const handleEdit = (row) => {
   isEdit.value = true
   currentAnimeId.value = row.id
-  animeForm.value = {...row}
+  animeForm.value = {
+    title: row.title || '',
+    coverImage: row.coverImage || '',
+    description: row.description || '',
+    releaseDate: row.releaseDate || '',
+    status: row.status || 'ongoing'
+  }
   animeDialogVisible.value = true
 }
 
@@ -373,18 +381,52 @@ const handleAddEpisode = (row) => {
 // 提交新增番剧表单
 const submitAnimeForm = async () => {
   try {
-    if (isEdit.value) {
-      await updateAnimeService(currentAnimeId.value, animeForm.value)
-    } else {
-      await addAnimeService(animeForm.value)
+    // 表单验证
+    if (!animeForm.value.title?.trim()) {
+      ElMessage.warning('请输入番剧标题')
+      return
     }
-    pageParams.value.pageNum = 1 // 重置到第一页
-    await getAnimeList()
-    animeDialogVisible.value = false
-    ElMessage.success(isEdit.value ? '更新成功' : '添加成功')
+    if (!animeForm.value.coverImage) {
+      ElMessage.warning('请上传番剧封面')
+      return
+    }
+
+    if (isEdit.value) {
+      // 调用修改函数
+      await handleEditAnime()
+    } else {
+      // 调用新增函数
+      await handleAddAnime()
+    }
   } catch (error) {
     ElMessage.error(isEdit.value ? '更新失败' : '添加失败')
   }
+}
+
+// 处理新增番剧
+const handleAddAnime = async () => {
+  const addData = {
+    title: animeForm.value.title.trim(),
+    coverImage: animeForm.value.coverImage,
+    description: animeForm.value.description?.trim() || '',
+    releaseDate: animeForm.value.releaseDate || null,
+    status: animeForm.value.status || 'ongoing'
+  }
+  await addAnimeService(addData)
+  pageParams.value.pageNum = 1 // 重置到第一页
+  await getAnimeList()
+  animeDialogVisible.value = false
+  ElMessage.success('添加成功')
+}
+
+// 处理修改番剧
+const handleEditAnime = async () => {
+  await updateAnimeService(currentAnimeId.value, animeForm.value)
+  
+  // 刷新列表
+  await getAnimeList()
+  animeDialogVisible.value = false
+  ElMessage.success('修改成功')
 }
 
 // 提交剧集表单
@@ -401,6 +443,9 @@ const submitEpisodeForm = async () => {
     ElMessage.error('添加剧集失败')
   }
 }
+
+
+
 
 // 获取状态对应的标签类型
 const getStatusType = (status) => {
