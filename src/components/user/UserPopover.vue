@@ -121,8 +121,17 @@ const getUserInfo = async () => {
 }
 
 // 从 store 中获取用户信息
-const userInfo = computed(() => userInfoStore.info)
-
+const userInfo = computed(() => {
+  const info = userInfoStore.info
+  if (info === null) {
+    // 清除用户信息
+    userInfoStore.removeInfo()
+    // 清除token
+    tokenStore.removeToken()
+    return {}
+  }
+  return info
+})
 const handleLogout = () => {
   // 清除用户信息
   userInfoStore.removeInfo()
