@@ -358,7 +358,7 @@ const handleEdit = (row) => {
 // 处理删除番剧
 const handleDelete = async (row) => {
   try {
-    await deleteAnimeService(row.id)
+    await deleteAnimeService(row.animeId)
     await getAnimeList()
     ElMessage.success('删除成功')
   } catch (error) {
@@ -605,9 +605,6 @@ onMounted(() => {
   color: #606266;
   background-color: #f4f4f5;
 
-  .el-icon {
-    font-size: 16px;
-  }
 
   &:hover {
     background-color: #e6f7ff;
@@ -745,13 +742,6 @@ onMounted(() => {
 
 /* 分页组件样式定制 */
 :deep(.el-pagination.is-background) {
-  .el-pagination__total,
-  .el-pagination__sizes {
-    margin-right: 16px;
-  }
-
-  .btn-prev,
-  .btn-next,
   .el-pager li {
     background-color: #fff;
     border: 1px solid #dcdfe6;
@@ -794,11 +784,6 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-
-  .el-icon {
-    margin-right: 4px;
-    font-size: 16px;
-  }
 }
 
 .text-danger {
