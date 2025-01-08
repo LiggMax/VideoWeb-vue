@@ -16,8 +16,8 @@ export const addAnimeService = (animeData) => {
 }
 
 // 更新番剧  .
-export const updateAnimeService = (animeData) => {
-  return request.put(`/anime`, animeData)
+export const updateAnimeService = (animeId,animeData) => {
+  return request.put(`/anime/${animeId}`, animeData)
 }
 
 // 删除番剧

@@ -344,7 +344,7 @@ const showAddAnimeDialog = () => {
 // 处理编辑番剧
 const handleEdit = (row) => {
   isEdit.value = true
-  currentAnimeId.value = row.id
+  currentAnimeId.value = row.animeId
   animeForm.value = {
     title: row.title || '',
     coverImage: row.coverImage || '',
