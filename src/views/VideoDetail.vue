@@ -157,7 +157,7 @@ import { useRoute, useRouter } from 'vue-router'
 import {getVideoDetailService, getVideoListService} from '@/api/video' // 假设你会创建这个API服务
 import { VideoPlay, Plus, ChatDotRound, CaretRight, ChatRound } from '@element-plus/icons-vue'
 import VideoPlayer from '@/components/video/VideoPlayer.vue'
-import {ElMessage} from "element-plus";
+import {ElMessage, ElMessageBox} from "element-plus";
 import useUserInfoStore from '@/stores/userInfo'
 import UploaderIcon from '@/components/icons/UploaderIcon.vue'
 import {addCommentService, getCommentsService} from "@/api/comments";
@@ -397,9 +397,32 @@ const handleFollow = async () => {
     eventBus.emit('showLogin')
     return
   }
+  
+  // 如果是取消关注，需要确认
+  if (isFollowed.value) {
+    try {
+      await ElMessageBox.confirm(
+        '确定取消关注该用户吗？',
+        '提示',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+      )
+    } catch (error) {
+      return // 用户取消操作
+    }
+  }
+
+  try {
     await followUserService(videoInfo.value.userId, !isFollowed.value)
     isFollowed.value = !isFollowed.value
     ElMessage.success(isFollowed.value ? '关注成功' : '已取消关注')
+  } catch (error) {
+    console.error('关注操作失败:', error)
+    ElMessage.error('操作失败，请稍后重试')
+  }
 }
 
 // 监听登录状态变化
