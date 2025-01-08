@@ -3,26 +3,28 @@
 
     <el-divider content-position="left">个人资料</el-divider>
 
-    <el-form 
-      :model="form" 
-      :rules="rules"
-      ref="formRef"
-      label-width="100px"
-      class="edit-form"
+    <el-form
+        :model="form"
+        :rules="rules"
+        ref="formRef"
+        label-width="100px"
+        class="edit-form"
     >
       <!-- 头像上传 -->
       <el-form-item label="头像" prop="userPic">
         <el-upload
-          class="avatar-uploader"
-          action="/api/file/uploadImage"
-          :headers="{'Authorization': tokenStore.token}"
-          :show-file-list="false"
-          :on-success="handleAvatarSuccess"
-          :before-upload="beforeAvatarUpload"
-          name="image"
+            class="avatar-uploader"
+            action="/api/file/uploadImage"
+            :headers="{'Authorization': tokenStore.token}"
+            :show-file-list="false"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload"
+            name="image"
         >
           <img v-if="form.userPic" :src="form.userPic" class="avatar-preview" alt="头像加载失败"/>
-          <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
+          <el-icon v-else class="avatar-uploader-icon">
+            <Plus/>
+          </el-icon>
         </el-upload>
       </el-form-item>
 
@@ -39,7 +41,7 @@
           <el-radio :label="0">保密</el-radio>
         </el-radio-group>
       </el-form-item>
-      
+
       <el-form-item label="邮箱">
         <div class="info-value readonly">{{ userInfo.email }}</div>
       </el-form-item>
@@ -47,16 +49,16 @@
       <!-- 个人简介 -->
       <el-form-item label="个人简介" prop="introduction">
         <el-input
-          v-model="form.introduction"
-          type="textarea"
-          :rows="4"
-          placeholder="介绍一下你自己吧"
+            v-model="form.introduction"
+            type="textarea"
+            :rows="4"
+            placeholder="介绍一下你自己吧"
         />
       </el-form-item>
       <el-form-item label="注册时间:">
         <div class="info-value readonly">{{ formatDate(userInfo.createTime) }}</div>
       </el-form-item>
-      
+
       <!-- 提交按钮 -->
       <el-form-item>
         <el-button type="primary" @click="submitForm(formRef)">保存修改</el-button>
@@ -67,12 +69,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { ElMessage } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
-import { useTokenStore } from '@/stores/token'
+import {ref, onMounted, computed} from 'vue'
+import {ElMessage} from 'element-plus'
+import {Plus} from '@element-plus/icons-vue'
+import {useTokenStore} from '@/stores/token'
 import useUserInfoStore from '@/stores/userInfo'
-import { updateUserInfoService } from '@/api/user'
+import {updateUserInfoService} from '@/api/user'
 
 const tokenStore = useTokenStore()
 const userInfoStore = useUserInfoStore()
@@ -89,12 +91,12 @@ const form = ref({
 // 表单验证规则
 const rules = {
   nickname: [
-    { required: true, message: '请输入昵称', trigger: 'blur' },
-    { min: 2, max: 12, message: '昵称长度在 2 到 12 个字符', trigger: 'blur' }
+    {required: true, message: '请输入昵称', trigger: 'blur'},
+    {min: 2, max: 12, message: '昵称长度在 2 到 12 个字符', trigger: 'blur'}
   ],
   introduction: [
-    { required: true, message: '请输入个人简介', trigger: 'blur' },
-    { min: 5, max: 100, message: '简介长度在 5 到 100 个字符', trigger: 'blur' }
+    {required: true, message: '请输入个人简介', trigger: 'blur'},
+    {min: 5, max: 100, message: '简介长度在 5 到 100 个字符', trigger: 'blur'}
   ]
 }
 
@@ -125,11 +127,11 @@ const submitForm = async (formEl) => {
   if (!formEl) return
   await formEl.validate(async (valid) => {
     if (valid) {
-        await updateUserInfoService(form.value)
-        ElMessage.success('个人资料更新成功')
-        // 更新 store 中的用户信息
-        await userInfoStore.info()
-      }
+      await updateUserInfoService(form.value)
+      ElMessage.success('个人资料更新成功')
+      // 更新 store 中的用户信息
+      await userInfoStore.info()
+    }
   })
 }
 
