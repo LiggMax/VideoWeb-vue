@@ -152,7 +152,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, onUnmounted } from 'vue'
+import { ref, onMounted, computed, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {getVideoDetailService, getVideoListService} from '@/api/video' // 假设你会创建这个API服务
 import { VideoPlay, Plus, ChatDotRound, CaretRight, ChatRound } from '@element-plus/icons-vue'
@@ -226,10 +226,27 @@ const getVideoDetail = async () => {
     const result = await getVideoDetailService(videoId)
     if (result.data) {
       videoInfo.value = result.data
+      // 获取视频详情后，检查是否已关注
+      if (isLogin.value) {
+        checkFollowStatus()
+      }
+    }
+    } catch (error) {
+      console.error('获取视频详情失败:', error)
+      ElMessage.error('获取视频详情失败')
+    }
+}
+
+// 检查关注状态
+const checkFollowStatus = async () => {
+  try {
+    const result = await getUserFollowService(videoInfo.value.userId)
+    if (result.data) {
+      // 判断 followUserId 是否等于视频作者的 userId
+      isFollowed.value = result.data.some(item => item.followUserId === Number(videoInfo.value.userId))
     }
   } catch (error) {
-    console.error('获取视频详情失败:', error)
-    ElMessage.error('获取视频详情失败')
+    console.error('获取关注状态失败:', error)
   }
 }
 
@@ -390,6 +407,15 @@ const handleFollow = async () => {
     ElMessage.error('操作失败，请稍后重试')
   }
 }
+
+// 监听登录状态变化
+watch(isLogin, (newVal) => {
+  if (newVal && videoInfo.value.userId) {
+    checkFollowStatus()
+  } else {
+    isFollowed.value = false
+  }
+})
 </script>
 
 <style scoped>
