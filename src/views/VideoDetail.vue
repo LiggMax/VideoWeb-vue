@@ -397,15 +397,9 @@ const handleFollow = async () => {
     eventBus.emit('showLogin')
     return
   }
-  
-  try {
     await followUserService(videoInfo.value.userId, !isFollowed.value)
     isFollowed.value = !isFollowed.value
     ElMessage.success(isFollowed.value ? '关注成功' : '已取消关注')
-  } catch (error) {
-    console.error('关注操作失败:', error)
-    ElMessage.error('操作失败，请稍后重试')
-  }
 }
 
 // 监听登录状态变化

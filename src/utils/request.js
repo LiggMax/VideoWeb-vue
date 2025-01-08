@@ -41,13 +41,15 @@ instance.interceptors.response.use(
         return Promise.reject(result.data);
     },
     err => {
-        if (err.response.status===401){
+        if (err.response.status === 429) {
+            ElMessage.error('请求过于频繁，请稍后再试')
+        } else if (err.response.status === 401) {
             ElMessage.error('请先登录')
             //清除token
             useTokenStore().removeToken();
             // 触发显示登录弹窗事件
             eventBus.emit('showLogin')
-        }else {
+        } else {
             ElMessage.error('服务异常')
         }
         return Promise.reject(err);//异步的状态转化成失败的状态
