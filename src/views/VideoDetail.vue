@@ -107,9 +107,14 @@
           </div>
           <div class="uploader-desc">{{ videoInfo.introduction || '这个UP主很懒，还没有添加简介~' }}</div>
           <div v-if="!isSelfVideo" class="button-group">
-            <el-button type="primary" class="follow-btn">
+            <el-button 
+              type="primary" 
+              class="follow-btn"
+              :class="{ 'is-followed': isFollowed }"
+              @click="handleFollow"
+            >
               <el-icon><Plus /></el-icon>
-              关注
+              {{ isFollowed ? '已关注' : '关注' }}
             </el-button>
             <el-button class="message-btn" @click="goToChat">
               <el-icon><ChatDotRound /></el-icon>
@@ -164,6 +169,7 @@ import { useTokenStore } from '@/stores/token'
 import eventBus from '@/utils/eventBus'
 import DanmakuList from '@/components/video/DanmakuList.vue'
 import {formatDate} from "@/utils/format";
+import {followUserService, getUserFollowService} from '@/api/user/userfollow'
 
 // 配置 dayjs
 dayjs.extend(relativeTime)
@@ -234,44 +240,10 @@ onMounted(() => {
 
 // 评论列表
 const comments = ref([
-  {
-    id: 1,
-    nickname: '用户A',
-    avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
-    content: '这个视频太棒了！',
-    createTime: '2024-01-22',
-    likeCount: 66
-  },
-  {
-    id: 2,
-    nickname: '用户B',
-    userPic: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
-    content: '期待更新！',
-    createTime: '2024-01-22',
-    likeCount: 23
-  }
 ])
 
 // 推荐视频
 const recommendVideos = ref([
-  {
-    id: 1,
-    title: '推荐视频标题1',
-    cover: 'https://play.xfvod.pro/images/hb/baiquan.jpg',
-    duration: '12:34',
-    uploader: 'UP主1',
-    viewCount: '5.2万',
-    createTime: '3天前'
-  },
-  {
-    id: 2,
-    title: '推荐视频标题2',
-    cover: 'https://play.xfvod.pro/images/hb/lx.jpg',
-    duration: '05:23',
-    uploader: 'UP主2',
-    viewCount: '2.8万',
-    createTime: '1天前'
-  }
 ])
 
 // 添加收缩状态控制
@@ -399,6 +371,25 @@ onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
 })
 
+// 是否已关注
+const isFollowed = ref(false)
+
+// 处理关注/取关
+const handleFollow = async () => {
+  if (!isLogin.value) {
+    eventBus.emit('showLogin')
+    return
+  }
+  
+  try {
+    await followUserService(videoInfo.value.userId, !isFollowed.value)
+    isFollowed.value = !isFollowed.value
+    ElMessage.success(isFollowed.value ? '关注成功' : '已取消关注')
+  } catch (error) {
+    console.error('关注操作失败:', error)
+    ElMessage.error('操作失败，请稍后重试')
+  }
+}
 </script>
 
 <style scoped>
@@ -755,6 +746,18 @@ onUnmounted(() => {
   background: #fb7299;
   border-color: #fb7299;
   font-size: 14px;
+  
+  &.is-followed {
+    background-color: #f4f4f5;
+    border-color: #e4e4e4;
+    color: #606266;
+    
+    &:hover {
+      background-color: #fde2e2;
+      border-color: #fbc4c4;
+      color: #f56c6c;
+    }
+  }
 }
 
 .message-btn {

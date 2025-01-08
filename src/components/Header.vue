@@ -116,7 +116,7 @@ import LoginDialog from '@/components/LoginDialog.vue'
 import UserPopover from '@/components/user/UserPopover.vue'
 import { useTokenStore } from '@/stores/token'
 import useUserInfoStore  from '@/stores/userInfo'
-import { getUserInfoService } from '@/api/user'
+import { getUserInfoService } from '@/api/user/user'
 import { 
   VideoCamera, 
   Message, 

@@ -93,7 +93,7 @@
 import { ref, computed, watch } from 'vue'
 import { Message, Lock, Key, Close } from '@element-plus/icons-vue'
 import {ElMessage} from "element-plus";
-import {resetPasswordService, sendResetEmailCodeService} from "@/api/user";
+import {resetPasswordService, sendResetEmailCodeService} from "@/api/user/user";
 
 const props = defineProps({
   visible: {

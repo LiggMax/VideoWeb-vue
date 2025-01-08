@@ -196,7 +196,7 @@ import {
   Message,
   Key
 } from '@element-plus/icons-vue'
-import {sendEmailCodeService, userLoginService, userRegisterService} from "@/api/user";
+import {sendEmailCodeService, userLoginService, userRegisterService} from "@/api/user/user";
 import {ElMessage} from "element-plus";
 import router from "@/router";
 import {useTokenStore} from "@/stores/token";

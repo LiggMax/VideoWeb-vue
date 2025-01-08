@@ -105,7 +105,7 @@ import useUserInfoStore from '@/stores/userInfo'
 import {ElMessage, ElMessageBox} from "element-plus";
 import {useTokenStore} from "@/stores/token";
 import {deleteVideoService, editVideoService, getUserVideoService, publishVideoService} from "@/api/userVideo";
-import {getUserInfoService} from "@/api/user";
+import {getUserInfoService} from "@/api/user/user";
 import EditProfileContent from '@/components/user/EditUserInformation.vue'
 import UserVideoContent from '@/components/user/UserVideoContent.vue'
 import AnimeManageContent from '@/components/user/AnimeManageContent.vue'

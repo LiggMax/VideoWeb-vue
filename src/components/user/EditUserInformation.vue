@@ -74,7 +74,7 @@ import {ElMessage} from 'element-plus'
 import {Plus} from '@element-plus/icons-vue'
 import {useTokenStore} from '@/stores/token'
 import useUserInfoStore from '@/stores/userInfo'
-import {updateUserInfoService} from '@/api/user'
+import {updateUserInfoService} from '@/api/user/user'
 
 const tokenStore = useTokenStore()
 const userInfoStore = useUserInfoStore()

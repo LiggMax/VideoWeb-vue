@@ -30,7 +30,7 @@
         <!-- 用户基本信息 -->
         <div class="user-header">
           <div class="user-basic">
-            <h3 class="username">{{ userInfo.nickname || userInfo.username }}</h3>
+            <h3 class="username">{{ userInfo.nickname}}</h3>
             <div class="user-level">
               <span>硬币 0</span>
             </div>
@@ -92,7 +92,7 @@ import { User, VideoCamera, Star, Edit } from '@element-plus/icons-vue'
 import useUserInfoStore from '@/stores/userInfo'
 import { useTokenStore } from '@/stores/token'
 import { ElMessage } from 'element-plus'
-import {getUserInfoService, logoutService} from "@/api/user"
+import {getUserInfoService, logoutService} from "@/api/user/user"
 import { useRouter } from 'vue-router'
 
 const userInfoStore = useUserInfoStore()
