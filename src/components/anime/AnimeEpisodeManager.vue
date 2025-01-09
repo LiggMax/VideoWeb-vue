@@ -68,9 +68,32 @@
         
         <el-table-column label="操作" width="150" fixed="right">
           <template #default="scope">
-            <el-button link type="primary" @click="previewEpisode(scope.row)">预览</el-button>
-            <el-button link type="primary" @click="editEpisode(scope.row)">编辑</el-button>
-            <el-button link type="danger" @click="deleteEpisode(scope.row)">删除</el-button>
+            <div class="action-buttons">
+              <el-button 
+                class="action-btn"
+                type="primary" 
+                link
+                @click="previewEpisode(scope.row)"
+              >
+                <el-icon><VideoPlay /></el-icon>
+              </el-button>
+              <el-button 
+                class="action-btn"
+                type="primary" 
+                link
+                @click="editEpisode(scope.row)"
+              >
+                <el-icon><Edit /></el-icon>
+              </el-button>
+              <el-button 
+                class="action-btn"
+                type="danger" 
+                link
+                @click="deleteEpisode(scope.row)"
+              >
+                <el-icon><Delete /></el-icon>
+              </el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -152,7 +175,16 @@
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Upload, CircleCheckFilled, Picture, Back } from '@element-plus/icons-vue'
+import { 
+  Plus, 
+  Upload, 
+  CircleCheckFilled, 
+  Picture, 
+  Back, 
+  VideoPlay, 
+  Edit, 
+  Delete 
+} from '@element-plus/icons-vue'
 import { formatDate } from '@/utils/format'
 import VideoPlayer from '@/components/video/VideoPlayer.vue'
 import { getAnimeDetailService } from '@/api/anime/anime'
@@ -478,5 +510,35 @@ const beforeVideoUpload = (file) => {
   margin-bottom: 20px;
 }
 
-/* 其他样式保持不变... */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.action-btn {
+  padding: 6px;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+.action-btn:hover {
+  background-color: #f5f7fa;
+}
+
+.action-btn :deep(.el-icon) {
+  font-size: 16px;
+  vertical-align: middle;
+}
+
+/* 为不同类型的按钮设置悬停颜色 */
+.action-btn[type="primary"]:hover {
+  color: var(--el-color-primary);
+  background-color: var(--el-color-primary-light-9);
+}
+
+.action-btn[type="danger"]:hover {
+  color: var(--el-color-danger);
+  background-color: var(--el-color-danger-light-9);
+}
 </style> 
