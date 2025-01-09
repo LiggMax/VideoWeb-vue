@@ -487,14 +487,14 @@ const handleDragging = (e) => {
   const progressRect = progressRef.value.getBoundingClientRect()
   const progressWidth = progressRect.width
 
-  // 计算鼠标在进度条上���相对位置
+  // 计算鼠标在进度条上的相对位置
   const offsetX = Math.max(0, Math.min(e.clientX - progressRect.left, progressWidth))
   const newProgress = (offsetX / progressWidth) * 100
 
   // 更新进度条位置
   currentProgress.value = newProgress
 
-  // 同时更新当前时间显示，但不更新��频时间
+  // 同时更新当前时间显示，但不更新视频时间
   currentTime.value = (duration.value * newProgress) / 100
 }
 
@@ -543,7 +543,7 @@ const hideControlsTimer = ref(null)
 // 修改显示控制方法
 const showControls = () => {
   isControlsVisible.value = true
-  // ���除之前的定时器
+  // 清除之前的定时器
   if (hideControlsTimer.value) {
     clearTimeout(hideControlsTimer.value)
   }
@@ -649,10 +649,6 @@ const handleKeyPress = (e) => {
       showVolumeHint()
     }
   }
-  // M 键静音
-  if (e.code === 'KeyM') {
-    toggleMute()
-  }
 }
 
 // 在组件挂载时添加键盘事件监听
@@ -704,7 +700,7 @@ const getLastPlayTime = () => {
   return time ? parseFloat(time) : 0
 }
 
-// 保��播放位置
+// 保存播放位置
 const savePlayTime = (time) => {
   // 只有当播放进度在1%到95%之间时才保存
   if (duration.value) {
