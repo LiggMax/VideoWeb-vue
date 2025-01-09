@@ -43,28 +43,6 @@
             </div>
             <p class="description">{{ anime.description || '暂无简介' }}</p>
           </div>
-          <div class="card-actions">
-            <el-dropdown 
-              trigger="click" 
-              @command="(command) => handleCommand(command, anime)"
-              @click.stop
-            >
-              <el-button circle>
-                <el-icon><MoreFilled /></el-icon>
-              </el-button>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item command="edit">
-                    <el-icon><Edit /></el-icon>编辑信息
-                  </el-dropdown-item>
-                  <el-dropdown-item command="delete" divided>
-                    <el-icon><Delete /></el-icon>
-                    <span class="text-danger">删除番剧</span>
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
-          </div>
         </div>
       </div>
 
@@ -543,11 +521,15 @@ onMounted(() => {
   line-height: 1.5;
 }
 
-.card-actions {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 1;
+.image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  color: #909399;
+  font-size: 24px;
 }
 
 .pagination-container {
@@ -562,25 +544,36 @@ onMounted(() => {
   }
 }
 
-:deep(.el-dropdown-menu__item) {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
+/* 封面上传样式 */
+.cover-uploader {
+  :deep(.el-upload) {
+    width: 200px;
+    height: 280px;
+    border: 1px dashed #d9d9d9;
+    border-radius: 8px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      border-color: #fb7299;
+    }
+  }
 }
 
-.text-danger {
-  color: #f56c6c;
+.uploaded-cover {
+  width: 200px;
+  height: 280px;
+  object-fit: cover;
+  display: block;
 }
 
-.image-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f5f5f5;
-  color: #909399;
-  font-size: 24px;
+.upload-icon {
+  font-size: 28px;
+  color: #8c939d;
 }
 </style> 
