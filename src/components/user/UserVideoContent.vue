@@ -113,13 +113,13 @@
             name="video"
             :limit="1"
             :on-exceed="handleVideoExceed"
-            accept=".mp4,.mov,.avi"
+            accept=".mp4,.mov,.avi,.mkv"
           >
             <div class="video-upload-box">
               <template v-if="!form.videoUrl">
                 <el-icon class="upload-icon"><VideoCamera /></el-icon>
                 <div class="upload-text">点击上传视频</div>
-                <div class="upload-tip">支持 mp4/mov/avi 格式，最大 500MB</div>
+                <div class="upload-tip">支持 mp4/mov/avi 格式，</div>
               </template>
               <template v-else>
                 <div class="video-preview">
@@ -299,13 +299,8 @@ const handleVideoSuccess = (response) => {
 }
 
 const beforeVideoUpload = (file) => {
-  const isValidFormat = ['video/mp4', 'video/quicktime', 'video/x-msvideo'].includes(file.type)
   const isLt500M = file.size / 1024 / 1024 < 1500
 
-  if (!isValidFormat) {
-    ElMessage.error('请上传正确的视频格式!')
-    return false
-  }
   if (!isLt500M) {
     ElMessage.error('视频大小不能超过 1.5G!')
     return false
