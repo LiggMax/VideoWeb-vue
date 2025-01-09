@@ -41,23 +41,6 @@
             <div class="anime-info">
               <div class="info-header">
                 <div class="title">{{ scope.row.title }}</div>
-                <el-dropdown trigger="click" @command="(command) => handleCommand(command, scope.row)">
-                  <div class="more-btn">
-                    <el-icon><MoreFilled /></el-icon>
-                  </div>
-                  <template #dropdown>
-                    <el-dropdown-menu>
-                      <el-dropdown-item command="edit">
-                        <el-icon><Edit /></el-icon>
-                        编辑信息
-                      </el-dropdown-item>
-                      <el-dropdown-item command="delete" divided>
-                        <el-icon><Delete /></el-icon>
-                        <span class="text-danger">删除番剧</span>
-                      </el-dropdown-item>
-                    </el-dropdown-menu>
-                  </template>
-                </el-dropdown>
               </div>
               <div class="description">{{ scope.row.description || '暂无简介' }}</div>
               <div class="meta-info">

@@ -108,7 +108,7 @@ import {deleteVideoService, editVideoService, getUserVideoService, publishVideoS
 import {getUserInfoService} from "@/api/user/user";
 import EditProfileContent from '@/components/user/EditUserInformation.vue'
 import UserVideoContent from '@/components/user/UserVideoContent.vue'
-import AnimeManageContent from '@/components/user/AnimeManageContent.vue'
+import AnimeManageContent from '@/components/AnimeManageContent.vue'
 
 const router = useRouter()
 const userInfoStore = useUserInfoStore()

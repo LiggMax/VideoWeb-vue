@@ -154,8 +154,8 @@
 <script setup>
 import { ref, onMounted, computed, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import {getVideoDetailService, getVideoListService} from '@/api/video' // 假设你会创建这个API服务
-import { VideoPlay, Plus, ChatDotRound, CaretRight, ChatRound } from '@element-plus/icons-vue'
+import {getVideoDetailService} from '@/api/video' // 假设你会创建这个API服务
+import {  Plus, ChatDotRound,  ChatRound } from '@element-plus/icons-vue'
 import VideoPlayer from '@/components/video/VideoPlayer.vue'
 import {ElMessage, ElMessageBox} from "element-plus";
 import useUserInfoStore from '@/stores/userInfo'
