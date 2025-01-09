@@ -50,7 +50,7 @@
         
         <el-table-column label="标题" min-width="200">
           <template #default="scope">
-            <div class="episode-title">{{ scope.row.title }}</div>
+            <div class="episode-title">{{ scope.row.episodeTitle || scope.row.title }}</div>
           </template>
         </el-table-column>
         
@@ -62,7 +62,7 @@
         
         <el-table-column label="上传时间" width="180">
           <template #default="scope">
-            <span>{{ formatDate(scope.row.createTime) }}</span>
+            <span>{{ formatDate(scope.row.airDate || scope.row.createTime) }}</span>
           </template>
         </el-table-column>
         
@@ -149,7 +149,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Upload, CircleCheckFilled, Picture, Back } from '@element-plus/icons-vue'
@@ -176,11 +176,17 @@ const getStatusLabel = (status) => {
   return labels[status] || '未知'
 }
 
-const route = useRoute()
 const router = useRouter()
 
 // 番剧信息
-const animeInfo = ref({})
+const animeInfo = ref({
+  title: '',
+  coverImage: '',
+  description: '',
+  status: '',
+  releaseDate: '',
+  episodes: []
+})
 const episodeDialogVisible = ref(false)
 const previewDialogVisible = ref(false)
 const previewUrl = ref('')
@@ -221,13 +227,38 @@ const props = defineProps({
 
 // 获取番剧详情
 const getAnimeDetail = async () => {
-  try {
-    const res = await getAnimeDetailService(props.animeId)
-    animeInfo.value = res.data
-  } catch (error) {
-    ElMessage.error('获取番剧信息失败')
+  const res = await getAnimeDetailService(props.animeId)
+  if (res.code === 0) {
+    // 从 data 数组中获取第一个元素，因为接口返回的是数组
+    const animeData = res.data[0]
+    if (animeData) {
+      animeInfo.value = {
+        animeId: animeData.animeId,
+        title: animeData.title,
+        coverImage: animeData.coverImage,
+        description: animeData.description,
+        status: animeData.status,
+        releaseDate: animeData.releaseDate,
+        episodes: [{
+          episodeId: animeData.episodeId,
+          number: animeData.episodeNumber,
+          title: animeData.episodeTitle,
+          duration: animeData.duration,
+          videoUrl: animeData.episodeImage,
+          createTime: animeData.airDate,
+          updateTime: animeData.airDate
+        }]
+      }
+    }
   }
 }
+
+// 添加 watch 以监听 animeId 的变化
+watch(() => props.animeId, (newId) => {
+  if (newId) {
+    getAnimeDetail()
+  }
+}, { immediate: true })
 
 // 格式化时长
 const formatDuration = (minutes) => {
@@ -244,9 +275,112 @@ const backToList = () => {
   emit('update')
 }
 
-onMounted(() => {
-  getAnimeDetail()
-})
+// 预览剧集
+const previewEpisode = (episode) => {
+  previewUrl.value = episode.videoUrl
+  previewDialogVisible.value = true
+}
+
+// 编辑剧集
+const editEpisode = (episode) => {
+  isEdit.value = true
+  episodeForm.value = {
+    number: episode.number,
+    title: episode.title,
+    videoUrl: episode.videoUrl,
+    videoName: `第${episode.number}集`
+  }
+  episodeDialogVisible.value = true
+}
+
+// 删除剧集
+const deleteEpisode = async (episode) => {
+  try {
+    await ElMessageBox.confirm('确定要删除这个剧集吗？', '警告', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    // 这里添加删除逻辑
+    ElMessage.success('删除成功')
+    await getAnimeDetail()
+  } catch (error) {
+    console.log('取消删除')
+  }
+}
+
+// 显示添加剧集对话框
+const showAddEpisodeDialog = () => {
+  isEdit.value = false
+  episodeForm.value = {
+    number: (animeInfo.value.episodes?.length || 0) + 1,
+    title: '',
+    videoUrl: '',
+    videoName: ''
+  }
+  episodeDialogVisible.value = true
+}
+
+// 上传视频
+const uploadVideo = async (options) => {
+  try {
+    uploading.value = true
+    // 模拟上传延迟
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    episodeForm.value.videoUrl = 'https://example.com/uploaded-video.mp4'
+    episodeForm.value.videoName = options.file.name
+    ElMessage.success('视频上传成功')
+  } catch (error) {
+    ElMessage.error('上传失败')
+  } finally {
+    uploading.value = false
+  }
+}
+
+// 移除视频
+const removeVideo = () => {
+  episodeForm.value.videoUrl = ''
+  episodeForm.value.videoName = ''
+}
+
+// 提交表单
+const submitEpisodeForm = async () => {
+  if (!episodeFormRef.value) return
+  
+  try {
+    await episodeFormRef.value.validate()
+    
+    if (isEdit.value) {
+      // 编辑逻辑
+      await updateEpisodeService(props.animeId, episodeForm.value)
+      ElMessage.success('更新成功')
+    } else {
+      // 添加逻辑
+      await addEpisodeService(props.animeId, episodeForm.value)
+      ElMessage.success('添加成功')
+    }
+    
+    episodeDialogVisible.value = false
+    await getAnimeDetail()
+  } catch (error) {
+    console.error(error)
+    ElMessage.error('操作失败')
+  }
+}
+
+// 视频上传前验证
+const beforeVideoUpload = (file) => {
+  const isMP4 = file.type === 'video/mp4'
+  const isLt500M = file.size / 1024 / 1024 < 500
+
+  if (!isMP4) {
+    ElMessage.error('请上传 MP4 格式的视频!')
+  }
+  if (!isLt500M) {
+    ElMessage.error('视频大小不能超过 500MB!')
+  }
+  return isMP4 && isLt500M
+}
 </script>
 
 <style scoped>
