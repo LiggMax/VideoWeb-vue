@@ -42,6 +42,19 @@ const routes = [
     name: 'Chat',
     component: () => import('@/views/UserChat.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/anime/manage/:id',
+    name: 'AnimeEpisodeManager',
+    component: () => import('@/components/anime/AnimeEpisodeManager.vue')
+  },
+  {
+    path: '/anime/episode/:id',
+    name: 'AnimeEpisodeManager',
+    component: () => import('@/components/anime/AnimeEpisodeManager.vue'),
+    meta: {
+      requiresAuth: true
+    }
   }
 ]
 

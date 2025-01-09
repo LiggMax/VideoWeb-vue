@@ -15,7 +15,7 @@
           v-for="anime in animeList" 
           :key="anime.id" 
           class="anime-card"
-          @click="showEpisodeManager(anime)"
+          @click="handleAnimeClick(anime.animeId)"
         >
           <div class="cover-wrapper">
             <el-image 
@@ -39,7 +39,7 @@
               <el-tag :type="getStatusType(anime.status)" size="small">
                 {{ getStatusLabel(anime.status) }}
               </el-tag>
-              <span class="release-date">{{ formatDate(anime.releaseDate) }}</span>
+              <span class="release-date">{{ anime.releaseDate }} : 首播</span>
             </div>
             <p class="description">{{ anime.description || '暂无简介' }}</p>
           </div>
@@ -168,6 +168,7 @@ import {
 } from "@/api/anime/anime"
 import { formatDate} from "@/utils/format";
 import AnimeEpisodeManager from './anime/AnimeEpisodeManager.vue'
+import { useRouter } from 'vue-router'
 
 const animeList = ref([])
 const animeDialogVisible = ref(false)
@@ -180,6 +181,8 @@ const pageParams = ref({
   pageNum: 1,
   pageSize: 10
 })
+
+const router = useRouter()
 
 // 番剧状态选项
 const statusOptions = [
@@ -357,9 +360,6 @@ const submitEpisodeForm = async () => {
   }
 }
 
-
-
-
 // 获取状态对应的标签类型
 const getStatusType = (status) => {
   const types = {
@@ -415,6 +415,12 @@ const handleCommand = async (command, row) => {
       } catch {}
       break
   }
+}
+
+const emit = defineEmits(['select-anime'])
+
+const handleAnimeClick = (animeId) => {
+  emit('select-anime', animeId)
 }
 
 onMounted(() => {
@@ -575,5 +581,14 @@ onMounted(() => {
 .upload-icon {
   font-size: 28px;
   color: #8c939d;
+}
+
+.anime-card {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.anime-card:hover {
+  transform: translateY(-5px);
 }
 </style> 

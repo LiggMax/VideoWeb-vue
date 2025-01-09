@@ -1,5 +1,12 @@
 <template>
   <div class="episode-manager">
+    <!-- 返回按钮 -->
+    <div class="page-header">
+      <el-button @click="backToList">
+        <el-icon><Back /></el-icon>返回列表
+      </el-button>
+    </div>
+
     <!-- 番剧基本信息卡片 -->
     <div class="anime-info-card">
       <div class="cover-section">
@@ -14,7 +21,7 @@
       <div class="info-section">
         <h2 class="title">{{ animeInfo.title }}</h2>
         <div class="meta-info">
-          <el-tag :type="getStatusType(animeInfo.status)" size="small">
+          <el-tag :type="getStatusTagType(animeInfo.status)" size="small">
             {{ getStatusLabel(animeInfo.status) }}
           </el-tag>
           <span class="release-date">首播: {{ formatDate(animeInfo.releaseDate) }}</span>
@@ -143,18 +150,34 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Upload, CircleCheckFilled, Picture } from '@element-plus/icons-vue'
+import { Plus, Upload, CircleCheckFilled, Picture, Back } from '@element-plus/icons-vue'
 import { formatDate } from '@/utils/format'
 import VideoPlayer from '@/components/video/VideoPlayer.vue'
 import { getAnimeDetailService, addEpisodeService, deleteEpisodeService, updateEpisodeService } from '@/api/anime/anime'
 
-const props = defineProps({
-  animeId: {
-    type: [String, Number],
-    required: true
+// 添加状态处理函数
+const getStatusTagType = (status) => {
+  const types = {
+    'ongoing': 'success',
+    'completed': 'info',
+    'hiatus': 'warning'
   }
-})
+  return types[status] || 'info'
+}
+
+const getStatusLabel = (status) => {
+  const labels = {
+    'ongoing': '连载中',
+    'completed': '已完结',
+    'hiatus': '暂停'
+  }
+  return labels[status] || '未知'
+}
+
+const route = useRoute()
+const router = useRouter()
 
 // 番剧信息
 const animeInfo = ref({})
@@ -188,6 +211,14 @@ const episodeRules = {
   ]
 }
 
+// 在 props 中添加 animeId
+const props = defineProps({
+  animeId: {
+    type: [String, Number],
+    required: true
+  }
+})
+
 // 获取番剧详情
 const getAnimeDetail = async () => {
   try {
@@ -206,7 +237,12 @@ const formatDuration = (minutes) => {
   return hours ? `${hours}小时${mins}分钟` : `${mins}分钟`
 }
 
-// 其他方法保持不变...
+// 返回列表
+const emit = defineEmits(['update'])
+
+const backToList = () => {
+  emit('update')
+}
 
 onMounted(() => {
   getAnimeDetail()
@@ -292,6 +328,10 @@ onMounted(() => {
 
 .upload-area:hover {
   border-color: #409eff;
+}
+
+.page-header {
+  margin-bottom: 20px;
 }
 
 /* 其他样式保持不变... */

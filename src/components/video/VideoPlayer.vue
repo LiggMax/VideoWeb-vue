@@ -859,11 +859,339 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss">
-@import '@/styles/components/video/player';
-@import '@/styles/components/video/controls';
-@import '@/styles/components/video/volume';
-@import '@/styles/components/video/loading';
+// 播放器基础容器样式
+.video-player {
+  width: 100%;
+  background: #000;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  user-select: none;
+  -webkit-user-select: none;
+  min-width: 680px;
+  min-height: 470px;
+}
 
+.video-element {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+
+  &.playing {
+    object-fit: contain;
+  }
+
+  // 自定义播放器控件样式
+  &::-webkit-media-controls-panel {
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.5));
+  }
+
+  &::-webkit-media-controls-play-button {
+    border-radius: 50%;
+    transition: all 0.3s;
+  }
+
+  &::-webkit-media-controls-timeline {
+    border-radius: 2px;
+  }
+
+  &::-webkit-media-controls-volume-slider {
+    border-radius: 2px;
+  }
+
+  &::-webkit-media-controls-mute-button {
+    border-radius: 50%;
+  }
+}
+
+// 视频标题样式
+.video-title {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 16px 20px;
+  background: linear-gradient(rgba(0, 0, 0, 0.7), transparent);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.3s;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+
+  .video-player:hover & {
+    opacity: 1;
+  }
+}
+
+// 响应式样式
+@media screen and (max-width: 768px) {
+  .video-player {
+    min-width: 320px;
+    min-height: 180px;
+  }
+}
+// 音量控制样式
+.volume-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 48px;
+}
+
+.volume-btn-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 100%;
+
+  &:hover .volume-slider {
+    width: 80px;
+    opacity: 1;
+  }
+}
+
+.volume-slider {
+  width: 0;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  transition: width 0.3s ease;
+  opacity: 0;
+}
+
+// 添加音量进度条样式
+.volume-progress {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: #fff;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #fb7299;
+    transform: scaleY(1.2);
+  }
+}
+
+// 音量按钮样式
+.volume-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  padding: 10px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s;
+
+  svg {
+    width: 28px;
+    height: 28px;
+    transition: transform 0.2s;
+  }
+
+  &:hover {
+    color: #fb7299;
+
+    svg {
+      transform: scale(1.1);
+    }
+  }
+}
+
+// 音量指示器样式
+.volume-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: rgba(255, 255, 255, 0.85);
+  z-index: 100;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.volume-indicator-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 200px;
+}
+
+.volume-icon {
+  font-size: 28px;
+  color: rgba(251, 114, 153, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(251, 114, 153, 0.06);
+  border-radius: 8px;
+  animation: scaleIcon 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  svg {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+.volume-control-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.volume-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.volume-bar-fill {
+  height: 100%;
+  background: rgba(251, 114, 153, 0.8);
+  border-radius: 2px;
+  transition: width 0.2s ease;
+}
+
+.volume-value {
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 40px;
+  text-align: right;
+  color: rgba(255, 255, 255, 0.85);
+  animation: fadeInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// 动画
+@keyframes scaleIcon {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// 过渡动画
+.volume-indicator-enter-active,
+.volume-indicator-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.volume-indicator-enter-from,
+.volume-indicator-leave-to {
+  opacity: 0;
+}
+// 播放器基础容器样式
+.video-player {
+  width: 100%;
+  background: #000;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  user-select: none;
+  -webkit-user-select: none;
+  min-width: 680px;
+  min-height: 470px;
+}
+
+.video-element {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+
+  &.playing {
+    object-fit: contain;
+  }
+
+  // 自定义播放器控件样式
+  &::-webkit-media-controls-panel {
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.5));
+  }
+
+  &::-webkit-media-controls-play-button {
+    border-radius: 50%;
+    transition: all 0.3s;
+  }
+
+  &::-webkit-media-controls-timeline {
+    border-radius: 2px;
+  }
+
+  &::-webkit-media-controls-volume-slider {
+    border-radius: 2px;
+  }
+
+  &::-webkit-media-controls-mute-button {
+    border-radius: 50%;
+  }
+}
+
+// 视频标题样式
+.video-title {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 16px 20px;
+  background: linear-gradient(rgba(0, 0, 0, 0.7), transparent);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.3s;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+
+  .video-player:hover & {
+    opacity: 1;
+  }
+}
+
+// 响应式样式
+@media screen and (max-width: 768px) {
+  .video-player {
+    min-width: 320px;
+    min-height: 180px;
+  }
+}
 /* 更新弹幕输入区域样式 */
 .danmaku-input-area {
   display: flex;
@@ -911,5 +1239,453 @@ onUnmounted(() => {
   .danmaku-toggle {
     margin-left: auto; /* 将弹幕开关按钮推到右侧 */
   }
+}
+// 加载动画样式
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.loading-text {
+  color: #fff;
+  font-size: 14px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.circular {
+  width: 42px;
+  height: 42px;
+  animation: loading-rotate 2s linear infinite;
+}
+
+.path {
+  stroke-dasharray: 90, 150;
+  stroke-dashoffset: 0;
+  stroke-width: 3;
+  stroke: #fb7299;
+  stroke-linecap: round;
+  animation: loading-dash 1.5s ease-in-out infinite;
+}
+
+@keyframes loading-rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loading-dash {
+  0% {
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -40px;
+  }
+  100% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -120px;
+  }
+}
+// 自定义控制栏
+.custom-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  padding: 10px;
+  opacity: 1;
+  transition: opacity 0.3s;
+}
+
+// 进度条样式
+.progress-bar {
+  position: relative;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: height 0.2s;
+  margin-bottom: 10px;
+  user-select: none;
+
+  &:hover {
+    height: 6px;
+
+    .progress-handle {
+      opacity: 1;
+    }
+
+    .progress-current {
+      background: #fb7299;
+    }
+  }
+}
+
+.progress-current {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: #fb7299;
+  transition: none;
+  pointer-events: none;
+}
+
+.progress-handle {
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  background: #fb7299;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  z-index: 2;
+
+  &.is-dragging {
+    opacity: 1;
+  }
+}
+
+.progress-loaded {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+  z-index: 1;
+}
+
+// 时间提示工具
+.time-tooltip {
+  position: absolute;
+  top: -30px;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+// 控制栏布局
+.controls-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #fff;
+  gap: 16px;
+  padding: 0 24px;
+  position: relative;
+  height: 48px;
+}
+
+// 左侧控制按钮
+.left-controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 200px;
+  z-index: 2;
+}
+
+// 中间区域
+.danmaku-input-area {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 800px;
+  min-width: 400px;
+  width: 60%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s;
+  z-index: 1;
+
+  @media screen and (max-width: 1200px) {
+    width: 50%;
+  }
+
+  @media screen and (max-width: 900px) {
+    width: 40%;
+  }
+}
+
+// 右侧控制按钮
+.right-controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 200px;
+  justify-content: flex-end;
+  z-index: 2;
+}
+
+// 控制按钮
+.control-btn {
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  min-width: 32px;
+  min-height: 32px;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  &:hover {
+    color: #fb7299;
+    transform: scale(1.1);
+  }
+}
+
+// 播放按钮
+.play-btn {
+  width: 40px;
+  height: 40px;
+  padding: 6px;
+}
+
+// 浮动播放按钮
+.float-play-btn {
+  position: absolute;
+  right: 20px;
+  bottom: 70px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.8);
+  z-index: 3;
+  filter: drop-shadow(0 1px 1px #000);
+  transition: all 0.3s ease;
+
+  &:hover {
+    color: #fb7299;
+    transform: scale(1.1);
+  }
+}
+
+// 时间显示
+.time-display {
+  font-size: 14px;
+  min-width: 85px;
+}
+
+// 播放速度按钮
+.speed-btn {
+  .speed-text {
+    color: #fff;
+    font-size: 14px;
+  }
+}
+
+// 全屏按钮
+.fullscreen-btn {
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+// 收缩按钮
+.collapse-trigger {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 60px;
+  width: 24px;
+  transition: all 0.3s ease;
+  z-index: 100;
+
+  .collapse-btn {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 24px;
+    height: 60px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px 0 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(2px);
+
+    &:hover {
+      background: rgba(251, 114, 153, 0.95);
+      width: 28px;
+    }
+
+    svg {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.95);
+      transition: transform 0.3s ease;
+    }
+  }
+
+  &.is-collapsed svg {
+    transform: rotate(180deg);
+  }
+}
+
+// 播放结束遮罩
+.end-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  .replay-button {
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    padding: 12px 24px;
+    border-radius: 4px;
+    background: rgba(251, 114, 153, 0.9);
+    transition: all 0.3s;
+
+    &:hover {
+      background: #fb7299;
+      transform: scale(1.05);
+    }
+  }
+}
+
+// 继续播放提示
+.resume-tip {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: transparent;
+  border-radius: 8px;
+  padding: 12px 16px;
+  z-index: 100;
+  min-width: 200px;
+
+  &-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 8px 12px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  &-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.95);
+  }
+
+  &-time {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+  }
+}
+
+// 淡入淡出动画
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+// 弹幕输入区域
+.danmaku-input {
+  flex: 1;
+  max-width: calc(100% - 100px);
+
+  :deep(.el-input__wrapper) {
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: none;
+    border: none;
+    width: 100%;
+    height: 36px;
+
+    &:hover, &.is-focus {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .el-input__inner {
+      color: #fff;
+      height: 36px;
+      line-height: 36px;
+      padding: 0 15px;
+
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+      }
+    }
+  }
+
+  :deep(.el-input-group__append) {
+    padding: 0 20px;
+  }
+
+  :deep(.el-input-group__prepend) {
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+}
+
+// 调整颜色选择器和开关的大小
+.danmaku-color-picker,
+.danmaku-toggle {
+  flex-shrink: 0;
+  width: 42px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style> 

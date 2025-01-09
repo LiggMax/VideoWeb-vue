@@ -68,7 +68,15 @@
 
           <!-- 番剧管理内容 -->
           <template v-if="currentNav === 'anime'">
-            <anime-manage-content />
+            <div v-if="!currentAnimeId">
+              <anime-manage-content @select-anime="handleAnimeSelect" />
+            </div>
+            <div v-else>
+              <anime-episode-manager 
+                :anime-id="currentAnimeId" 
+                @update="handleBackToAnimeList"
+              />
+            </div>
           </template>
 
           <!-- 其他导航内容的空状态 -->
@@ -99,7 +107,8 @@ import {
   Delete,
   Plus,
   CircleCheckFilled,
-  Film
+  Film,
+  Back
 } from '@element-plus/icons-vue'
 import useUserInfoStore from '@/stores/userInfo'
 import {ElMessage, ElMessageBox} from "element-plus";
@@ -109,6 +118,7 @@ import {getUserInfoService} from "@/api/user/user";
 import EditProfileContent from '@/components/user/EditUserInformation.vue'
 import UserVideoContent from '@/components/user/UserVideoContent.vue'
 import AnimeManageContent from '@/components/AnimeManageContent.vue'
+import AnimeEpisodeManager from '@/components/anime/AnimeEpisodeManager.vue'
 
 const router = useRouter()
 const userInfoStore = useUserInfoStore()
@@ -376,6 +386,20 @@ const goToEditProfile = () => {
 
 const handleNavClick = (item) => {
   currentNav.value = item.name
+}
+
+const currentAnimeId = ref(null)
+
+const handleAnimeSelect = (animeId) => {
+  currentAnimeId.value = animeId
+}
+
+const handleBackToAnimeList = () => {
+  currentAnimeId.value = null
+}
+
+const handleEpisodeUpdate = () => {
+  // Handle episode update logic here
 }
 </script>
 
