@@ -155,7 +155,8 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Upload, CircleCheckFilled, Picture, Back } from '@element-plus/icons-vue'
 import { formatDate } from '@/utils/format'
 import VideoPlayer from '@/components/video/VideoPlayer.vue'
-import { getAnimeDetailService, addEpisodeService, deleteEpisodeService, updateEpisodeService } from '@/api/anime/anime'
+import { getAnimeDetailService } from '@/api/anime/anime'
+import { getAnimeEpisodeService } from '@/api/anime/animeEpisode'
 
 // 添加状态处理函数
 const getStatusTagType = (status) => {
@@ -229,7 +230,6 @@ const props = defineProps({
 const getAnimeDetail = async () => {
   const res = await getAnimeDetailService(props.animeId)
   if (res.code === 0) {
-    // 从 data 数组中获取第一个元素，因为接口返回的是数组
     const animeData = res.data[0]
     if (animeData) {
       animeInfo.value = {
@@ -239,17 +239,27 @@ const getAnimeDetail = async () => {
         description: animeData.description,
         status: animeData.status,
         releaseDate: animeData.releaseDate,
-        episodes: [{
-          episodeId: animeData.episodeId,
-          number: animeData.episodeNumber,
-          title: animeData.episodeTitle,
-          duration: animeData.duration,
-          videoUrl: animeData.episodeImage,
-          createTime: animeData.airDate,
-          updateTime: animeData.airDate
-        }]
+        episodes: []
       }
+      // 获取剧集信息
+      getEpisodes()
     }
+  }
+}
+
+// 获取剧集列表
+const getEpisodes = async () => {
+  const res = await getAnimeEpisodeService(props.animeId)
+  if (res.code === 0) {
+    animeInfo.value.episodes = res.data.map(episode => ({
+      episodeId: episode.episodeId,
+      number: episode.episodeNumber,
+      title: episode.episodeTitle,
+      duration: episode.duration,
+      videoUrl: episode.episodeImage,
+      createTime: episode.airDate,
+      updateTime: episode.airDate
+    }))
   }
 }
 
