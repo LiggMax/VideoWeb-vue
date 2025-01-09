@@ -597,14 +597,16 @@ const handleNavClick = (item) => {
 .content-wrap {
   background: #fff;
   min-height: calc(100vh - 364px);
+  width: 100%;
 }
 
 .content-main {
-  max-width: 1100px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: 100%;
   padding: 20px;
   display: flex;
   gap: 24px;
+  justify-content: flex-start;
 }
 
 .side-nav {
@@ -614,6 +616,9 @@ const handleNavClick = (item) => {
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 16px;
+  position: sticky;
+  top: 84px;
+  align-self: flex-start;
 }
 
 .nav-item {
@@ -663,6 +668,7 @@ const handleNavClick = (item) => {
   background: #fff;
   border-radius: 8px;
   padding: 24px;
+  max-width: calc(100% - 224px); /* 200px侧边栏 + 24px间距 */
 }
 
 .empty-state {
@@ -732,18 +738,17 @@ const handleNavClick = (item) => {
   }
 
   .content-main {
-    padding: 1200px;
+    flex-direction: column;
+    padding: 12px;
   }
 
   .side-nav {
-    width: 150px;
-  }
-
-  .nav-item {
-    padding: 8px 12px;
+    width: 100%;
+    position: static;
   }
 
   .main-content {
+    max-width: 100%;
     min-height: 300px;
     padding: 16px;
   }

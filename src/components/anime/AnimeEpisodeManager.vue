@@ -1,0 +1,298 @@
+<template>
+  <div class="episode-manager">
+    <!-- 番剧基本信息卡片 -->
+    <div class="anime-info-card">
+      <div class="cover-section">
+        <el-image :src="animeInfo.coverImage" fit="cover" class="cover-image">
+          <template #error>
+            <div class="image-placeholder">
+              <el-icon><Picture /></el-icon>
+            </div>
+          </template>
+        </el-image>
+      </div>
+      <div class="info-section">
+        <h2 class="title">{{ animeInfo.title }}</h2>
+        <div class="meta-info">
+          <el-tag :type="getStatusType(animeInfo.status)" size="small">
+            {{ getStatusLabel(animeInfo.status) }}
+          </el-tag>
+          <span class="release-date">首播: {{ formatDate(animeInfo.releaseDate) }}</span>
+          <span class="episode-count">总集数: {{ animeInfo.episodes?.length || 0 }}</span>
+        </div>
+        <p class="description">{{ animeInfo.description || '暂无简介' }}</p>
+      </div>
+    </div>
+
+    <!-- 剧集管理区域 -->
+    <div class="episodes-section">
+      <div class="section-header">
+        <h3>剧集列表</h3>
+        <el-button type="primary" @click="showAddEpisodeDialog">
+          <el-icon><Plus /></el-icon>添加剧集
+        </el-button>
+      </div>
+
+      <!-- 剧集列表 -->
+      <el-table :data="animeInfo.episodes" style="width: 100%" row-key="number">
+        <el-table-column label="集数" width="80" align="center">
+          <template #default="scope">
+            <span class="episode-number">第{{ scope.row.number }}集</span>
+          </template>
+        </el-table-column>
+        
+        <el-table-column label="标题" min-width="200">
+          <template #default="scope">
+            <div class="episode-title">{{ scope.row.title }}</div>
+          </template>
+        </el-table-column>
+        
+        <el-table-column label="时长" width="100" align="center">
+          <template #default="scope">
+            <span>{{ formatDuration(scope.row.duration) }}</span>
+          </template>
+        </el-table-column>
+        
+        <el-table-column label="上传时间" width="180">
+          <template #default="scope">
+            <span>{{ formatDate(scope.row.createTime) }}</span>
+          </template>
+        </el-table-column>
+        
+        <el-table-column label="操作" width="150" fixed="right">
+          <template #default="scope">
+            <el-button link type="primary" @click="previewEpisode(scope.row)">预览</el-button>
+            <el-button link type="primary" @click="editEpisode(scope.row)">编辑</el-button>
+            <el-button link type="danger" @click="deleteEpisode(scope.row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+
+    <!-- 添加/编辑剧集对话框 -->
+    <el-dialog
+      v-model="episodeDialogVisible"
+      :title="isEdit ? '编辑剧集' : '添加剧集'"
+      width="50%"
+    >
+      <el-form :model="episodeForm" label-width="80px" :rules="episodeRules" ref="episodeFormRef">
+        <el-form-item label="集数" prop="number">
+          <el-input-number 
+            v-model="episodeForm.number" 
+            :min="1"
+            controls-position="right"
+            placeholder="请输入集数"
+          />
+        </el-form-item>
+        <el-form-item label="标题" prop="title">
+          <el-input 
+            v-model="episodeForm.title" 
+            placeholder="请输入剧集标题"
+            maxlength="50"
+            show-word-limit
+          />
+        </el-form-item>
+        <el-form-item label="视频" prop="videoUrl">
+          <el-upload
+            class="video-uploader"
+            :http-request="uploadVideo"
+            :show-file-list="false"
+            accept="video/*"
+            :before-upload="beforeVideoUpload"
+          >
+            <div v-if="!episodeForm.videoUrl" class="upload-area">
+              <el-icon class="upload-icon"><Upload /></el-icon>
+              <div class="upload-text">点击上传视频</div>
+              <div class="upload-tip">支持 MP4、WebM 格式</div>
+            </div>
+            <div v-else class="video-preview">
+              <el-icon class="success-icon"><CircleCheckFilled /></el-icon>
+              <div class="video-info">
+                <div class="video-name">{{ episodeForm.videoName }}</div>
+              </div>
+              <el-button link type="danger" @click.stop="removeVideo">删除</el-button>
+            </div>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="episodeDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitEpisodeForm" :loading="uploading">
+            {{ uploading ? '上传中...' : '确定' }}
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
+
+    <!-- 视频预览对话框 -->
+    <el-dialog
+      v-model="previewDialogVisible"
+      title="视频预览"
+      width="70%"
+      :destroy-on-close="true"
+    >
+      <video-player
+        v-if="previewUrl"
+        :video-url="previewUrl"
+        :auto-play="true"
+      />
+    </el-dialog>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { Plus, Upload, CircleCheckFilled, Picture } from '@element-plus/icons-vue'
+import { formatDate } from '@/utils/format'
+import VideoPlayer from '@/components/video/VideoPlayer.vue'
+import { getAnimeDetailService, addEpisodeService, deleteEpisodeService, updateEpisodeService } from '@/api/anime/anime'
+
+const props = defineProps({
+  animeId: {
+    type: [String, Number],
+    required: true
+  }
+})
+
+// 番剧信息
+const animeInfo = ref({})
+const episodeDialogVisible = ref(false)
+const previewDialogVisible = ref(false)
+const previewUrl = ref('')
+const isEdit = ref(false)
+const uploading = ref(false)
+
+// 表单相关
+const episodeFormRef = ref(null)
+const episodeForm = ref({
+  number: 1,
+  title: '',
+  videoUrl: '',
+  videoName: ''
+})
+
+// 表单校验规则
+const episodeRules = {
+  number: [
+    { required: true, message: '请输入集数', trigger: 'blur' },
+    { type: 'number', min: 1, message: '集数必须大于0', trigger: 'blur' }
+  ],
+  title: [
+    { required: true, message: '请输入剧集标题', trigger: 'blur' },
+    { min: 1, max: 50, message: '标题长度在1-50个字符之间', trigger: 'blur' }
+  ],
+  videoUrl: [
+    { required: true, message: '请上传视频', trigger: 'change' }
+  ]
+}
+
+// 获取番剧详情
+const getAnimeDetail = async () => {
+  try {
+    const res = await getAnimeDetailService(props.animeId)
+    animeInfo.value = res.data
+  } catch (error) {
+    ElMessage.error('获取番剧信息失败')
+  }
+}
+
+// 格式化时长
+const formatDuration = (minutes) => {
+  if (!minutes) return '未知'
+  const hours = Math.floor(minutes / 60)
+  const mins = minutes % 60
+  return hours ? `${hours}小时${mins}分钟` : `${mins}分钟`
+}
+
+// 其他方法保持不变...
+
+onMounted(() => {
+  getAnimeDetail()
+})
+</script>
+
+<style scoped>
+.episode-manager {
+  padding: 20px;
+}
+
+.anime-info-card {
+  display: flex;
+  gap: 24px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+
+.cover-section {
+  flex-shrink: 0;
+}
+
+.cover-image {
+  width: 200px;
+  height: 280px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.info-section {
+  flex: 1;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 500;
+  color: #18191c;
+  margin-bottom: 16px;
+}
+
+.meta-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.description {
+  font-size: 14px;
+  color: #61666d;
+  line-height: 1.6;
+}
+
+.episodes-section {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.episode-number {
+  font-weight: 500;
+}
+
+.upload-area {
+  text-align: center;
+  padding: 24px;
+  border: 1px dashed #dcdfe6;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.upload-area:hover {
+  border-color: #409eff;
+}
+
+/* 其他样式保持不变... */
+</style> 
