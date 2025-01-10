@@ -10,7 +10,12 @@
     <!-- 番剧基本信息卡片 -->
     <div class="anime-info-card">
       <div class="cover-section">
-        <el-image :src="animeInfo.coverImage" fit="cover" class="cover-image">
+        <el-image 
+          :src="animeInfo.coverImage" 
+          fit="cover" 
+          class="cover-image"
+          :preview-src-list="[animeInfo.coverImage]"
+        >
           <template #error>
             <div class="image-placeholder">
               <el-icon><Picture /></el-icon>
@@ -41,7 +46,13 @@
       </div>
 
       <!-- 剧集列表 -->
-      <el-table :data="animeInfo.episodes" style="width: 100%" row-key="number">
+      <el-table 
+        :data="animeInfo.episodes" 
+        style="width: 100%" 
+        row-key="episodeId"
+        v-loading="loading"
+        :empty-text="loading ? '加载中...' : '暂无剧集'"
+      >
         <el-table-column label="集数" width="80" align="center">
           <template #default="scope">
             <span class="episode-number">第{{ scope.row.number }}集</span>
@@ -50,19 +61,19 @@
         
         <el-table-column label="标题" min-width="200">
           <template #default="scope">
-            <div class="episode-title">{{ scope.row.episodeTitle || scope.row.title }}</div>
+            <div class="episode-title">{{ scope.row.episodeTitle }}</div>
           </template>
         </el-table-column>
         
         <el-table-column label="时长" width="100" align="center">
           <template #default="scope">
-            <span>{{ formatDuration(scope.row.duration) }}</span>
+            <span>{{ scope.row.duration }}分钟</span>
           </template>
         </el-table-column>
         
         <el-table-column label="上传时间" width="180">
           <template #default="scope">
-            <span>{{ formatDate(scope.row.airDate || scope.row.createTime) }}</span>
+            <span>{{ formatDate(scope.row.airDate) }}</span>
           </template>
         </el-table-column>
         
@@ -128,7 +139,6 @@
             :http-request="uploadVideo"
             :show-file-list="false"
             accept="video/*"
-            :before-upload="beforeVideoUpload"
           >
             <div v-if="!episodeForm.videoUrl" class="upload-area">
               <el-icon class="upload-icon"><Upload /></el-icon>
@@ -140,7 +150,7 @@
               <div class="video-info">
                 <div class="video-name">{{ episodeForm.videoName }}</div>
               </div>
-              <el-button link type="danger" @click.stop="removeVideo">删除</el-button>
+              <el-button link type="danger" >删除</el-button>
             </div>
           </el-upload>
         </el-form-item>
@@ -148,7 +158,7 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="episodeDialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="submitEpisodeForm" :loading="uploading">
+          <el-button type="primary"  :loading="uploading">
             {{ uploading ? '上传中...' : '确定' }}
           </el-button>
         </span>
@@ -173,7 +183,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
   Plus, 
@@ -187,8 +197,7 @@ import {
 } from '@element-plus/icons-vue'
 import { formatDate } from '@/utils/format'
 import VideoPlayer from '@/components/video/VideoPlayer.vue'
-import { getAnimeDetailService } from '@/api/anime/anime'
-import { getAnimeEpisodeService } from '@/api/anime/animeEpisode'
+import { getAnimeDetailService } from '@/api/anime/animeEpisode'
 
 // 添加状态处理函数
 const getStatusTagType = (status) => {
@@ -225,6 +234,7 @@ const previewDialogVisible = ref(false)
 const previewUrl = ref('')
 const isEdit = ref(false)
 const uploading = ref(false)
+const loading = ref(true)
 
 // 表单相关
 const episodeFormRef = ref(null)
@@ -260,38 +270,35 @@ const props = defineProps({
 
 // 获取番剧详情
 const getAnimeDetail = async () => {
-  const res = await getAnimeDetailService(props.animeId)
-  if (res.code === 0) {
-    const animeData = res.data[0]
-    if (animeData) {
+  loading.value = true
+  try {
+    const res = await getAnimeDetailService(props.animeId)
+    if (res.code === 0) {
+      const { data } = res
       animeInfo.value = {
-        animeId: animeData.animeId,
-        title: animeData.title,
-        coverImage: animeData.coverImage,
-        description: animeData.description,
-        status: animeData.status,
-        releaseDate: animeData.releaseDate,
-        episodes: []
+        animeId: data.animeId,
+        title: data.title,
+        coverImage: data.coverImage,
+        description: data.description,
+        status: data.status || 'completed',
+        releaseDate: data.releaseDate,
+        episodes: data.episodes?.map(episode => ({
+          episodeId: episode.episodeId,
+          number: episode.episodeNumber,
+          episodeTitle: episode.episodeTitle,
+          duration: episode.duration,
+          videoUrl: episode.episodeVideo || '',
+          episodeImage: episode.episodeImage,
+          airDate: episode.airDate
+        })) || []
       }
-      // 获取剧集信息
-      getEpisodes()
+      console.log('处理后的数据:', animeInfo.value)
     }
-  }
-}
-
-// 获取剧集列表
-const getEpisodes = async () => {
-  const res = await getAnimeEpisodeService(props.animeId)
-  if (res.code === 0) {
-    animeInfo.value.episodes = res.data.map(episode => ({
-      episodeId: episode.episodeId,
-      number: episode.episodeNumber,
-      title: episode.episodeTitle,
-      duration: episode.duration,
-      videoUrl: episode.episodeImage,
-      createTime: episode.airDate,
-      updateTime: episode.airDate
-    }))
+  } catch (error) {
+    console.error('获取番剧信息失败:', error)
+    ElMessage.error('获取番剧信息失败')
+  } finally {
+    loading.value = false
   }
 }
 
@@ -303,12 +310,7 @@ watch(() => props.animeId, (newId) => {
 }, { immediate: true })
 
 // 格式化时长
-const formatDuration = (minutes) => {
-  if (!minutes) return '未知'
-  const hours = Math.floor(minutes / 60)
-  const mins = minutes % 60
-  return hours ? `${hours}小时${mins}分钟` : `${mins}分钟`
-}
+
 
 // 返回列表
 const emit = defineEmits(['update'])
@@ -327,10 +329,12 @@ const previewEpisode = (episode) => {
 const editEpisode = (episode) => {
   isEdit.value = true
   episodeForm.value = {
+    episodeId: episode.episodeId,
     number: episode.number,
-    title: episode.title,
+    title: episode.episodeTitle,
     videoUrl: episode.videoUrl,
-    videoName: `第${episode.number}集`
+    videoName: `第${episode.number}集`,
+    episodeImage: episode.episodeImage
   }
   episodeDialogVisible.value = true
 }
@@ -343,7 +347,7 @@ const deleteEpisode = async (episode) => {
       cancelButtonText: '取消',
       type: 'warning'
     })
-    // 这里添加删除逻辑
+    // TODO: 调用删除接口
     ElMessage.success('删除成功')
     await getAnimeDetail()
   } catch (error) {
@@ -367,9 +371,11 @@ const showAddEpisodeDialog = () => {
 const uploadVideo = async (options) => {
   try {
     uploading.value = true
-    // 模拟上传延迟
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    episodeForm.value.videoUrl = 'https://example.com/uploaded-video.mp4'
+    const formData = new FormData()
+    formData.append('video', options.file)
+    // TODO: 调用上传接口
+    const res = await uploadVideoService(formData)
+    episodeForm.value.videoUrl = res.data
     episodeForm.value.videoName = options.file.name
     ElMessage.success('视频上传成功')
   } catch (error) {
@@ -386,43 +392,6 @@ const removeVideo = () => {
 }
 
 // 提交表单
-const submitEpisodeForm = async () => {
-  if (!episodeFormRef.value) return
-  
-  try {
-    await episodeFormRef.value.validate()
-    
-    if (isEdit.value) {
-      // 编辑逻辑
-      await updateEpisodeService(props.animeId, episodeForm.value)
-      ElMessage.success('更新成功')
-    } else {
-      // 添加逻辑
-      await addEpisodeService(props.animeId, episodeForm.value)
-      ElMessage.success('添加成功')
-    }
-    
-    episodeDialogVisible.value = false
-    await getAnimeDetail()
-  } catch (error) {
-    console.error(error)
-    ElMessage.error('操作失败')
-  }
-}
-
-// 视频上传前验证
-const beforeVideoUpload = (file) => {
-  const isMP4 = file.type === 'video/mp4'
-  const isLt500M = file.size / 1024 / 1024 < 500
-
-  if (!isMP4) {
-    ElMessage.error('请上传 MP4 格式的视频!')
-  }
-  if (!isLt500M) {
-    ElMessage.error('视频大小不能超过 500MB!')
-  }
-  return isMP4 && isLt500M
-}
 </script>
 
 <style scoped>

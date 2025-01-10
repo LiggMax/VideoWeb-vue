@@ -4,7 +4,7 @@
     <div class="action-bar">
       <el-button type="primary" @click="showAddAnimeDialog">
         <el-icon><Plus /></el-icon>
-        发布新番剧
+        创建新番剧
       </el-button>
     </div>
 
@@ -147,12 +147,6 @@
 import {ref, onMounted} from 'vue'
 import {
   Plus,
-  Upload,
-  CircleCheckFilled,
-  VideoCamera,
-  Edit,
-  Delete,
-  MoreFilled,
   Picture,
   Back
 } from '@element-plus/icons-vue'

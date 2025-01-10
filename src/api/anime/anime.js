@@ -25,11 +25,6 @@ export const deleteAnimeService = (id) => {
   return request.delete(`/anime/${id}`)
 }
 
-// 获取番剧详情
-export const getAnimeDetailService = (id) => {
-  return request.get(`/anime/${id}`)
-}
-
 // 添加剧集
 export const addEpisodeService = (animeId, episodeData) => {
   return request.post(`/anime/${animeId}/episodes`, episodeData)

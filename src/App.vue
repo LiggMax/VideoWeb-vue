@@ -2,7 +2,6 @@
   <div class="app">
     <Header />
     <router-view></router-view>
-<!--    <Calendar/>-->
   </div>
 </template>
 
