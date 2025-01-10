@@ -273,30 +273,12 @@ const getAnimeDetail = async () => {
   loading.value = true
   try {
     const res = await getAnimeDetailService(props.animeId)
-    if (res.code === 0) {
       const { data } = res
       animeInfo.value = {
-        animeId: data.animeId,
-        title: data.title,
-        coverImage: data.coverImage,
-        description: data.description,
+        ...data,
         status: data.status || 'completed',
-        releaseDate: data.releaseDate,
-        episodes: data.episodes?.map(episode => ({
-          episodeId: episode.episodeId,
-          number: episode.episodeNumber,
-          episodeTitle: episode.episodeTitle,
-          duration: episode.duration,
-          videoUrl: episode.episodeVideo || '',
-          episodeImage: episode.episodeImage,
-          airDate: episode.airDate
-        })) || []
+        episodes: data.episodes || []
       }
-      console.log('处理后的数据:', animeInfo.value)
-    }
-  } catch (error) {
-    console.error('获取番剧信息失败:', error)
-    ElMessage.error('获取番剧信息失败')
   } finally {
     loading.value = false
   }
