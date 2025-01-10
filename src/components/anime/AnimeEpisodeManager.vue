@@ -9,6 +9,11 @@
 
     <!-- 番剧基本信息卡片 -->
     <div class="anime-info-card">
+      <div class="edit-button">
+        <el-button type="primary" @click="showEditAnimeDialog">
+          <el-icon><Edit /></el-icon>编辑信息
+        </el-button>
+      </div>
       <div class="cover-section">
         <el-image 
           :src="animeInfo.coverImage" 
@@ -29,7 +34,7 @@
           <el-tag :type="getStatusTagType(animeInfo.status)" size="small">
             {{ getStatusLabel(animeInfo.status) }}
           </el-tag>
-          <span class="release-date">首播: {{ formatDate(animeInfo.releaseDate) }}</span>
+          <span class="release-date">首播: {{ animeInfo.releaseDate }}</span>
           <span class="episode-count">总集数: {{ animeInfo.episodes?.length || 0 }}</span>
         </div>
         <p class="description">{{ animeInfo.description || '暂无简介' }}</p>
@@ -178,6 +183,67 @@
         :auto-play="true"
       />
     </el-dialog>
+
+    <!-- 编辑番剧信息对话框 -->
+    <el-dialog
+      v-model="animeDialogVisible"
+      title="编辑番剧信息"
+      width="50%"
+    >
+      <el-form :model="animeForm" label-width="80px" ref="animeFormRef">
+        <el-form-item label="封面">
+          <el-upload
+            class="cover-uploader"
+            :show-file-list="false"
+            :auto-upload="true"
+            action="/api/file/uploadImage"
+            name="image"
+            :on-success="handleCoverSuccess"
+            accept="image/*"
+          >
+            <img v-if="animeForm.coverImage" :src="animeForm.coverImage" class="uploaded-cover"/>
+            <el-icon v-else class="upload-icon"><Plus /></el-icon>
+          </el-upload>
+        </el-form-item>
+        <el-form-item label="标题" prop="title">
+          <el-input v-model="animeForm.title" placeholder="请输入番剧标题"/>
+        </el-form-item>
+        <el-form-item label="简介" prop="description">
+          <el-input
+            v-model="animeForm.description"
+            type="textarea"
+            rows="4"
+            placeholder="请输入番剧简介"
+          />
+        </el-form-item>
+        <el-form-item label="首播时间">
+          <el-date-picker
+            v-model="animeForm.releaseDate"
+            type="date"
+            placeholder="选择首播日期"
+            format="YYYY-MM-DD"
+            value-format="YYYY-MM-DD"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="animeForm.status" style="width: 100%">
+            <el-option
+              v-for="item in statusOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="animeDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitAnimeForm">确定</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -198,6 +264,8 @@ import {
 import { formatDate } from '@/utils/format'
 import VideoPlayer from '@/components/video/VideoPlayer.vue'
 import { getAnimeDetailService } from '@/api/anime/animeEpisode'
+import {uploadVideoService} from "@/api/anime/anime";
+import { updateAnimeService } from '@/api/anime/anime'
 
 // 添加状态处理函数
 const getStatusTagType = (status) => {
@@ -373,7 +441,52 @@ const removeVideo = () => {
   episodeForm.value.videoName = ''
 }
 
-// 提交表单
+// 状态选项
+const statusOptions = [
+  { label: '连载中', value: 'ongoing' },
+  { label: '已完结', value: 'completed' },
+  { label: '暂停', value: 'hiatus' }
+]
+
+// 编辑番剧表单
+const animeDialogVisible = ref(false)
+const animeFormRef = ref(null)
+const animeForm = ref({
+  title: '',
+  coverImage: '',
+  description: '',
+  releaseDate: '',
+  status: ''
+})
+
+// 显示编辑番剧对话框
+const showEditAnimeDialog = () => {
+  animeForm.value = {
+    title: animeInfo.value.title,
+    coverImage: animeInfo.value.coverImage,
+    description: animeInfo.value.description,
+    releaseDate: animeInfo.value.releaseDate,
+    status: animeInfo.value.status
+  }
+  animeDialogVisible.value = true
+}
+
+// 处理封面上传成功
+const handleCoverSuccess = (res) => {
+  animeForm.value.coverImage = res.data
+}
+
+// 提交番剧表单
+const submitAnimeForm = async () => {
+  try {
+    await updateAnimeService(props.animeId, animeForm.value)
+    ElMessage.success('更新成功')
+    animeDialogVisible.value = false
+    await getAnimeDetail()
+  } catch (error) {
+    ElMessage.error('更新失败')
+  }
+}
 </script>
 
 <style scoped>
@@ -389,6 +502,7 @@ const removeVideo = () => {
   border-radius: 8px;
   margin-bottom: 24px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  position: relative;
 }
 
 .cover-section {
@@ -491,5 +605,43 @@ const removeVideo = () => {
 .action-btn[type="danger"]:hover {
   color: var(--el-color-danger);
   background-color: var(--el-color-danger-light-9);
+}
+
+.edit-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+.cover-uploader {
+  :deep(.el-upload) {
+    width: 200px;
+    height: 280px;
+    border: 1px dashed #d9d9d9;
+    border-radius: 8px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      border-color: #fb7299;
+    }
+  }
+}
+
+.uploaded-cover {
+  width: 200px;
+  height: 280px;
+  object-fit: cover;
+  display: block;
+}
+
+.upload-icon {
+  font-size: 28px;
+  color: #8c939d;
 }
 </style> 

@@ -30,16 +30,6 @@ export const addEpisodeService = (animeId, episodeData) => {
   return request.post(`/anime/${animeId}/episodes`, episodeData)
 }
 
-// 更新剧集
-export const updateEpisodeService = (animeId, episodeId, episodeData) => {
-  return request.put(`/anime/${animeId}/episodes/${episodeId}`, episodeData)
-}
-
-// 删除剧集
-export const deleteEpisodeService = (animeId, episodeId) => {
-  return request.delete(`/anime/${animeId}/episodes/${episodeId}`)
-}
-
 // 上传视频
 export const uploadVideoService = (formData) => {
   return request.post('/file/uploadVideo', formData, {
