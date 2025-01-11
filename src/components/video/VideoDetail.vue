@@ -9,6 +9,7 @@
           :poster="videoInfo.cover"
           :title="videoInfo.title"
           :is-collapsed="isCollapsed || isAutoCollapsed"
+          :video-id="videoInfo.id"
           @toggle-collapse="toggleCollapse"
         />
 
@@ -445,7 +446,7 @@ watch(isLogin, (newVal) => {
   margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 380px;
-  gap: 20px;
+  gap: 40px;
   padding: 0 20px;
   transition: all 0.3s ease-in-out;
 }
@@ -462,14 +463,15 @@ watch(isLogin, (newVal) => {
   min-width: 0;
   max-width: 1760px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0;
 }
 
 /* 右侧区域样式 */
 .recommend-section {
   overflow: hidden;
   transition: all 0.3s ease-in-out;
-  width: 380px; /* 固定右侧宽度 */
+  width: 380px;
+  padding-top: 20px;
 }
 
 .recommend-section.is-collapsed {
@@ -524,19 +526,24 @@ watch(isLogin, (newVal) => {
 @media screen and (max-width: 1200px) {
   .main-content {
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 20px;
     padding: 0 10px;
     max-width: 1000px;
   }
 
   .video-section {
-    padding: 0 10px;
-    max-width: 100%;
+    padding: 0;
+  }
+  
+  .recommend-section {
+    width: 100%;
+    padding-top: 0;
   }
 }
 
 @media screen and (max-width: 768px) {
   .main-content {
+    gap: 10px;
     padding: 0;
   }
 

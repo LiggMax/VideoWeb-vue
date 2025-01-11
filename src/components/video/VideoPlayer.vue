@@ -7,8 +7,11 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import Artplayer from 'artplayer'
+import artplayerPluginDanmuku from 'artplayer-plugin-danmuku'
 import { useRouter } from 'vue-router'
 import eventBus from '@/utils/eventBus'
+import { sendBarrageService, getBarrageService } from '@/api/barrage'
+import { ElMessage } from 'element-plus'
 import PlayIcon from '@/components/icons/PlayIcon.vue'
 
 const props = defineProps({
@@ -27,6 +30,10 @@ const props = defineProps({
   isCollapsed: {
     type: Boolean,
     default: false
+  },
+  videoId: {
+    type: [String, Number],
+    required: true
   }
 })
 
@@ -114,7 +121,70 @@ const initPlayer = () => {
       url: props.poster,
       number: 60,
       column: 10,
-    }
+    },
+    plugins: [
+      artplayerPluginDanmuku({
+        // 获取弹幕数据
+        danmuku: async () => {
+          try {
+            const response = await getBarrageService(props.videoId)
+            if (response.code === 0) {
+              // 假设后端返回的弹幕数据需要转换成插件需要的格式
+              return response.data.map(item => ({
+                text: item.content, // 弹幕内容
+                time: item.time, // 弹幕出现时间
+                color: item.color || '#FFFFFF', // 弹幕颜色，如果没有则使用默认白色
+                type: item.type || 0, // 弹幕类型，如果没有则使用默认滚动类型
+                border: false, // 是否显示描边
+              }))
+            }
+            return []
+          } catch (error) {
+            console.error('获取弹幕失败:', error)
+            ElMessage.error('获取弹幕失败')
+            return []
+          }
+        },
+        speed: 5, // 弹幕速度
+        opacity: 1, // 透明度
+        fontSize: 25, // 字号大小
+        color: '#FFFFFF', // 默认颜色
+        mode: 0, // 默认模式：滚动
+        margin: [10, '25%'], // 弹幕上下边距
+        antiOverlap: true, // 防重叠
+        useWorker: true, // 使用 web worker
+        synchronousPlayback: false, // 同步播放速度
+        maxLength: 100, // 最大字数限制
+        minWidth: 200, // 最小宽度
+        maxWidth: 400, // 最大宽度
+        theme: 'dark', // 主题
+        // 发送弹幕前的处理
+        beforeEmit: async (danmu) => {
+          try {
+            // 构造发送弹幕的数据
+            const barrageData = {
+              videoId: props.videoId,
+              content: danmu.text,
+              time: art.value.currentTime, // 当前视频播放时间
+              color: danmu.color,
+              type: danmu.type
+            }
+            
+            const response = await sendBarrageService(barrageData)
+            if (response.code === 0) {
+              ElMessage.success('发送弹幕成功')
+              return true
+            }
+            ElMessage.error(response.message || '发送弹幕失败')
+            return false
+          } catch (error) {
+            console.error('发送弹幕失败:', error)
+            ElMessage.error('发送弹幕失败')
+            return false
+          }
+        }
+      })
+    ]
   })
 
   // 监听播放器事件
@@ -144,6 +214,20 @@ const initPlayer = () => {
   // 监听网页全屏事件
   art.value.on('fullscreenWeb', (state) => {
     emit('toggle-collapse', state)
+  })
+
+  // 监听弹幕相关事件
+  art.value.on('artplayerPluginDanmuku:emit', (danmu) => {
+    console.log('发送弹幕:', danmu)
+  })
+
+  art.value.on('artplayerPluginDanmuku:loaded', (danmus) => {
+    console.log('弹幕加载完成, 总数:', danmus.length)
+  })
+
+  art.value.on('artplayerPluginDanmuku:error', (error) => {
+    console.error('弹幕错误:', error)
+    ElMessage.error('弹幕系统出现错误')
   })
 }
 

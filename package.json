@@ -18,7 +18,8 @@
     "pinia": "^2.3.0",
     "pinia-persistedstate-plugin": "^0.1.0",
     "vue": "^3.3.0",
-    "vue-router": "^4.0.0"
+    "vue-router": "^4.0.0",
+    "artplayer-plugin-danmuku": "^latest"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.0.0",
