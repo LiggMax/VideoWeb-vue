@@ -383,8 +383,8 @@ onUnmounted(() => {
 }
 
 :deep(.wide-screen-icon) {
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
   fill: currentColor;
   transition: all 0.2s;
 }
