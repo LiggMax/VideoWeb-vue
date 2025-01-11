@@ -321,14 +321,17 @@ onUnmounted(() => {
 
 /* 自定义主题色 */
 :deep(.art-video-player .art-control-progress) {
+  /* 未播放部分使用半透明灰色 */
   background: rgba(255, 255, 255, 0.2);
 }
 
-:deep(.art-video-player .art-control-progress .art-control-progress-inner) {
+:deep(.art-video-player .art-control-progress-inner) {
+  /* 只有已播放部分使用粉色 */
   background: #fb7299;
 }
 
-:deep(.art-video-player .art-control-progress .art-control-progress-inner .art-control-progress-dot) {
+:deep(.art-video-player .art-control-progress-inner .art-control-progress-dot) {
+  /* 进度条小圆点使用粉色边框 */
   border-color: #fb7299;
 }
 
