@@ -519,5 +519,187 @@ watch(isLogin, (newVal) => {
   }
 }
 
-/* 其他现有样式保持不变... */
+/* UP主信息卡片样式优化 */
+.uploader-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.uploader-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.uploader-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.uploader-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.nickname {
+  font-size: 18px;
+  font-weight: 600;
+  color: #18191c;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nickname :deep(.uploader-icon) {
+  color: #fb7299;
+  transform: scale(0.9);
+}
+
+.fans-count {
+  font-size: 14px;
+  color: #9499a0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fans-count .count {
+  color: #fb7299;
+  font-weight: 500;
+}
+
+.uploader-desc {
+  font-size: 14px;
+  color: #61666d;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  position: relative;
+  padding-left: 12px;
+  border-left: 3px solid #fb7299;
+  background: #fafafa;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.button-group {
+  display: flex;
+  gap: 12px;
+}
+
+.follow-btn {
+  flex: 2;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background: #fb7299;
+  border-color: #fb7299;
+  
+  &:hover {
+    background: #fc8bab;
+    border-color: #fc8bab;
+    transform: translateY(-1px);
+  }
+  
+  &.is-followed {
+    background-color: #f4f4f5;
+    border-color: #e4e4e4;
+    color: #606266;
+    
+    &:hover {
+      background-color: #fde2e2;
+      border-color: #fbc4c4;
+      color: #f56c6c;
+    }
+  }
+}
+
+.message-btn {
+  flex: 1;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background: #fff;
+  border: 1px solid #e3e5e7;
+  color: #61666d;
+  
+  &:hover {
+    background: #f4f5f7;
+    border-color: #d0d3d7;
+    color: #18191c;
+    transform: translateY(-1px);
+  }
+}
+
+/* 头像样式 */
+:deep(.el-avatar) {
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(251, 114, 153, 0.2);
+  transition: all 0.3s ease;
+}
+
+:deep(.el-avatar:hover) {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(251, 114, 153, 0.3);
+}
+
+/* 暗色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .uploader-card {
+    background: #232427;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .nickname {
+    color: #e5e7eb;
+  }
+  
+  .uploader-desc {
+    color: #9499a0;
+    background: #18191c;
+    border-left-color: #fb7299;
+  }
+  
+  .message-btn {
+    background: #2c2d30;
+    border-color: #363739;
+    color: #e5e7eb;
+    
+    &:hover {
+      background: #363739;
+      border-color: #4a4b4d;
+    }
+  }
+}
+
+/* 响应式调整 */
+@media screen and (max-width: 1200px) {
+  .uploader-card {
+    padding: 20px;
+  }
+  
+  .button-group {
+    gap: 8px;
+  }
+}
 </style> 
