@@ -99,9 +99,9 @@
 
 ## 番剧管理页(管理员)
 
-<img src="C:\Users\LiGG\Desktop\Blibli-Web\blibli-vue\src\assets\项目介绍\番剧管理页(1).png" alt="番剧管理页(1)" style="zoom:50%;" />
+<img src="src/assets/项目介绍/番剧管理页(1).png" alt="番剧管理页(1)" style="zoom:50%;" />
 
-<img src="C:\Users\LiGG\Desktop\Blibli-Web\blibli-vue\src\assets\项目介绍\番剧管理页(2).png" alt="番剧管理页(2)" style="zoom: 50%;" />
+<img src="src/assets/项目介绍/番剧管理页(2).png" alt="番剧管理页(2)" style="zoom: 50%;" />
 
 
 
