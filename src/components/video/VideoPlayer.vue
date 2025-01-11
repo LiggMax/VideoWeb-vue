@@ -9,10 +9,8 @@ import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import Artplayer from 'artplayer'
 import artplayerPluginDanmuku from 'artplayer-plugin-danmuku'
 import { useRouter } from 'vue-router'
-import eventBus from '@/utils/eventBus'
 import { sendBarrageService, getBarrageService } from '@/api/barrage'
 import { ElMessage } from 'element-plus'
-import PlayIcon from '@/components/icons/PlayIcon.vue'
 
 const props = defineProps({
   videoUrl: {

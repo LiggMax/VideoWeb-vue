@@ -4,23 +4,34 @@
       <!-- 左侧视频区域 -->
       <div class="video-section">
         <!-- 视频播放器 -->
-        <VideoPlayer 
-          :video-url="videoInfo.videoUrl"
-          :poster="videoInfo.cover"
-          :title="videoInfo.title"
-          :is-collapsed="isCollapsed || isAutoCollapsed"
-          :video-id="videoInfo.id"
-          @toggle-collapse="toggleCollapse"
+        <VideoPlayer
+            :video-url="videoInfo.videoUrl"
+            :poster="videoInfo.cover"
+            :title="videoInfo.title"
+            :is-collapsed="isCollapsed || isAutoCollapsed"
+            :video-id="videoInfo.id"
+            @toggle-collapse="toggleCollapse"
         />
 
         <!-- 视频信息 -->
         <div class="video-info">
           <h1 class="video-title">{{ videoInfo.title }}</h1>
+          <!-- 添加视频简介区域 -->
+          <div class="video-description">
+            <div class="description-header">
+              <span>视频简介</span>
+            </div>
+            <div class="description-content">
+              {{ videoInfo.content || '暂无简介' }}
+            </div>
+          </div>
+          <br>
           <div class="video-stats">
-            <span class="view-count">{{ videoInfo.viewCount }}:播放</span>
+            <span class="view-count">{{ videoInfo.viewCount }}播放</span>
             <span class="bullet">·</span>
             <span class="date">发布于 {{ formatDate(videoInfo.createTime) }}</span>
           </div>
+
         </div>
 
 
@@ -29,29 +40,31 @@
           <div class="comment-header">
             <h3>评论 {{ videoInfo.commentCount }}</h3>
           </div>
-          
+
           <!-- 评论输入框 -->
           <div class="comment-input-area">
-            <el-avatar :size="60" :src="userInfo.userPic" class="input-avatar" />
+            <el-avatar :size="60" :src="userInfo.userPic" class="input-avatar"/>
             <div class="input-wrapper">
               <el-input
-                v-model="commentContent"
-                type="textarea"
-                :rows="2"
-                placeholder="发一条友善的评论"
-                resize="none"
-                maxlength="300"
-                show-word-limit
+                  v-model="commentContent"
+                  type="textarea"
+                  :rows="2"
+                  placeholder="发一条友善的评论"
+                  resize="none"
+                  maxlength="300"
+                  show-word-limit
               />
               <div class="comment-tools">
                 <div class="emoji-picker" @click="handleEmojiClick">
-                  <el-icon><ChatRound /></el-icon>
+                  <el-icon>
+                    <ChatRound/>
+                  </el-icon>
                   表情
-                  <EmojiPicker 
-                    :visible="showEmojiPicker"
-                    :position="emojiPosition"
-                    @select="insertEmoji"
-                    @close="showEmojiPicker = false"
+                  <EmojiPicker
+                      :visible="showEmojiPicker"
+                      :position="emojiPosition"
+                      @select="insertEmoji"
+                      @close="showEmojiPicker = false"
                   />
                 </div>
                 <el-button type="primary" :disabled="!commentContent.trim()" @click="submitComment">
@@ -60,26 +73,26 @@
               </div>
             </div>
           </div>
-          
+
           <!-- 评论列表 -->
           <div class="comment-list">
             <div v-for="comment in comments" :key="comment.id" class="comment-item">
-              <el-avatar :size="48" :src="comment.userPic" class="comment-avatar" />
+              <el-avatar :size="48" :src="comment.userPic" class="comment-avatar"/>
               <div class="comment-content">
                 <div class="comment-user">
                   {{ comment.nickname }}
-                  <UploaderIcon v-if="comment.userId === videoInfo.userId" />
+                  <UploaderIcon v-if="comment.userId === videoInfo.userId"/>
                 </div>
                 <div class="comment-text">{{ comment.content }}</div>
                 <div class="comment-info">
                   <span class="comment-time">{{ formatDate(comment.createTime) }}</span>
                   <div class="comment-actions">
                     <span class="action-item">
-                      <el-icon><Thumb /></el-icon>
+                      <el-icon><Thumb/></el-icon>
                       {{ comment.likeCount }}
                     </span>
                     <span class="action-item">
-                      <el-icon><ChatDotRound /></el-icon>
+                      <el-icon><ChatDotRound/></el-icon>
                       回复
                     </span>
                   </div>
@@ -95,7 +108,7 @@
         <!-- UP主信息卡片 -->
         <div class="uploader-card">
           <div class="uploader-header">
-            <el-avatar :size="48" :src="videoInfo.userPic" />
+            <el-avatar :size="48" :src="videoInfo.userPic"/>
             <div class="uploader-info">
               <div class="nickname">{{ videoInfo.nickname }}</div>
               <div class="fans-count">100粉丝</div>
@@ -104,24 +117,28 @@
           <H5>UP主简介：</H5>
           <div class="uploader-desc">{{ videoInfo.introduction || '这个UP主很懒，还没有添加简介~' }}</div>
           <div v-if="!isSelfVideo" class="button-group">
-            <el-button 
-              type="primary" 
-              class="follow-btn"
-              :class="{ 'is-followed': isFollowed }"
-              @click="handleFollow"
+            <el-button
+                type="primary"
+                class="follow-btn"
+                :class="{ 'is-followed': isFollowed }"
+                @click="handleFollow"
             >
-              <el-icon><Plus /></el-icon>
+              <el-icon>
+                <Plus/>
+              </el-icon>
               {{ isFollowed ? '已关注' : '关注' }}
             </el-button>
             <el-button class="message-btn" @click="goToChat">
-              <el-icon><ChatDotRound /></el-icon>
+              <el-icon>
+                <ChatDotRound/>
+              </el-icon>
               私信
             </el-button>
           </div>
         </div>
 
         <!-- 添加弹幕列表 -->
-        <DanmakuList :videoId="videoId" />
+        <DanmakuList :videoId="videoId"/>
 
         <h3 class="recommend-title">相关推荐</h3>
         <div class="recommend-list">
@@ -149,10 +166,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, onUnmounted, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import {ref, onMounted, computed, onUnmounted, watch} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
 import {getVideoDetailService} from '@/api/video' // 假设你会创建这个API服务
-import {  Plus, ChatDotRound,  ChatRound } from '@element-plus/icons-vue'
+import {Plus, ChatDotRound, ChatRound, Document} from '@element-plus/icons-vue'
 import VideoPlayer from '@/components/video/VideoPlayer.vue'
 import {ElMessage, ElMessageBox} from "element-plus";
 import useUserInfoStore from '@/stores/userInfo'
@@ -162,7 +179,7 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/zh-cn'
 import EmojiPicker from '@/components/EmojiPicker.vue'
-import { useTokenStore } from '@/stores/token'
+import {useTokenStore} from '@/stores/token'
 import eventBus from '@/utils/eventBus'
 import DanmakuList from '@/components/video/DanmakuList.vue'
 import {formatDate} from "@/utils/format";
@@ -195,7 +212,7 @@ const getVideoDetail = async () => {
   try {
     // 从路由参数中获取视频ID
     const videoId = route.params.id
-    
+
     // 如果有query参数，可以先用query参数中的数据做快速展示
     if (route.query.title) {
       videoInfo.value = {
@@ -204,7 +221,7 @@ const getVideoDetail = async () => {
         cover: route.query.cover
       }
     }
-    
+
     // 调用API获取完整的视频详情
     const result = await getVideoDetailService(videoId)
     if (result.data) {
@@ -214,10 +231,10 @@ const getVideoDetail = async () => {
         checkFollowStatus()
       }
     }
-    } catch (error) {
-      console.error('获取视频详情失败:', error)
-      ElMessage.error('获取视频详情失败')
-    }
+  } catch (error) {
+    console.error('获取视频详情失败:', error)
+    ElMessage.error('获取视频详情失败')
+  }
 }
 
 // 检查关注状态
@@ -239,12 +256,10 @@ onMounted(() => {
 })
 
 // 评论列表
-const comments = ref([
-])
+const comments = ref([])
 
 // 推荐视频
-const recommendVideos = ref([
-])
+const recommendVideos = ref([])
 
 // 添加收缩状态控制
 const isCollapsed = ref(false)
@@ -260,24 +275,24 @@ const commentContent = ref('')  // 评论内容
 
 // 提交评论方法
 const submitComment = async () => {
-    // 检查评论内容是否为空
-    if (!commentContent.value.trim()) {
-      return ElMessage.warning('评论内容不能为空')
-    }
-    // 从路由中获取当前视频ID
-    const id = route.params.id
-    // 调用添加评论接口
-    await addCommentService(id, commentContent.value.trim())
-    // 提示成功
-    ElMessage.success('评论成功')
-    
-    // 清空评论内容
-    commentContent.value = ''
-    
-    // 重新获取视频详情（更新评论数）
-    await gteComment()
-    
-    // TODO: 重新获取评论列表（如果有分页获取评论列表的接口）
+  // 检查评论内容是否为空
+  if (!commentContent.value.trim()) {
+    return ElMessage.warning('评论内容不能为空')
+  }
+  // 从路由中获取当前视频ID
+  const id = route.params.id
+  // 调用添加评论接口
+  await addCommentService(id, commentContent.value.trim())
+  // 提示成功
+  ElMessage.success('评论成功')
+
+  // 清空评论内容
+  commentContent.value = ''
+
+  // 重新获取视频详情（更新评论数）
+  await gteComment()
+
+  // TODO: 重新获取评论列表（如果有分页获取评论列表的接口）
 }
 //获取评论内容
 const gteComment = async () => {
@@ -289,7 +304,7 @@ const gteComment = async () => {
 gteComment()
 
 const showEmojiPicker = ref(false)
-const emojiPosition = ref({ top: '40px', left: '0px' })
+const emojiPosition = ref({top: '40px', left: '0px'})
 
 // 处理表情点击
 const handleEmojiClick = (event) => {
@@ -337,7 +352,7 @@ const goToChat = () => {
   }
   router.push({
     name: 'Chat',
-    query: { username: videoInfo.value.username }
+    query: {username: videoInfo.value.username}
   })
 }
 
@@ -380,18 +395,18 @@ const handleFollow = async () => {
     eventBus.emit('showLogin')
     return
   }
-  
+
   // 如果是取消关注，需要确认
   if (isFollowed.value) {
     try {
       await ElMessageBox.confirm(
-        '确定取消关注该用户吗？',
-        '提示',
-        {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }
+          '确定取消关注该用户吗？',
+          '提示',
+          {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }
       )
     } catch (error) {
       return // 用户取消操作
@@ -474,7 +489,7 @@ watch(isLogin, (newVal) => {
   .main-content {
     max-width: 1920px;
   }
-  
+
   .video-section {
     max-width: 1520px;
   }
@@ -484,7 +499,7 @@ watch(isLogin, (newVal) => {
   .main-content {
     max-width: 1760px;
   }
-  
+
   .video-section {
     max-width: 1360px;
   }
@@ -494,7 +509,7 @@ watch(isLogin, (newVal) => {
   .main-content {
     max-width: 1600px;
   }
-  
+
   .video-section {
     max-width: 1200px;
   }
@@ -504,7 +519,7 @@ watch(isLogin, (newVal) => {
   .main-content {
     max-width: 1400px;
   }
-  
+
   .video-section {
     max-width: 1000px;
   }
@@ -521,7 +536,7 @@ watch(isLogin, (newVal) => {
   .video-section {
     padding: 0;
   }
-  
+
   .recommend-section {
     width: 100%;
     padding-top: 0;
@@ -628,18 +643,18 @@ watch(isLogin, (newVal) => {
   transition: all 0.3s ease;
   background: #fb7299;
   border-color: #fb7299;
-  
+
   &:hover {
     background: #fc8bab;
     border-color: #fc8bab;
     transform: translateY(-1px);
   }
-  
+
   &.is-followed {
     background-color: #f4f4f5;
     border-color: #e4e4e4;
     color: #606266;
-    
+
     &:hover {
       background-color: #fde2e2;
       border-color: #fbc4c4;
@@ -662,7 +677,7 @@ watch(isLogin, (newVal) => {
   background: #fff;
   border: 1px solid #e3e5e7;
   color: #61666d;
-  
+
   &:hover {
     background: #f4f5f7;
     border-color: #d0d3d7;
@@ -689,22 +704,22 @@ watch(isLogin, (newVal) => {
     background: #232427;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
-  
+
   .nickname {
     color: #e5e7eb;
   }
-  
+
   .uploader-desc {
     color: #9499a0;
     background: #18191c;
     border-left-color: #fb7299;
   }
-  
+
   .message-btn {
     background: #2c2d30;
     border-color: #363739;
     color: #e5e7eb;
-    
+
     &:hover {
       background: #363739;
       border-color: #4a4b4d;
@@ -717,7 +732,7 @@ watch(isLogin, (newVal) => {
   .uploader-card {
     padding: 20px;
   }
-  
+
   .button-group {
     gap: 8px;
   }
@@ -812,7 +827,7 @@ watch(isLogin, (newVal) => {
   color: #61666d;
   transition: all 0.3s;
   font-size: 14px;
-  
+
   &:hover {
     background: #f4f5f7;
     color: #fb7299;
@@ -832,7 +847,7 @@ watch(isLogin, (newVal) => {
   padding: 16px;
   border-radius: 8px;
   transition: all 0.3s;
-  
+
   &:hover {
     background: #f9f9f9;
   }
@@ -843,7 +858,7 @@ watch(isLogin, (newVal) => {
   border: 2px solid #fff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s;
-  
+
   &:hover {
     transform: scale(1.05);
   }
@@ -895,11 +910,11 @@ watch(isLogin, (newVal) => {
   gap: 4px;
   cursor: pointer;
   transition: all 0.3s;
-  
+
   &:hover {
     color: #fb7299;
   }
-  
+
   :deep(.el-icon) {
     font-size: 16px;
   }
@@ -910,30 +925,30 @@ watch(isLogin, (newVal) => {
   .comment-section {
     background: #232427;
   }
-  
+
   .comment-header h3 {
     color: #e5e7eb;
   }
-  
+
   .comment-item:hover {
     background: #2c2d30;
   }
-  
+
   .comment-text {
     color: #e5e7eb;
   }
-  
+
   :deep(.el-textarea__inner) {
     background: #2c2d30;
     border-color: #363739;
     color: #e5e7eb;
-    
+
     &:focus {
       border-color: #fb7299;
       box-shadow: 0 0 0 2px rgba(251, 114, 153, 0.2);
     }
   }
-  
+
   .emoji-picker:hover {
     background: #363739;
   }
@@ -945,19 +960,120 @@ watch(isLogin, (newVal) => {
     padding: 16px;
     border-radius: 0;
   }
-  
+
   .comment-input-area {
     gap: 12px;
     margin-bottom: 16px;
     padding-bottom: 16px;
   }
-  
+
   .comment-item {
     padding: 12px;
   }
-  
+
   .comment-actions {
     gap: 12px;
+  }
+}
+
+/* 添加视频信息区域样式 */
+.video-info {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.video-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #18191c;
+  margin-bottom: 12px;
+  line-height: 1.4;
+  padding: 0 16px;
+}
+
+.video-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #9499a0;
+  font-size: 14px;
+  margin-bottom: 16px;
+  padding: 0 16px;
+}
+
+.bullet {
+  color: #9499a0;
+}
+
+/* 视频简介样式 */
+.video-description {
+  background: #f6f7f8;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.description-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: #18191c;
+  font-weight: 500;
+
+  .el-icon {
+    font-size: 16px;
+    color: #00a1d6;
+  }
+}
+
+.description-content {
+  color: #61666d;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* 暗色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .video-info {
+    background: #232427;
+  }
+
+  .video-title {
+    color: #e5e7eb;
+  }
+
+  .video-description {
+    background: #18191c;
+  }
+
+  .description-header {
+    color: #e5e7eb;
+  }
+
+  .description-content {
+    color: #9499a0;
+  }
+}
+
+/* 响应式调整 */
+@media screen and (max-width: 768px) {
+  .video-info {
+    padding: 16px;
+    border-radius: 0;
+  }
+
+  .video-title {
+    font-size: 18px;
+  }
+
+  .video-description {
+    padding: 12px;
   }
 }
 </style> 
