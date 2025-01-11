@@ -119,7 +119,12 @@ const initPlayer = () => {
       },
     ],
     icons: {
-      loading: '<img src="/loading.gif">',
+      loading: `<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50" class="loading-icon">
+        <circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round">
+          <animate attributeName="stroke-dasharray" dur="1.5s" values="1,150;90,150;90,150" keyTimes="0;0.5;1" repeatCount="indefinite"/>
+          <animate attributeName="stroke-dashoffset" dur="1.5s" values="0;-35;-124" keyTimes="0;0.5;1" repeatCount="indefinite"/>
+        </circle>
+      </svg>`,
       state: `<img src="https://s1.hdslb.com/bfs/static/player/img/play.svg" class="art-state-icon">`,
     },
     quality: [
@@ -417,5 +422,25 @@ onUnmounted(() => {
 
 :deep(.art-control-right .art-control:hover) {
   opacity: 1;
+}
+
+/* 添加 loading 图标样式 */
+:deep(.loading-icon) {
+  animation: rotate 2s linear infinite;
+  opacity: 0.8;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 确保 loading 图标在暗色背景下可见 */
+:deep(.art-video-player .art-loading) {
+  background: none;
 }
 </style> 
