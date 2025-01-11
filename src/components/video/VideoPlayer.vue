@@ -131,7 +131,7 @@ const initPlayer = () => {
             if (response.code === 0) {
               // 假设后端返回的弹幕数据需要转换成插件需要的格式
               return response.data.map(item => ({
-                text: item.content, // 弹幕内容
+                text: item.text, // 弹幕内容
                 time: item.time, // 弹幕出现时间
                 color: item.color || '#FFFFFF', // 弹幕颜色，如果没有则使用默认白色
                 type: item.type || 0, // 弹幕类型，如果没有则使用默认滚动类型
@@ -164,7 +164,7 @@ const initPlayer = () => {
             // 构造发送弹幕的数据
             const barrageData = {
               videoId: props.videoId,
-              content: danmu.text,
+              text: danmu.text,
               time: art.value.currentTime, // 当前视频播放时间
               color: danmu.color,
               type: danmu.type
