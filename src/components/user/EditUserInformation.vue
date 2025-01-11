@@ -175,20 +175,23 @@ const formatDate = (dateString) => {
 
 <style scoped>
 .edit-profile-content {
-  padding: 20px;
+  padding: 32px 40px;
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 .info-section {
-  margin-bottom: 20px;
+  margin-bottom: 32px;
 }
 
 :deep(.el-divider__text) {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 500;
   color: #303133;
+  padding: 0 24px;
 }
 
 :deep(.el-form-item.is-required:not(.is-no-asterisk)) {
@@ -209,8 +212,9 @@ const formatDate = (dateString) => {
 }
 
 .edit-form {
-  max-width: 600px;
-  margin: 0 auto;
+  max-width: 800px;
+  margin: 24px auto 0;
+  padding: 0 20px;
 }
 
 .avatar-uploader {
@@ -218,12 +222,14 @@ const formatDate = (dateString) => {
 }
 
 .avatar-uploader :deep(.el-upload) {
-  border: 1px dashed #d9d9d9;
+  border: 2px dashed #d9d9d9;
   border-radius: 50%;
   cursor: pointer;
   position: relative;
   overflow: hidden;
   transition: border-color 0.3s;
+  width: 140px;
+  height: 140px;
 }
 
 .avatar-uploader :deep(.el-upload:hover) {
@@ -231,17 +237,15 @@ const formatDate = (dateString) => {
 }
 
 .avatar-uploader-icon {
-  font-size: 28px;
-  color: #8c939d;
-  width: 120px;
-  height: 120px;
-  text-align: center;
-  line-height: 120px;
+  font-size: 32px;
+  width: 140px;
+  height: 140px;
+  line-height: 140px;
 }
 
 .avatar-preview {
-  width: 120px;
-  height: 120px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
   object-fit: cover;
 }
@@ -256,10 +260,68 @@ const formatDate = (dateString) => {
   border-color: #fc8bab;
 }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
+:deep(.el-form-item) {
+  margin-bottom: 32px;
+}
+
+:deep(.el-form-item__label) {
+  font-size: 15px;
+  padding-right: 24px;
+}
+
+:deep(.el-input__inner) {
+  height: 40px;
+  line-height: 40px;
+  font-size: 15px;
+}
+
+:deep(.el-textarea__inner) {
+  font-size: 15px;
+  padding: 12px 16px;
+  min-height: 120px;
+}
+
+:deep(.el-button) {
+  padding: 12px 24px;
+  font-size: 15px;
+  height: 44px;
+}
+
+.info-value.readonly {
+  font-size: 15px;
+  padding: 8px 16px;
+  background-color: #f5f7fa;
+  border-radius: 4px;
+  min-height: 40px;
+  line-height: 24px;
+  display: flex;
+  align-items: center;
+}
+
+/* 响应式设计优化 */
+@media (max-width: 1200px) {
+  .edit-profile-content {
+    max-width: 900px;
+    padding: 24px 32px;
+  }
+  
   .edit-form {
-    padding: 16px;
+    max-width: 700px;
+  }
+}
+
+@media (max-width: 768px) {
+  .edit-profile-content {
+    padding: 20px;
+    margin: 0 16px;
+  }
+  
+  .edit-form {
+    padding: 0;
+  }
+  
+  :deep(.el-form-item__label) {
+    padding-right: 16px;
   }
 }
 </style> 

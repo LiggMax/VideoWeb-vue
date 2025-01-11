@@ -101,6 +101,7 @@
               <div class="fans-count">100粉丝</div>
             </div>
           </div>
+          <H5>UP主简介：</H5>
           <div class="uploader-desc">{{ videoInfo.introduction || '这个UP主很懒，还没有添加简介~' }}</div>
           <div v-if="!isSelfVideo" class="button-group">
             <el-button 
