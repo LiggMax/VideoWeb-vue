@@ -87,7 +87,8 @@
 
 ## 播放页
 
-### **![首页](src/assets/项目介绍/播放页面.png)**
+### **![首页](![image](https://github.com/user-attachments/assets/8e61eaaf-cfc7-4f23-8f95-4adf30674b9d)
+)**
 
 ## 个人中心
 
