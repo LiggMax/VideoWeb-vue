@@ -60,8 +60,8 @@
             <el-icon><Clock /></el-icon>
           </div>
         </div>
-        <div class="upload-section" v-if="!isMobile">
-          <el-button class="upload-btn" type="primary">
+        <div class="upload-section" v-if="!isMobile && !isUploadPage">
+          <el-button class="upload-btn" type="primary" @click="goToUpload">
             <el-icon class="camera-icon"><VideoCamera /></el-icon>
             <span class="btn-text">投稿</span>
           </el-button>
@@ -133,6 +133,7 @@ import {
 } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import eventBus from '@/utils/eventBus'
+import {ElMessage} from "element-plus";
 //路由
 const router = useRouter()
 const isScrolled = ref(false)
@@ -231,6 +232,24 @@ const mobileNavItems = [
   { name: '消息', path: '/messages', icon: 'Message' },
   { name: '收藏', path: '/favorites', icon: 'Star' }
 ]
+
+const goToUpload = () => {
+  if (!isLogin.value) {
+    // 如果未登录，显示登录对话框
+    ElMessage.error('请先登录')
+    loginDialogVisible.value = true
+    return
+  }
+  // 跳转到个人中心的视频发布页面
+  router.push('/user-center')
+  // 通过 eventBus 发送事件，通知 UserCenter 组件打开视频发布抽屉
+  eventBus.emit('openUploadDrawer')
+}
+
+// 在 script setup 部分添加路由相关的计算属性
+const isUploadPage = computed(() => {
+  return router.currentRoute.value.path === '/user-center'
+})
 </script>
 
 <style scoped>

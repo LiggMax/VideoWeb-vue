@@ -159,7 +159,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
   VideoCamera, 
@@ -177,6 +177,7 @@ import {
   publishVideoService 
 } from '@/api/userVideo'
 import {formatDate} from "@/utils/format";
+import eventBus from '@/utils/eventBus'
 
 const tokenStore = useTokenStore()
 const emptyText = '还没有发布过视频哦'
@@ -322,6 +323,17 @@ const handleDrawerClose = () => {
   resetForm()
   drawerVisible.value = false
 }
+
+// 添加事件监听
+onMounted(() => {
+  eventBus.on('openUploadDrawer', () => {
+    drawerVisible.value = true
+  })
+})
+
+onUnmounted(() => {
+  eventBus.off('openUploadDrawer')
+})
 
 // 初始化
 getUserVideoInfo()
