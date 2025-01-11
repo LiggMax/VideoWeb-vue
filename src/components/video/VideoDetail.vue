@@ -441,10 +441,10 @@ watch(isLogin, (newVal) => {
 .main-content {
   width: 100%;
   position: relative;
-  max-width: 1400px; /* 增加整体最大宽度 */
+  max-width: 1600px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 380px; /* 恢复网格布局 */
+  grid-template-columns: minmax(0, 1fr) 380px;
   gap: 20px;
   padding: 0 20px;
   transition: all 0.3s ease-in-out;
@@ -462,6 +462,7 @@ watch(isLogin, (newVal) => {
   min-width: 0;
   max-width: 1200px;
   margin: 0 auto;
+  padding: 0 20px;
 }
 
 /* 右侧区域样式 */
@@ -480,41 +481,30 @@ watch(isLogin, (newVal) => {
 }
 
 /* 响应式布局调整 */
-@media screen and (min-width: 1440px) {
+@media screen and (max-width: 1600px) {
   .main-content {
-    max-width: 1600px;
-  }
-  
-  .video-section {
     max-width: 1400px;
   }
 }
 
 @media screen and (max-width: 1200px) {
   .main-content {
-    grid-template-columns: 1fr; /* 在小屏幕上变为单列 */
+    grid-template-columns: 1fr;
     gap: 10px;
-    max-width: 1000px;
-  }
-
-  .recommend-section {
-    display: none; /* 在小屏幕上隐藏右侧内容 */
+    padding: 0 10px;
   }
 
   .video-section {
-    padding-right: 0;
-    max-width: 1000px;
+    padding: 0 10px;
   }
 }
 
 @media screen and (max-width: 768px) {
   .main-content {
-    padding: 0 10px;
+    padding: 0;
   }
 
   .video-section {
-    width: 100%;
-    max-width: 100%;
     padding: 0;
   }
 }

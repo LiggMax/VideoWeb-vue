@@ -185,15 +185,14 @@ onUnmounted(() => {
   position: relative;
   border-radius: 4px;
   overflow: hidden;
-  min-height: 700px;
-  max-width: 1200px;
+  aspect-ratio: 16/9;
+  max-width: 100%;
   margin: 0 auto;
 }
 
 .artplayer-app {
   width: 100%;
   height: 100%;
-  aspect-ratio: 16/9;
   position: absolute;
   top: 0;
   left: 0;
@@ -234,14 +233,13 @@ onUnmounted(() => {
 /* 响应式调整 */
 @media screen and (max-width: 1200px) {
   .video-player {
-    min-height: 600px;
+    border-radius: 2px;
   }
 }
 
 @media screen and (max-width: 768px) {
   .video-player {
     border-radius: 0;
-    min-height: 400px;
   }
   
   :deep(.art-subtitle) {
