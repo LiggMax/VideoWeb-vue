@@ -702,4 +702,241 @@ watch(isLogin, (newVal) => {
     gap: 8px;
   }
 }
+
+/* 评论区样式优化 */
+.comment-section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.comment-header {
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.comment-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #18191c;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comment-count {
+  color: #fb7299;
+  font-weight: 500;
+}
+
+/* 评论输入区域 */
+.comment-input-area {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #f1f2f3;
+}
+
+.input-avatar {
+  flex-shrink: 0;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(251, 114, 153, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.input-avatar:hover {
+  transform: scale(1.05);
+}
+
+.input-wrapper {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+:deep(.el-textarea__inner) {
+  resize: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  border-color: #e3e5e7;
+  transition: all 0.3s;
+}
+
+:deep(.el-textarea__inner:focus) {
+  border-color: #fb7299;
+  box-shadow: 0 0 0 2px rgba(251, 114, 153, 0.1);
+}
+
+.comment-tools {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.emoji-picker {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #61666d;
+  transition: all 0.3s;
+  font-size: 14px;
+  
+  &:hover {
+    background: #f4f5f7;
+    color: #fb7299;
+  }
+}
+
+/* 评论列表样式 */
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.comment-item {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  transition: all 0.3s;
+  
+  &:hover {
+    background: #f9f9f9;
+  }
+}
+
+.comment-avatar {
+  flex-shrink: 0;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s;
+  
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+.comment-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.comment-user {
+  font-size: 14px;
+  font-weight: 500;
+  color: #fb7299;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comment-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #18191c;
+  margin-bottom: 8px;
+  word-break: break-word;
+}
+
+.comment-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #9499a0;
+}
+
+.comment-time {
+  color: #9499a0;
+}
+
+.comment-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.action-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+  
+  &:hover {
+    color: #fb7299;
+  }
+  
+  :deep(.el-icon) {
+    font-size: 16px;
+  }
+}
+
+/* 暗色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .comment-section {
+    background: #232427;
+  }
+  
+  .comment-header h3 {
+    color: #e5e7eb;
+  }
+  
+  .comment-item:hover {
+    background: #2c2d30;
+  }
+  
+  .comment-text {
+    color: #e5e7eb;
+  }
+  
+  :deep(.el-textarea__inner) {
+    background: #2c2d30;
+    border-color: #363739;
+    color: #e5e7eb;
+    
+    &:focus {
+      border-color: #fb7299;
+      box-shadow: 0 0 0 2px rgba(251, 114, 153, 0.2);
+    }
+  }
+  
+  .emoji-picker:hover {
+    background: #363739;
+  }
+}
+
+/* 响应式调整 */
+@media screen and (max-width: 768px) {
+  .comment-section {
+    padding: 16px;
+    border-radius: 0;
+  }
+  
+  .comment-input-area {
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+  }
+  
+  .comment-item {
+    padding: 12px;
+  }
+  
+  .comment-actions {
+    gap: 12px;
+  }
+}
 </style> 
