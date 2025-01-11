@@ -108,7 +108,7 @@ const initPlayer = () => {
     ],
     icons: {
       loading: '<img src="/loading.gif">',
-      play: `<svg viewBox="0 0 24 24"><path d="M17.982 9.275 8.06 3.27A2.013 2.013 0 0 0 5 4.994v12.011a2.017 2.017 0 0 0 3.06 1.725l9.922-6.005a2.017 2.017 0 0 0 0-3.45z" fill="currentColor"/></svg>`,
+      state: `<img src="https://s1.hdslb.com/bfs/static/player/img/play.svg" class="art-state-icon">`,
     },
     quality: [
       {
@@ -329,5 +329,35 @@ onUnmounted(() => {
   :deep(.art-subtitle) {
     font-size: 14px;
   }
+}
+
+/* 自定义播放状态图标样式 */
+:deep(.art-video-player .art-state) {
+  position: absolute;
+  right: 30px;  /* 距离右边距离 */
+  bottom: 70px; /* 距离底部距离，避免与控制栏重叠 */
+  left: auto;   /* 取消默认的左侧定位 */
+  top: auto;    /* 取消默认的顶部定位 */
+  transform: none; /* 取消默认的居中变换 */
+  background: none;
+  padding: 0;   /* 移除内边距 */
+}
+
+:deep(.art-state-icon) {
+  width: 80px;  /* 增加图标尺寸 */
+  height: 80px; /* 增加图标尺寸 */
+  filter: brightness(0) invert(1); /* 将图标转为白色 */
+  opacity: 0.9;
+  transition: all 0.3s ease;
+}
+
+:deep(.art-state:hover .art-state-icon) {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* 确保图标在暗色背景下可见 */
+:deep(.art-state-playing) {
+  display: none !important; /* 播放时隐藏图标 */
 }
 </style> 

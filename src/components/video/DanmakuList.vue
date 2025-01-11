@@ -18,9 +18,9 @@
                class="danmaku-item"
           >
             <div class="danmaku-info">
-              <span class="time">{{ formatTime(item.timePoint) }}</span>
+              <span class="time">{{ formatTime(item.time) }}</span>
               <span class="content" :style="{ color: isWhiteColor(item.color) ? '#18191c' : item.color }">
-                {{ item.content }}
+                {{ item.text }}
               </span>
             </div>
           </div>
