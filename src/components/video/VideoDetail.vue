@@ -172,20 +172,6 @@ import {followUserService, getUserFollowService} from '@/api/user/userfollow'
 dayjs.extend(relativeTime)
 dayjs.locale('zh-cn')
 
-// 格式化时间的函数
-const formatCommentTime = (time) => {
-  const now = dayjs()
-  const commentTime = dayjs(time)
-  const diffDays = now.diff(commentTime, 'day')
-
-  if (diffDays < 1) {
-    return commentTime.fromNow()  // 显示"几分钟前"、"几小时前"
-  } else if (diffDays < 30) {
-    return commentTime.format('MM-DD HH:mm')  // 显示"月-日 时:分"
-  } else {
-    return commentTime.format('YYYY-MM-DD')   // 显示完整日期
-  }
-}
 const route = useRoute()
 const router = useRouter()
 
@@ -314,8 +300,8 @@ const handleEmojiClick = (event) => {
     const emojiButton = event.currentTarget
     const rect = emojiButton.getBoundingClientRect()
     emojiPosition.value = {
-      top: '40px',  // 相对于按钮向下偏移
-      left: '0'
+      top: rect.height + 'px',  // 位于按钮正下方
+      left: '0px'
     }
   }
 }
@@ -816,6 +802,7 @@ watch(isLogin, (newVal) => {
 }
 
 .emoji-picker {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 4px;

@@ -21,8 +21,8 @@
                 编辑资料
               </el-button>
             </div>
-            <div class="user-id">UID: {{ userInfo.id }}</div>
-            <div class="user-intro">这个人很懒，什么都没有写</div>
+            <div class="user-id">账号: {{ userInfo.username }}</div>
+            <div class="user-intro">个人简介：{{ userInfo.introduction || '这个人很懒什么都没写' }}</div>
           </div>
         </div>
         <div class="user-stats">
@@ -524,9 +524,9 @@ const handleEpisodeUpdate = () => {
 }
 
 .user-id {
-  font-size: 14px;
+  font-size: 18px;
   color: #61666d;
-  margin-bottom: 8px;
+  margin-bottom: 11px;
 }
 
 .user-intro {

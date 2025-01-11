@@ -48,7 +48,7 @@
             </el-dropdown>
           </div>
           <h3 class="video-title">{{ video.title }}</h3>
-          <p class="video-description">{{ video.content }}</p>
+          <p class="video-description">简介：{{ video.content }}</p>
           <div class="video-meta">
             <span class="update-time">发布时间: {{ formatDate(video.createTime) }}</span>
             <span class="view-count">更新时间: {{ formatDate(video.updateTime) }}</span>

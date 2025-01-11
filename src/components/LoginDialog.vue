@@ -43,8 +43,8 @@
           <el-form :model="loginForm">
             <el-form-item>
               <el-input
-                  v-model="loginForm.username"
-                  placeholder="请输入账号"
+                  v-model="loginForm.account"
+                  placeholder="请输入账号/邮箱"
                   :prefix-icon="User"
                   size="large"
               />
@@ -100,15 +100,6 @@
               :rules="registerRules"
               ref="registerFormRef"
           >
-            <el-form-item prop="username">
-              <el-input
-                  v-model="registerForm.username"
-                  placeholder="请输入账号"
-                  :prefix-icon="User"
-                  size="large"
-              />
-            </el-form-item>
-
             <!-- 添加邮箱输入框 -->
             <el-form-item prop="email">
               <el-input
@@ -222,7 +213,7 @@ const tokenStore = useTokenStore();
 
 // 登录表单数据
 const loginForm = ref({
-  username: '',
+  account: '',
   password: '',
   remember: false
 })
@@ -244,10 +235,6 @@ const registerForm = ref({
 
 // 注册表单验证规则
 const registerRules = {
-  username: [
-    {required: true, message: '请输入账号', trigger: 'blur'},
-    {min: 5, max: 15, message: '长度在 5 到 15 个字符', trigger: 'blur'}
-  ],
   email: [
     {required: true, message: '请输入邮箱', trigger: 'blur'},
     {type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur'}
@@ -315,13 +302,13 @@ const handleSmsLogin = () => {
 }
 // 处理账号登录
 const handleLogin = async () => {
-  if (!loginForm.value.username || !loginForm.value.password)
+  if (!loginForm.value.account || !loginForm.value.password)
     return ElMessage.warning('请输入账号和密码')
 
   //判断是否符合5~15字符
-  if (loginForm.value.username.length < 5 || loginForm.value.username.length > 15 ||
-      loginForm.value.password.length < 5 || loginForm.value.password.length > 15) {
-    return ElMessage.error('用户或密码长度在5-15个字符')
+  if (loginForm.value.account.length < 5 || loginForm.value.account.length > 20 ||
+      loginForm.value.password.length < 5 || loginForm.value.password.length > 20) {
+    return ElMessage.error('账号或密码长度在5-20个字符')
   }
   let result = await userLoginService(loginForm.value)
 
