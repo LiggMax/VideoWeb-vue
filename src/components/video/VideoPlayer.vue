@@ -146,13 +146,12 @@ const initPlayer = () => {
           try {
             const response = await getBarrageService(props.videoId)
             if (response.code === 0) {
-              // 假设后端返回的弹幕数据需要转换成插件需要的格式
               return response.data.map(item => ({
-                text: item.text, // 弹幕内容
-                time: item.time, // 弹幕出现时间
-                color: item.color || '#FFFFFF', // 弹幕颜色，如果没有则使用默认白色
-                type: item.type || 0, // 弹幕类型，如果没有则使用默认滚动类型
-                border: false, // 是否显示描边
+                text: item.text,
+                time: item.time,
+                color: item.color || '#FFFFFF',
+                type: item.type || 0,
+                border: false,
               }))
             }
             return []
@@ -162,27 +161,38 @@ const initPlayer = () => {
             return []
           }
         },
-        speed: 5, // 弹幕速度
-        opacity: 1, // 透明度
-        fontSize: 25, // 字号大小
-        color: '#FFFFFF', // 默认颜色
-        mode: 0, // 默认模式：滚动
-        margin: [10, '25%'], // 弹幕上下边距
-        antiOverlap: true, // 防重叠
-        useWorker: true, // 使用 web worker
-        synchronousPlayback: false, // 同步播放速度
-        maxLength: 100, // 最大字数限制
-        minWidth: 200, // 最小宽度
-        maxWidth: 400, // 最大宽度
-        theme: 'dark', // 主题
+        speed: 5,
+        opacity: 1,
+        fontSize: 25,
+        color: '#FFFFFF',
+        mode: 0,
+        margin: [10, '25%'],
+        antiOverlap: true,
+        useWorker: true,
+        synchronousPlayback: false,
+        maxLength: 100,
+        minWidth: 200,
+        maxWidth: 400,
+        theme: 'dark',
+        // 输入框获得焦点时暂停视频
+        onInput: () => {
+          if (art.value && !art.value.paused) {
+            art.value.pause()
+          }
+        },
+        // 发送弹幕后恢复播放
+        onSend: () => {
+          if (art.value && art.value.paused) {
+            art.value.play()
+          }
+        },
         // 发送弹幕前的处理
         beforeEmit: async (danmu) => {
           try {
-            // 构造发送弹幕的数据
             const barrageData = {
               videoId: props.videoId,
               text: danmu.text,
-              time: art.value.currentTime, // 当前视频播放时间
+              time: art.value.currentTime,
               color: danmu.color,
               type: danmu.type
             }

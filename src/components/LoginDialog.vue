@@ -1,7 +1,7 @@
 <template>
   <el-dialog
       v-model="dialogVisible"
-      width="800px"
+      :width="isMobile ? '90%' : '800px'"
       :show-close="false"
       class="login-dialog"
       @close="handleDialogClose"
@@ -32,7 +32,7 @@
 
     <div class="dialog-content">
       <!-- 左侧图片 -->
-      <div class="left-section">
+      <div class="left-section" v-if="!isMobile">
         <img src="https://lain.bgm.tv/r/400/pic/cover/l/ba/69/277954_s8qHA.jpg" alt="login-banner"/>
       </div>
 
@@ -175,7 +175,7 @@
 </template>
 
 <script setup>
-import {ref, watch, computed, nextTick} from 'vue'
+import {ref, watch, computed, nextTick, onMounted, onUnmounted} from 'vue'
 import {
   Close,
   Position,
@@ -401,6 +401,21 @@ const handleResetClose = () => {
   showResetPassword.value = false
   emit('update:visible', false)
 }
+
+// 添加移动端检测
+const isMobile = ref(false)
+const checkMobile = () => {
+  isMobile.value = window.innerWidth <= 768
+}
+
+onMounted(() => {
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile)
+})
 </script>
 
 <style scoped>
@@ -758,5 +773,132 @@ const handleResetClose = () => {
 
 .forget-pwd:hover {
   color: #fb7299;
+}
+
+/* 添加移动端适配样式 */
+@media screen and (max-width: 768px) {
+  .dialog-content {
+    height: auto;
+    min-height: 400px;
+  }
+
+  .right-section {
+    padding: 20px;
+    width: 100%;
+  }
+
+  .tabs {
+    padding-right: 16px;
+    gap: 12px;
+  }
+
+  .tab-item {
+    font-size: 14px;
+  }
+
+  .login-form :deep(.el-input__wrapper),
+  .register-form :deep(.el-input__wrapper) {
+    height: 40px;
+  }
+
+  .login-form :deep(.el-input__inner),
+  .register-form :deep(.el-input__inner) {
+    font-size: 14px;
+  }
+
+  .form-options {
+    margin: 16px 0 24px;
+  }
+
+  .submit-btn {
+    height: 40px;
+    font-size: 14px;
+  }
+
+  .other-login {
+    padding-top: 24px;
+  }
+
+  .login-icons {
+    gap: 24px;
+  }
+
+  .login-icons .icon {
+    font-size: 20px;
+  }
+
+  .register-tip,
+  .login-tip {
+    margin-top: 12px;
+    padding-bottom: 12px;
+    font-size: 13px;
+  }
+
+  .code-input-group {
+    gap: 6px;
+  }
+
+  .send-code-btn {
+    width: 100px;
+    font-size: 12px;
+  }
+
+  :deep(.el-dialog) {
+    margin: 10vh auto !important;
+  }
+
+  :deep(.el-dialog__body) {
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  .forget-pwd {
+    font-size: 12px;
+  }
+
+  :deep(.el-checkbox__label) {
+    font-size: 13px;
+  }
+}
+
+/* 添加暗色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .login-dialog {
+    background: #1a1a1a;
+  }
+
+  .dialog-header {
+    border-bottom-color: #2c2c2c;
+  }
+
+  .tab-item {
+    color: #e5e7eb;
+  }
+
+  .right-section {
+    background: #1a1a1a;
+  }
+
+  :deep(.el-input__wrapper) {
+    background: #2c2c2c;
+    border-color: #3c3c3c;
+  }
+
+  :deep(.el-input__inner) {
+    color: #e5e7eb;
+  }
+
+  :deep(.el-checkbox__label) {
+    color: #e5e7eb;
+  }
+
+  .divider span {
+    background: #1a1a1a;
+    color: #e5e7eb;
+  }
+
+  .login-icons .icon {
+    color: #e5e7eb;
+  }
 }
 </style>
