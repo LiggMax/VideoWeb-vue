@@ -60,7 +60,7 @@
       >
         <el-table-column label="集数" width="80" align="center">
           <template #default="scope">
-            <span class="episode-number">第{{ scope.row.number }}集</span>
+            <span class="episode-number">第{{ scope.row.episodeNumber }}集</span>
           </template>
         </el-table-column>
         
@@ -123,12 +123,20 @@
     >
       <el-form :model="episodeForm" label-width="80px" :rules="episodeRules" ref="episodeFormRef">
         <el-form-item label="集数" prop="number">
-          <el-input-number 
+          <el-select
             v-model="episodeForm.number" 
-            :min="1"
-            controls-position="right"
-            placeholder="请输入集数"
-          />
+            placeholder="请选择集数"
+            style="width: 100%"
+            filterable
+            :filter-method="filterEpisodeNumber"
+          >
+            <el-option
+              v-for="num in availableEpisodeNumbers"
+              :key="num"
+              :label="`第${num}集`"
+              :value="num"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="标题" prop="title">
           <el-input 
@@ -138,33 +146,98 @@
             show-word-limit
           />
         </el-form-item>
-        <el-form-item label="视频" prop="videoUrl">
+        <el-form-item label="封面" prop="episodeImage">
           <el-upload
-            class="video-uploader"
-            :http-request="uploadVideo"
+            class="episode-cover-uploader"
             :show-file-list="false"
-            accept="video/*"
+            :auto-upload="true"
+            action="/api/file/uploadImage"
+            name="image"
+            :on-success="handleEpisodeCoverSuccess"
+            accept="image/*"
           >
-            <div v-if="!episodeForm.videoUrl" class="upload-area">
-              <el-icon class="upload-icon"><Upload /></el-icon>
-              <div class="upload-text">点击上传视频</div>
-              <div class="upload-tip">支持 MP4、WebM 格式</div>
-            </div>
-            <div v-else class="video-preview">
-              <el-icon class="success-icon"><CircleCheckFilled /></el-icon>
-              <div class="video-info">
-                <div class="video-name">{{ episodeForm.videoName }}</div>
-              </div>
-              <el-button link type="danger" >删除</el-button>
+            <img 
+              v-if="episodeForm.episodeImage" 
+              :src="episodeForm.episodeImage" 
+              class="episode-cover-preview"
+            />
+            <div v-else class="episode-cover-placeholder">
+              <el-icon><Plus /></el-icon>
+              <div class="upload-text">点击上传封面</div>
             </div>
           </el-upload>
+        </el-form-item>
+        <el-form-item label="视频" prop="videoUrl">
+          <div class="video-upload-container">
+            <!-- 选择文件区域 -->
+            <div v-if="!selectedFile && !episodeForm.videoUrl" class="upload-area" @click="triggerFileSelect">
+              <el-icon class="upload-icon"><Upload /></el-icon>
+              <div class="upload-text">选择视频文件</div>
+              <div class="upload-tip">支持 MP4、WebM 格式，最大 500MB</div>
+            </div>
+            
+            <!-- 已选择文件展示 -->
+            <div v-else-if="selectedFile && !uploading" class="file-selected">
+              <div class="file-info">
+                <el-icon><Document /></el-icon>
+                <span class="file-name">{{ selectedFile.name }}</span>
+                <span class="file-size">{{ formatFileSize(selectedFile.size) }}</span>
+              </div>
+              <div class="file-actions">
+                <el-button 
+                  type="primary" 
+                  link 
+                  @click="uploadVideo"
+                  :disabled="uploading"
+                >
+                  <el-icon><Upload /></el-icon>
+                  上传
+                </el-button>
+                <el-button 
+                  type="danger" 
+                  link 
+                  @click="removeSelectedFile"
+                  :disabled="uploading"
+                >
+                  <el-icon><Delete /></el-icon>
+                  移除
+                </el-button>
+              </div>
+            </div>
+            
+            <!-- 上传进度展示 -->
+            <div v-if="uploading" class="upload-progress">
+              <el-progress 
+                :percentage="uploadProgress" 
+                :format="progressFormat"
+                status="success"
+              />
+              <div class="progress-info">
+                <span>{{ formatFileSize(uploadedSize) }} / {{ formatFileSize(selectedFile?.size || 0) }}</span>
+                <span>{{ uploadSpeed }} MB/s</span>
+              </div>
+            </div>
+            
+            <!-- 隐藏的文件输入框 -->
+            <input
+              type="file"
+              ref="fileInput"
+              accept="video/*"
+              style="display: none"
+              @change="handleFileSelect"
+            >
+          </div>
         </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="episodeDialogVisible = false">取消</el-button>
-          <el-button type="primary"  :loading="uploading">
-            {{ uploading ? '上传中...' : '确定' }}
+          <el-button 
+            type="primary" 
+            @click="submitEpisodeForm" 
+            :disabled="!episodeForm.videoUrl || uploading"
+          >
+            确定
           </el-button>
         </span>
       </template>
@@ -248,7 +321,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
@@ -259,13 +332,15 @@ import {
   Back, 
   VideoPlay, 
   Edit, 
-  Delete 
+  Delete,
+  Document
 } from '@element-plus/icons-vue'
 import { formatDate } from '@/utils/format'
 import VideoPlayer from '@/components/video/VideoPlayer.vue'
 import { getAnimeDetailService } from '@/api/anime/animeEpisode'
 import {uploadVideoService} from "@/api/anime/anime";
 import { updateAnimeService } from '@/api/anime/anime'
+import { addAnimeEpisodeService } from '@/api/anime/animeEpisode'
 
 // 添加状态处理函数
 const getStatusTagType = (status) => {
@@ -307,10 +382,11 @@ const loading = ref(true)
 // 表单相关
 const episodeFormRef = ref(null)
 const episodeForm = ref({
-  number: 1,
+  episodeNumber: 1,
   title: '',
   videoUrl: '',
-  videoName: ''
+  videoName: '',
+  episodeImage: ''
 })
 
 // 表单校验规则
@@ -325,6 +401,9 @@ const episodeRules = {
   ],
   videoUrl: [
     { required: true, message: '请上传视频', trigger: 'change' }
+  ],
+  episodeImage: [
+    { required: true, message: '请上传剧集封面', trigger: 'change' }
   ]
 }
 
@@ -405,11 +484,40 @@ const deleteEpisode = async (episode) => {
   }
 }
 
+// 计算可用的集数选项
+const availableEpisodeNumbers = computed(() => {
+  const existingNumbers = new Set(animeInfo.value.episodes?.map(ep => ep.episodeNumber))
+  const maxNumber = Math.max(...Array.from(existingNumbers), 0) + 1
+  const numbers = []
+  
+  // 如果是编辑模式，包含当前编辑的集数
+  if (isEdit.value) {
+    existingNumbers.delete(episodeForm.value.number)
+  }
+  
+  // 生成集数列表，包括所有缺失的集数和下一集
+  for (let i = 1; i <= maxNumber; i++) {
+    if (!existingNumbers.has(i)) {
+      numbers.push(i)
+    }
+  }
+  
+  return numbers.sort((a, b) => a - b)
+})
+
+// 集数筛选方法
+const filterEpisodeNumber = (value) => {
+  const query = value.toString().toLowerCase()
+  return availableEpisodeNumbers.value.filter(num => {
+    return `第${num}集`.toLowerCase().includes(query)
+  })
+}
+
 // 显示添加剧集对话框
 const showAddEpisodeDialog = () => {
   isEdit.value = false
   episodeForm.value = {
-    number: (animeInfo.value.episodes?.length || 0) + 1,
+    number: availableEpisodeNumbers.value[0] || 1,
     title: '',
     videoUrl: '',
     videoName: ''
@@ -417,28 +525,91 @@ const showAddEpisodeDialog = () => {
   episodeDialogVisible.value = true
 }
 
-// 上传视频
-const uploadVideo = async (options) => {
+// 文件相关状态
+const fileInput = ref(null)
+const selectedFile = ref(null)
+const uploadProgress = ref(0)
+const uploadedSize = ref(0)
+const uploadSpeed = ref(0)
+let uploadStartTime = 0
+
+// 触发文件选择
+const triggerFileSelect = () => {
+  fileInput.value.click()
+}
+
+// 处理文件选择
+const handleFileSelect = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    if (file.size > 500 * 1024 * 1024) { // 500MB限制
+      ElMessage.error('文件大小不能超过500MB')
+      return
+    }
+    selectedFile.value = file
+  }
+  event.target.value = '' // 重置input，允许选择相同文件
+}
+
+// 移除已选择的文件
+const removeSelectedFile = () => {
+  selectedFile.value = null
+  episodeForm.value.videoUrl = ''
+  episodeForm.value.videoName = ''
+  uploadProgress.value = 0
+  uploadedSize.value = 0
+}
+
+// 格式化文件大小
+const formatFileSize = (bytes) => {
+  if (bytes === 0) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+// 格式化进度条文字
+const progressFormat = (percentage) => {
+  return percentage === 100 ? '上传完成' : `${percentage}%`
+}
+
+// 修改上传视频方法
+const uploadVideo = async () => {
+  if (!selectedFile.value) {
+    ElMessage.warning('请先选择视频文件')
+    return
+  }
+
   try {
     uploading.value = true
+    uploadStartTime = Date.now()
+    
     const formData = new FormData()
-    formData.append('video', options.file)
-    // TODO: 调用上传接口
-    const res = await uploadVideoService(formData)
+    formData.append('video', selectedFile.value)
+
+    const config = {
+      onUploadProgress: (progressEvent) => {
+        const complete = progressEvent.loaded / progressEvent.total
+        uploadProgress.value = parseFloat((complete * 100).toFixed(2))
+        uploadedSize.value = progressEvent.loaded
+        
+        // 计算上传速度
+        const duration = (Date.now() - uploadStartTime) / 1000
+        const speedMBps = (progressEvent.loaded / (1024 * 1024)) / duration
+        uploadSpeed.value = speedMBps.toFixed(2)
+      }
+    }
+
+    const res = await uploadVideoService(formData, config)
     episodeForm.value.videoUrl = res.data
-    episodeForm.value.videoName = options.file.name
+    episodeForm.value.videoName = selectedFile.value.name
     ElMessage.success('视频上传成功')
   } catch (error) {
     ElMessage.error('上传失败')
   } finally {
     uploading.value = false
   }
-}
-
-// 移除视频
-const removeVideo = () => {
-  episodeForm.value.videoUrl = ''
-  episodeForm.value.videoName = ''
 }
 
 // 状态选项
@@ -486,6 +657,58 @@ const submitAnimeForm = async () => {
   } catch (error) {
     ElMessage.error('更新失败')
   }
+}
+
+// 提交剧集
+const submitEpisodeForm = async () => {
+  try {
+    // 表单验证
+    await episodeFormRef.value.validate()
+    
+    // 构造提交的数据
+    const episodeData = {
+      episodeNumber: episodeForm.value.number,
+      episodeTitle: episodeForm.value.title,
+      episodeVideo: episodeForm.value.videoUrl,
+      episodeImage: episodeForm.value.episodeImage,
+      animeId: props.animeId
+    }
+
+    // 调用添加剧集接口
+    await addAnimeEpisodeService(props.animeId, episodeData)
+
+    // 成功提示
+    ElMessage.success('添加剧集成功')
+
+    // 关闭对话框
+    episodeDialogVisible.value = false
+
+    // 重新获取番剧详情，刷新列表
+    await getAnimeDetail()
+
+    // 重置表单
+    episodeForm.value = {
+      number: availableEpisodeNumbers.value[0] || 1,
+      title: '',
+      videoUrl: '',
+      videoName: '',
+      episodeImage: ''
+    }
+    selectedFile.value = null
+    uploadProgress.value = 0
+    uploadedSize.value = 0
+  } catch (error) {
+    if (error.message) {
+      ElMessage.error(error.message)
+    } else {
+      ElMessage.error('添加剧集失败')
+    }
+  }
+}
+
+// 处理封面上传成功
+const handleEpisodeCoverSuccess = (res) => {
+  episodeForm.value.episodeImage = res.data
 }
 </script>
 
@@ -643,5 +866,114 @@ const submitAnimeForm = async () => {
 .upload-icon {
   font-size: 28px;
   color: #8c939d;
+}
+
+.video-upload-container {
+  border: 1px dashed #dcdfe6;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.upload-area {
+  cursor: pointer;
+  text-align: center;
+  padding: 30px 0;
+  transition: all 0.3s;
+}
+
+.upload-area:hover {
+  background-color: #f5f7fa;
+  border-color: #409eff;
+}
+
+.file-selected {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background-color: #f5f7fa;
+  border-radius: 4px;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-name {
+  font-size: 14px;
+  color: #606266;
+}
+
+.file-size {
+  color: #909399;
+  font-size: 12px;
+}
+
+.upload-progress {
+  padding: 16px 0;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  color: #909399;
+  font-size: 12px;
+}
+
+.file-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.file-actions .el-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.episode-cover-uploader {
+  :deep(.el-upload) {
+    width: 280px;
+    height: 158px;
+    border: 1px dashed #d9d9d9;
+    border-radius: 8px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+
+    &:hover {
+      border-color: #fb7299;
+    }
+  }
+}
+
+.episode-cover-preview {
+  width: 280px;
+  height: 158px;
+  object-fit: cover;
+  display: block;
+}
+
+.episode-cover-placeholder {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #8c939d;
+
+  .el-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+
+  .upload-text {
+    font-size: 14px;
+  }
 }
 </style> 

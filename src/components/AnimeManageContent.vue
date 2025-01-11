@@ -160,7 +160,6 @@ import {
   addEpisodeService,
   uploadVideoService
 } from "@/api/anime/anime"
-import { formatDate} from "@/utils/format";
 import AnimeEpisodeManager from './anime/AnimeEpisodeManager.vue'
 import { useRouter } from 'vue-router'
 
@@ -182,6 +181,7 @@ const router = useRouter()
 const statusOptions = [
   {label: '连载中', value: 'ongoing'},
   {label: '已完结', value: 'completed'},
+  {label: '即将上映',value: 'upcoming'},
   {label: '暂停', value: 'hiatus'}
 ]
 
@@ -368,8 +368,9 @@ const getStatusType = (status) => {
 const getStatusLabel = (status) => {
   const labels = {
     'ongoing': '连载中',
-    'upcoming': '即将上线',
-    'finished': '已完结'
+    'hiatus': '停止',
+    'upcoming': '即将上映',
+    'completed': '已完结'
   }
   return labels[status] || '未知'
 }
