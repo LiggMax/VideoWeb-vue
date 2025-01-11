@@ -30,7 +30,7 @@ const routes = [
   {
     path: '/video/:id',
     name: 'VideoDetail',
-    component: () => import('@/views/VideoDetail.vue')
+    component: () => import('@/components/video/VideoDetail.vue')
   },
   {
     path: '/reset-password',

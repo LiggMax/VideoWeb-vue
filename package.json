@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.0.0",
+    "artplayer": "^5.2.1",
     "axios": "^1.7.9",
     "bilibili-clone": "file:",
     "dayjs": "^1.11.13",
