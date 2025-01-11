@@ -92,6 +92,18 @@ const initPlayer = () => {
           art.value.pip = !art.value.pip
         },
       },
+      {
+        position: 'right',
+        html: `<div class="wide-screen-btn" title="宽屏模式">
+          <svg class="wide-screen-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+            <path d="M824.448 199.552H199.552c-49.30133333 0-89.26933333 39.968-89.26933333 89.26933333v446.35733334c0 49.30133333 39.968 89.26933333 89.26933333 89.26933333h624.896c49.30133333 0 89.26933333-39.968 89.26933333-89.26933333V288.82133333c0-49.30133333-39.95733333-89.26933333-89.26933333-89.26933333zM338.98666667 521.32266667l45.90933333 45.90933333c13.07733333 13.06666667 13.07733333 34.272 0 47.33866667-13.07733333 13.07733333-34.272 13.07733333-47.33866667 0l-55.232-55.232-31.616-31.616c-8.68266667-8.68266667-8.68266667-22.76266667 0-31.44533334l31.616-31.616 55.232-55.232c13.07733333-13.06666667 34.272-13.06666667 47.33866667 0 13.07733333 13.07733333 13.07733333 34.272 0 47.33866667l-45.90933333 45.90933333c-5.152 5.152-5.152 13.49333333 0 18.64533334z m417.45066666 6.4l-31.62666666 31.616-55.232 55.232c-13.07733333 13.07733333-34.272 13.07733333-47.33866667 0-13.06666667-13.06666667-13.06666667-34.272 0-47.33866667l45.90933333-45.90933333c5.14133333-5.152 5.14133333-13.49333333 0-18.64533334l-45.90933333-45.90933333c-13.06666667-13.07733333-13.06666667-34.272 0-47.33866667 13.07733333-13.06666667 34.272-13.06666667 47.33866667 0l55.232 55.232 31.62666666 31.616c8.68266667 8.68266667 8.68266667 22.76266667 0 31.44533334z" />
+          </svg>
+        </div>`,
+        tooltip: '宽屏模式',
+        click: function () {
+          emit('toggle-collapse', !props.isCollapsed)
+        },
+      },
     ],
     settings: [
       {
@@ -359,5 +371,51 @@ onUnmounted(() => {
 /* 确保图标在暗色背景下可见 */
 :deep(.art-state-playing) {
   display: none !important; /* 播放时隐藏图标 */
+}
+
+/* 宽屏按钮样式 */
+:deep(.wide-screen-btn) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0 8px;
+  transition: all 0.2s;
+}
+
+:deep(.wide-screen-icon) {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+  transition: all 0.2s;
+}
+
+:deep(.wide-screen-btn:hover) {
+  opacity: 0.85;
+}
+
+:deep(.wide-screen-btn:hover .wide-screen-icon) {
+  transform: scale(1.1);
+}
+
+/* 调整控制栏右侧按钮间距 */
+:deep(.art-control-right) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 8px;
+}
+
+/* 控制栏按钮统一样式 */
+:deep(.art-control-right .art-control) {
+  opacity: 0.9;
+  transition: all 0.2s;
+  padding: 0 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+:deep(.art-control-right .art-control:hover) {
+  opacity: 1;
 }
 </style> 
