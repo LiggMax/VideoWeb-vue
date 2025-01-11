@@ -15,6 +15,28 @@
 
         <!-- 视频信息 -->
         <div class="video-info">
+          <!-- 添加互动按钮组 -->
+          <div class="video-actions">
+            <div class="action-item">
+              <el-button class="action-btn" :class="{ 'is-active': isLiked }">
+                <img :src="LikeIcon" class="action-icon" alt="点赞" />
+                <span>{{ videoInfo.likeCount || 0 }}</span>
+              </el-button>
+            </div>
+            <div class="action-item">
+              <el-button class="action-btn" :class="{ 'is-active': isCollected }">
+                <img :src="StarIcon" class="action-icon" alt="收藏" />
+                <span>收藏</span>
+              </el-button>
+            </div>
+            <div class="action-item">
+              <el-button class="action-btn">
+                <img :src="CoinIcon" class="action-icon" alt="投币" />
+                <span>投币</span>
+              </el-button>
+            </div>
+          </div>
+
           <h1 class="video-title">{{ videoInfo.title }}</h1>
           <!-- 添加视频简介区域 -->
           <div class="video-description">
@@ -184,6 +206,10 @@ import eventBus from '@/utils/eventBus'
 import DanmakuList from '@/components/video/DanmakuList.vue'
 import {formatDate} from "@/utils/format";
 import {followUserService, getUserFollowService} from '@/api/user/userfollow'
+import { useTitle } from '@vueuse/core' // 如果没有安装这个库，也可以直接操作 document.title
+import LikeIcon from '@/assets/imge/点赞.svg'
+import StarIcon from '@/assets/imge/收藏.svg'
+import CoinIcon from '@/assets/imge/投币.svg'
 
 // 配置 dayjs
 dayjs.extend(relativeTime)
@@ -207,6 +233,20 @@ const videoInfo = ref({
   username: '',//作者用户名
 })
 
+// 设置页面标题
+const title = useTitle()
+watch(() => videoInfo.value, (newVideo) => {
+  if (newVideo && newVideo.title) {
+    title.value = `${newVideo.title} - 哔哩哔哩` // 设置标题格式：视频标题 - 网站名
+  } else {
+    title.value = '哔哩哔哩' // 如果没有视频信息则显示默认标题
+  }
+}, { immediate: true })
+
+// 组件卸载时恢复默认标题
+onUnmounted(() => {
+  title.value = '哔哩哔哩'
+})
 // 获取视频详情
 const getVideoDetail = async () => {
   try {
@@ -431,6 +471,11 @@ watch(isLogin, (newVal) => {
     isFollowed.value = false
   }
 })
+
+// 添加互动状态
+const isLiked = ref(false)
+const isCollected = ref(false)
+
 </script>
 
 <style scoped>
@@ -1074,6 +1119,95 @@ watch(isLogin, (newVal) => {
 
   .video-description {
     padding: 12px;
+  }
+}
+
+/* 添加互动按钮样式 */
+.video-actions {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  border-bottom: 1px solid #f1f2f3;
+}
+
+.action-item {
+  display: flex;
+  align-items: center;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #61666d;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.action-icon {
+  width: 28px;
+  height: 28px;
+  transition: all 0.3s ease;
+  margin-right: 4px;
+}
+
+/* 激活状态下的图标颜色 */
+.action-btn.is-active .action-icon {
+  filter: invert(53%) sepia(49%) saturate(1352%) hue-rotate(308deg) brightness(97%) contrast(96%);
+}
+
+/* 悬浮状态下的图标颜色 */
+.action-btn:hover .action-icon {
+  filter: invert(53%) sepia(49%) saturate(1352%) hue-rotate(308deg) brightness(97%) contrast(96%);
+}
+
+.action-btn:hover {
+  color: #fb7299;
+}
+
+.action-btn.is-active {
+  color: #fb7299;
+}
+
+/* 暗色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .action-btn {
+    background: transparent;
+    color: #e5e7eb;
+  }
+
+  .action-btn:hover {
+    color: #fb7299;
+  }
+
+  .action-btn.is-active {
+    color: #fb7299;
+  }
+}
+
+/* 响应式调整 */
+@media screen and (max-width: 768px) {
+  .video-actions {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .action-btn {
+    padding: 10px 20px;
+    font-size: 15px;
+    gap: 10px;
+  }
+
+  .action-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 2px;
   }
 }
 </style> 
