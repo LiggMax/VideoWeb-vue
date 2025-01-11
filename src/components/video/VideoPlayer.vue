@@ -1,11 +1,11 @@
 <template>
-  <div class="video-player">
+  <div class="video-player" ref="playerContainer">
     <div class="artplayer-app"></div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import Artplayer from 'artplayer'
 import artplayerPluginDanmuku from 'artplayer-plugin-danmuku'
 import { useRouter } from 'vue-router'
@@ -40,19 +40,27 @@ const props = defineProps({
 const emit = defineEmits(['toggle-collapse'])
 const router = useRouter()
 const art = ref(null)
+const playerContainer = ref(null)
 
 // 初始化播放器
 const initPlayer = () => {
   if (art.value) return
 
   // 检查视频URL是否有效
-  if (!props.videoUrl) {
-    console.error('视频URL无效')
+  if (!props.videoUrl || !playerContainer.value) {
+    console.error('视频URL无效或容器未就绪')
+    return
+  }
+
+  // 确保容器内有 artplayer-app 元素
+  const container = playerContainer.value.querySelector('.artplayer-app')
+  if (!container) {
+    console.error('找不到播放器容器元素')
     return
   }
 
   art.value = new Artplayer({
-    container: '.artplayer-app',
+    container: container,
     url: props.videoUrl,
     poster: props.poster,
     title: props.title,
@@ -259,9 +267,12 @@ watch(() => props.videoUrl, (newUrl, oldUrl) => {
 
 // 组件挂载时初始化播放器
 onMounted(() => {
-  if (props.videoUrl) {
-    initPlayer()
-  }
+  // 使用 nextTick 确保 DOM 已更新
+  nextTick(() => {
+    if (props.videoUrl) {
+      initPlayer()
+    }
+  })
 })
 
 // 组件卸载时销毁播放器

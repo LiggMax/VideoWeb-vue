@@ -246,15 +246,26 @@
     <!-- 视频预览对话框 -->
     <el-dialog
       v-model="previewDialogVisible"
-      title="视频预览"
-      width="70%"
+      :title="previewEpisodeTitle"
+      width="60%"
       :destroy-on-close="true"
+      :close-on-click-modal="false"
+      class="preview-dialog"
+      @closed="handlePreviewClose"
     >
-      <video-player
-        v-if="previewUrl"
-        :video-url="previewUrl"
-        :auto-play="true"
-      />
+      <div class="preview-container">
+        <video
+          v-if="previewDialogVisible && previewUrl"
+          :key="previewUrl"
+          class="preview-video"
+          controls
+          autoplay
+          :poster="previewPoster"
+        >
+          <source :src="previewUrl" type="video/mp4">
+          您的浏览器不支持 HTML5 视频播放
+        </video>
+      </div>
     </el-dialog>
 
     <!-- 编辑番剧信息对话框 -->
@@ -327,8 +338,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
   Plus, 
   Upload, 
-  CircleCheckFilled, 
-  Picture, 
+  Picture,
   Back, 
   VideoPlay, 
   Edit, 
@@ -336,7 +346,6 @@ import {
   Document
 } from '@element-plus/icons-vue'
 import { formatDate } from '@/utils/format'
-import VideoPlayer from '@/components/video/VideoPlayer.vue'
 import { getAnimeDetailService } from '@/api/anime/animeEpisode'
 import {uploadVideoService} from "@/api/anime/anime";
 import { updateAnimeService } from '@/api/anime/anime'
@@ -375,6 +384,8 @@ const animeInfo = ref({
 const episodeDialogVisible = ref(false)
 const previewDialogVisible = ref(false)
 const previewUrl = ref('')
+const previewPoster = ref('')
+const previewEpisodeTitle = ref('')
 const isEdit = ref(false)
 const uploading = ref(false)
 const loading = ref(true)
@@ -450,7 +461,9 @@ const backToList = () => {
 
 // 预览剧集
 const previewEpisode = (episode) => {
-  previewUrl.value = episode.videoUrl
+  previewUrl.value = episode.episodeVideo
+  previewPoster.value = episode.episodeImage
+  previewEpisodeTitle.value = `${animeInfo.value.title}—第${episode.episodeNumber}集—${episode.episodeTitle}`
   previewDialogVisible.value = true
 }
 
@@ -459,10 +472,10 @@ const editEpisode = (episode) => {
   isEdit.value = true
   episodeForm.value = {
     episodeId: episode.episodeId,
-    number: episode.number,
+    number: episode.episodeNumber,
     title: episode.episodeTitle,
-    videoUrl: episode.videoUrl,
-    videoName: `第${episode.number}集`,
+    videoUrl: episode.episodeVideo,
+    videoName: `第${episode.episodeNumber}集`,
     episodeImage: episode.episodeImage
   }
   episodeDialogVisible.value = true
@@ -709,6 +722,14 @@ const submitEpisodeForm = async () => {
 // 处理封面上传成功
 const handleEpisodeCoverSuccess = (res) => {
   episodeForm.value.episodeImage = res.data
+}
+
+// 添加关闭预览的处理方法
+const handlePreviewClose = () => {
+  // 清理预览相关的状态
+  previewUrl.value = ''
+  previewPoster.value = ''
+  previewEpisodeTitle.value = ''
 }
 </script>
 
@@ -975,5 +996,72 @@ const handleEpisodeCoverSuccess = (res) => {
   .upload-text {
     font-size: 14px;
   }
+}
+
+/* 修改预览对话框相关样式 */
+:deep(.preview-dialog) {
+  .el-dialog__body {
+    padding: 0;
+    background: #000;
+    overflow: hidden;
+  }
+  
+  .el-dialog__header {
+    padding: 12px 16px;
+    margin: 0;
+    border-bottom: 1px solid #f0f0f0;
+    background: #fff;
+    position: relative;
+  }
+
+  .el-dialog {
+    max-width: 900px;
+  }
+
+  /* 自定义关闭按钮样式 */
+  .el-dialog__close {
+    font-size: 24px !important;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-radius: 50%;
+    transition: all 0.3s;
+    color: #606266;
+    
+    &:hover {
+      background-color: #f0f0f0;
+      color: #333;
+      transform: translateY(-50%) rotate(90deg);
+    }
+  }
+
+  /* 标题样式优化 */
+  .el-dialog__title {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+  }
+}
+
+.preview-container {
+  position: relative;
+  width: 100%;
+  background: #000;
+  aspect-ratio: 16/9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-height: 70vh;
+}
+
+.preview-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  max-height: 70vh;
 }
 </style> 
