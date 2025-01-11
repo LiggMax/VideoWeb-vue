@@ -441,7 +441,7 @@ watch(isLogin, (newVal) => {
 .main-content {
   width: 100%;
   position: relative;
-  max-width: 1600px;
+  max-width: 2160px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 380px;
@@ -460,7 +460,7 @@ watch(isLogin, (newVal) => {
   position: relative;
   transition: all 0.3s ease-in-out;
   min-width: 0;
-  max-width: 1200px;
+  max-width: 1760px;
   margin: 0 auto;
   padding: 0 20px;
 }
@@ -481,9 +481,43 @@ watch(isLogin, (newVal) => {
 }
 
 /* 响应式布局调整 */
+@media screen and (max-width: 2160px) {
+  .main-content {
+    max-width: 1920px;
+  }
+  
+  .video-section {
+    max-width: 1520px;
+  }
+}
+
+@media screen and (max-width: 1920px) {
+  .main-content {
+    max-width: 1760px;
+  }
+  
+  .video-section {
+    max-width: 1360px;
+  }
+}
+
+@media screen and (max-width: 1760px) {
+  .main-content {
+    max-width: 1600px;
+  }
+  
+  .video-section {
+    max-width: 1200px;
+  }
+}
+
 @media screen and (max-width: 1600px) {
   .main-content {
     max-width: 1400px;
+  }
+  
+  .video-section {
+    max-width: 1000px;
   }
 }
 
@@ -492,10 +526,12 @@ watch(isLogin, (newVal) => {
     grid-template-columns: 1fr;
     gap: 10px;
     padding: 0 10px;
+    max-width: 1000px;
   }
 
   .video-section {
     padding: 0 10px;
+    max-width: 100%;
   }
 }
 
