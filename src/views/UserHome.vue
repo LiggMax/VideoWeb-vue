@@ -36,13 +36,16 @@
     <!-- 用户内容区域 -->
     <div class="user-content">
       <div class="content-tabs">
-        <div class="tab active">发布的视频</div>
-        <div class="tab">动态</div>
-        <div class="tab">收藏</div>
+        <div class="tab active"><img :src="videoIcon" alt="视频">发布的视频</div>
+        <div class="tab"><img :src="dynamicIcon" alt="动态">动态</div>
+        <div class="tab"><img :src="starIcon" alt="收藏">收藏</div>
       </div>
       <!-- 视频列表 -->
       <div class="video-list" v-if="userHomeInfo.videos && userHomeInfo.videos.length > 0">
-        <div v-for="video in userHomeInfo.videos" :key="video.id" class="video-item">
+        <div v-for="video in userHomeInfo.videos" 
+             :key="video.id" 
+             class="video-item"
+             @click="goToVideo(video.id)">
           <div class="video-cover">
             <img :src="video.cover" :alt="video.title">
             <span class="duration">{{ video.duration }}</span>
@@ -65,15 +68,26 @@
 <script setup>
 import {ref, onMounted} from 'vue'
 import {userHomeService} from '@/api/user/user'
-import bgImage from '@/assets/背景图/背景图.webp' // 导入背景图片，请确保路径正确
+import {useRouter} from 'vue-router'
+import bgImage from '@/assets/背景图/背景图.webp' // 导入背景图片
+//图标
+import videoIcon from '@/assets/iconsvg/video.svg'
+import starIcon from '@/assets/iconsvg/userstar.svg'
+import dynamicIcon from '@/assets/iconsvg/dynamic.svg'
 
 const userHomeInfo = ref({})
 const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
+const router = useRouter()
 
 // 获取用户首页信息
 const getUserHomeInfo = async () => {
   const res = await userHomeService()
   userHomeInfo.value = res.data
+}
+
+// 跳转到视频播放页
+const goToVideo = (videoId) => {
+  router.push(`/video/${videoId}`)
 }
 
 onMounted(() => {
@@ -186,9 +200,8 @@ onMounted(() => {
 }
 
 .user-content {
-  max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  width: 100%;
 }
 
 .content-tabs {
@@ -196,6 +209,8 @@ onMounted(() => {
   gap: 32px;
   margin-bottom: 24px;
   border-bottom: 1px solid #e3e5e7;
+  max-width: 1200px;
+  margin-left: 40px;
 }
 
 .tab {
@@ -204,6 +219,24 @@ onMounted(() => {
   color: #61666d;
   cursor: pointer;
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tab img {
+  width: 35px;
+  height: 30px;
+  opacity: 0.6;
+  transition: all 0.3s ease;
+}
+
+.tab:hover img {
+  opacity: 0.8;
+}
+
+.tab.active img {
+  opacity: 1;
 }
 
 .tab.active {
@@ -223,8 +256,12 @@ onMounted(() => {
 
 .video-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(6, 1fr);
   gap: 20px;
+  width: 100%;
+  max-width: 2000px;
+  margin: 0 auto;
+  padding: 0 40px;
 }
 
 .video-item {
@@ -232,6 +269,8 @@ onMounted(() => {
   border-radius: 8px;
   overflow: hidden;
   transition: all 0.3s ease;
+  cursor: pointer;
+  width: 100%;
 }
 
 .video-item:hover {
@@ -288,6 +327,37 @@ onMounted(() => {
   margin: 0 6px;
 }
 
+@media screen and (max-width: 1700px) {
+  .video-list {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media screen and (max-width: 1400px) {
+  .video-list {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+}
+
+@media screen and (max-width: 1200px) {
+  .content-tabs {
+    margin-left: 30px;
+  }
+  .video-list {
+    padding: 0 30px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+}
+
+@media screen and (max-width: 992px) {
+  .video-list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+}
+
 @media screen and (max-width: 768px) {
   .user-header {
     height: 180px;
@@ -305,15 +375,25 @@ onMounted(() => {
 
   .content-tabs {
     gap: 16px;
+    margin-left: 15px;
   }
 
   .video-list {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    padding: 0 15px;
+    grid-template-columns: repeat(1, 1fr);
     gap: 12px;
   }
 
   .user-info-card {
     padding: 20px 20px 30px;
+  }
+
+  .video-title {
+    font-size: 13px;
+  }
+
+  .video-stats {
+    font-size: 11px;
   }
 }
 </style> 

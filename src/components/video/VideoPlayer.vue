@@ -15,7 +15,7 @@ import { useRouter } from 'vue-router'
 import { Back } from '@element-plus/icons-vue'
 import { sendBarrageService, getBarrageService } from '@/api/barrage'
 import { ElMessage } from 'element-plus'
-import ReturnIcon from '@/assets/iconsvg/返回.svg'
+import ReturnIcon from '@/assets/iconsvg/coin.svg'
 
 const props = defineProps({
   videoUrl: {

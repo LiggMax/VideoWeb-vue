@@ -207,8 +207,8 @@ import DanmakuList from '@/components/video/DanmakuList.vue'
 import {formatDate} from "@/utils/format";
 import {followUserService, getUserFollowService} from '@/api/user/userfollow'
 import { useTitle } from '@vueuse/core' // 如果没有安装这个库，也可以直接操作 document.title
-import LikeIcon from '@/assets/iconsvg/点赞.svg'
-import StarIcon from '@/assets/iconsvg/收藏.svg'
+import LikeIcon from '@/assets/iconsvg/like.svg'
+import StarIcon from '@/assets/iconsvg/star.svg'
 import CoinIcon from '@/assets/iconsvg/投币.svg'
 
 // 配置 dayjs
