@@ -145,8 +145,7 @@ onMounted(() => {
 
 .user-info-card {
   position: relative;
-  max-width: 1200px;
-  margin: 0 auto;
+  margin-left: 40px;
   padding: 20px 20px 40px;
   color: #fff;
 }
@@ -344,6 +343,9 @@ onMounted(() => {
   .content-tabs {
     margin-left: 30px;
   }
+  .user-info-card {
+    margin-left: 30px;
+  }
   .video-list {
     padding: 0 30px;
     grid-template-columns: repeat(3, 1fr);
@@ -385,7 +387,8 @@ onMounted(() => {
   }
 
   .user-info-card {
-    padding: 20px 20px 30px;
+    margin-left: 15px;
+    padding: 15px 15px 25px;
   }
 
   .video-title {
