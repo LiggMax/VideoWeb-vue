@@ -130,8 +130,13 @@
         <!-- UP主信息卡片 -->
         <div class="uploader-card">
           <div class="uploader-header">
-            <el-avatar :size="48" :src="videoInfo.userPic"/>
-            <div class="uploader-info">
+            <el-avatar 
+              :size="48" 
+              :src="videoInfo.userPic"
+              class="clickable"
+              @click="goToUserHome"
+            />
+            <div class="uploader-info" @click="goToUserHome">
               <div class="nickname">{{ videoInfo.nickname }}</div>
               <div class="fans-count">100粉丝</div>
             </div>
@@ -497,6 +502,16 @@ onUnmounted(() => {
   }
 })
 
+// 添加跳转到用户主页的方法
+const goToUserHome = () => {
+  if (videoInfo.value && videoInfo.value.username) {
+    router.push({
+      path: '/user',
+      query: { username: videoInfo.value.username }
+    })
+  }
+}
+
 </script>
 
 <style scoped>
@@ -644,6 +659,11 @@ onUnmounted(() => {
 .uploader-info {
   flex: 1;
   min-width: 0;
+  cursor: pointer;
+}
+
+.uploader-info:hover .nickname {
+  color: #fb7299;
 }
 
 .nickname {
@@ -1327,5 +1347,14 @@ onUnmounted(() => {
       color: #fff;
     }
   }
+}
+
+.clickable {
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+
+.clickable:hover {
+  opacity: 0.8;
 }
 </style> 
