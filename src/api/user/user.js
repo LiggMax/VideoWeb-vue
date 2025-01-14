@@ -49,6 +49,7 @@ export const logoutService = () => {
     return request.delete('/user/logout')
 }
 //用户首页信息接口
-export const userHomeService = () => {
-    return request.get('/user/homeList')
+export const userHomeService = (userNameData) => {
+    const params = userNameData ? { params: userNameData } : {}
+    return request.get('/user/homeList', params)
 }

@@ -166,7 +166,7 @@ const goToEditProfile = () => {
 // 跳转到用户首页
 const goToUserHome = () => {
   visible.value = false // 关闭弹窗
-  router.push('/user-home')
+  router.push('/user')
 }
 
 getUserInfo()

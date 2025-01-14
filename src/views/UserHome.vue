@@ -68,21 +68,31 @@
 <script setup>
 import {ref, onMounted} from 'vue'
 import {userHomeService} from '@/api/user/user'
-import {useRouter} from 'vue-router'
+import {useRouter, useRoute} from 'vue-router'
 import bgImage from '@/assets/背景图/背景图.webp' // 导入背景图片
 //图标
 import videoIcon from '@/assets/iconsvg/video.svg'
 import starIcon from '@/assets/iconsvg/userstar.svg'
 import dynamicIcon from '@/assets/iconsvg/dynamic.svg'
+import useUserInfoStore from '@/stores/userInfo'
 
 const userHomeInfo = ref({})
 const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
 const router = useRouter()
+const route = useRoute()
+const userInfoStore = useUserInfoStore()
 
 // 获取用户首页信息
 const getUserHomeInfo = async () => {
-  const res = await userHomeService()
-  userHomeInfo.value = res.data
+  // 如果有 username 查询参数，说明是查看其他用户的主页
+  if (route.query.username) {
+    const res = await userHomeService({ username: route.query.username })
+    userHomeInfo.value = res.data
+  } else {
+    // 否则获取当前登录用户的信息
+    const res = await userHomeService(null)
+    userHomeInfo.value = res.data
+  }
 }
 
 // 跳转到视频播放页
