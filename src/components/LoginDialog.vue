@@ -40,7 +40,7 @@
       <div class="right-section">
         <!-- 密码登录表单 -->
         <div v-if="currentView === 'login'" class="login-form">
-          <el-form :model="loginForm">
+          <el-form :model="loginForm" @keyup.enter="handleLogin">
             <el-form-item>
               <el-input
                   v-model="loginForm.account"

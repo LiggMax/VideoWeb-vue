@@ -1,5 +1,8 @@
 <template>
-  <div class="video-player" ref="playerContainer">
+  <div class="video-player" ref="playerContainer" @mousemove="handleMouseMove" @mouseleave="handleMouseLeave">
+    <div class="back-button" @click="router.back()" :class="{ 'show-control': isControlVisible }">
+     <img :src="ReturnIcon"  alt="返回" />
+    </div>
     <div class="artplayer-app"></div>
   </div>
 </template>
@@ -9,8 +12,10 @@ import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import Artplayer from 'artplayer'
 import artplayerPluginDanmuku from 'artplayer-plugin-danmuku'
 import { useRouter } from 'vue-router'
+import { Back } from '@element-plus/icons-vue'
 import { sendBarrageService, getBarrageService } from '@/api/barrage'
 import { ElMessage } from 'element-plus'
+import ReturnIcon from '@/assets/iconsvg/返回.svg'
 
 const props = defineProps({
   videoUrl: {
@@ -39,6 +44,19 @@ const emit = defineEmits(['toggle-collapse'])
 const router = useRouter()
 const art = ref(null)
 const playerContainer = ref(null)
+
+// 添加控制显示状态
+const isControlVisible = ref(false)
+
+// 鼠标移动处理
+const handleMouseMove = () => {
+  isControlVisible.value = true
+}
+
+// 鼠标离开处理
+const handleMouseLeave = () => {
+  isControlVisible.value = false
+}
 
 // 初始化播放器
 const initPlayer = () => {
@@ -459,5 +477,55 @@ onUnmounted(() => {
 /* 确保 loading 图标在暗色背景下可见 */
 :deep(.art-video-player .art-loading) {
   background: none;
+}
+
+/* 返回按钮样式 */
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.back-button.show-control {
+  opacity: 1;
+  visibility: visible;
+}
+
+.back-button:hover {
+  transform: translateX(-2px);
+}
+
+.back-button img {
+  width: 32px;
+  height: 32px;
+  filter: invert(80%);
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+.back-button:hover img {
+  filter: invert(100%);
+  opacity: 1;
+}
+
+/* 移动端适配 */
+@media screen and (max-width: 768px) {
+  .back-button {
+    top: 12px;
+    left: 12px;
+  }
+
+  .back-button img {
+    width: 28px;
+    height: 28px;
+  }
 }
 </style> 
