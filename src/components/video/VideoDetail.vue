@@ -139,17 +139,27 @@
           <H5>UP主简介：</H5>
           <div class="uploader-desc">{{ videoInfo.introduction || '这个UP主很懒，还没有添加简介~' }}</div>
           <div v-if="!isSelfVideo" class="button-group">
-            <el-button
-                type="primary"
-                class="follow-btn"
-                :class="{ 'is-followed': isFollowed }"
-                @click="handleFollow"
+            <div class="follow-btn-wrapper" 
+                 @mouseenter="handleMouseEnter" 
+                 @mouseleave="handleMouseLeave"
             >
-              <el-icon>
-                <Plus/>
-              </el-icon>
-              {{ isFollowed ? '已关注' : '关注' }}
-            </el-button>
+              <el-button
+                  type="primary"
+                  class="follow-btn"
+                  :class="{ 'is-followed': isFollowed }"
+                  @click="!isFollowed && handleFollow()"
+              >
+                <img :src="isFollowed ? Unfollow : concernIcon" class="follow-icon" alt="关注"/>
+                {{ isFollowed ? '已关注' : '关注' }}
+              </el-button>
+              <div class="unfollow-dropdown" 
+                   v-show="showUnfollow" 
+                   @click="handleFollow"
+              >
+                <el-icon><Close /></el-icon>
+                取消关注
+              </div>
+            </div>
             <el-button class="message-btn" @click="goToChat">
               <el-icon>
                 <ChatDotRound/>
@@ -191,7 +201,7 @@
 import {ref, onMounted, computed, onUnmounted, watch} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {getVideoDetailService} from '@/api/video' // 假设你会创建这个API服务
-import {Plus, ChatDotRound, ChatRound, Document} from '@element-plus/icons-vue'
+import {Plus, ChatDotRound, ChatRound, Document, Close, Check} from '@element-plus/icons-vue'
 import VideoPlayer from '@/components/video/VideoPlayer.vue'
 import {ElMessage, ElMessageBox} from "element-plus";
 import useUserInfoStore from '@/stores/userInfo'
@@ -210,6 +220,9 @@ import { useTitle } from '@vueuse/core' // 如果没有安装这个库，也可�
 import LikeIcon from '@/assets/iconsvg/like.svg'
 import StarIcon from '@/assets/iconsvg/star.svg'
 import CoinIcon from '@/assets/iconsvg/投币.svg'
+import concernIcon from '@/assets/iconsvg/关注.svg'
+import Unfollow from '@/assets/iconsvg/我的关注.svg'
+
 
 // 配置 dayjs
 dayjs.extend(relativeTime)
@@ -436,23 +449,6 @@ const handleFollow = async () => {
     return
   }
 
-  // 如果是取消关注，需要确认
-  if (isFollowed.value) {
-    try {
-      await ElMessageBox.confirm(
-          '确定取消关注该用户吗？',
-          '提示',
-          {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-          }
-      )
-    } catch (error) {
-      return // 用户取消操作
-    }
-  }
-
   try {
     await followUserService(videoInfo.value.userId, !isFollowed.value)
     isFollowed.value = !isFollowed.value
@@ -475,6 +471,31 @@ watch(isLogin, (newVal) => {
 // 添加互动状态
 const isLiked = ref(false)
 const isCollected = ref(false)
+
+const showUnfollow = ref(false)
+
+const hideTimer = ref(null)
+
+const handleMouseEnter = () => {
+  if (hideTimer.value) {
+    clearTimeout(hideTimer.value)
+    hideTimer.value = null
+  }
+  showUnfollow.value = isFollowed.value
+}
+
+const handleMouseLeave = () => {
+  hideTimer.value = setTimeout(() => {
+    showUnfollow.value = false
+  }, 100) // 添加100ms延迟
+}
+
+// 组件卸载时清理定时器
+onUnmounted(() => {
+  if (hideTimer.value) {
+    clearTimeout(hideTimer.value)
+  }
+})
 
 </script>
 
@@ -675,36 +696,52 @@ const isCollected = ref(false)
   gap: 12px;
 }
 
-.follow-btn {
+.follow-btn-wrapper {
   flex: 2;
+  position: relative;
+}
+
+.follow-btn {
+  width: 100%;
   height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 10px;
   font-size: 14px;
   font-weight: 500;
   border-radius: 8px;
   transition: all 0.3s ease;
-  background: #fb7299;
-  border-color: #fb7299;
+  background: #00aeec;
+  border: 1px solid #00aeec;
+  color: #fff;
 
   &:hover {
-    background: #fc8bab;
-    border-color: #fc8bab;
+    background: #33bfef;
+    border-color: #33bfef;
+    color: #fff;
     transform: translateY(-1px);
   }
 
   &.is-followed {
-    background-color: #f4f4f5;
-    border-color: #e4e4e4;
-    color: #606266;
+    background-color: #fff;
+    border: 1px solid #e3e5e7;
+    color: #61666d;
 
-    &:hover {
-      background-color: #fde2e2;
-      border-color: #fbc4c4;
-      color: #f56c6c;
+    .follow-icon {
+      filter: brightness(0.6);
     }
+  }
+
+  .follow-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+    filter: brightness(100);
+  }
+
+  &.is-followed .follow-icon {
+    filter: brightness(0.6);
   }
 }
 
@@ -768,6 +805,39 @@ const isCollected = ref(false)
     &:hover {
       background: #363739;
       border-color: #4a4b4d;
+    }
+  }
+
+  .follow-btn {
+    &:not(.is-followed) {
+      background: #00aeec;
+      border-color: #00aeec;
+      color: #fff;
+
+      &:hover {
+        background: #33bfef;
+        border-color: #33bfef;
+      }
+
+      .follow-icon {
+        filter: brightness(100);
+      }
+    }
+
+    &.is-followed {
+      background-color: #2c2d30;
+      border-color: #363739;
+      color: #e5e7eb;
+
+      .follow-icon {
+        filter: brightness(2);
+      }
+    }
+  }
+
+  .follow-btn {
+    &.is-followed .follow-icon {
+      filter: brightness(2);
     }
   }
 }
@@ -1208,6 +1278,54 @@ const isCollected = ref(false)
     width: 24px;
     height: 24px;
     margin-right: 2px;
+  }
+}
+
+.unfollow-dropdown {
+  position: absolute;
+  top: calc(100% - 1px);
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid #e3e5e7;
+  border-radius: 8px;
+  color: #61666d;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  z-index: 10;
+
+  &:hover {
+    background-color: #f4f5f7;
+    border-color: #e3e5e7;
+    color: #18191c;
+  }
+
+  .el-icon {
+    font-size: 12px;
+  }
+}
+
+/* 暗色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .unfollow-dropdown {
+    background-color: #2c2d30;
+    border-color: #363739;
+    color: #e5e7eb;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+    &:hover {
+      background-color: #363739;
+      border-color: #4a4b4d;
+      color: #fff;
+    }
   }
 }
 </style> 
