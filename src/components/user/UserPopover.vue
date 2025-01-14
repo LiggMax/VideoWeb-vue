@@ -23,7 +23,7 @@
            @mouseenter="handleMouseEnter" 
            @mouseleave="handleMouseLeave">
         <!-- 头像展示区域 -->
-        <div class="avatar-showcase">
+        <div class="avatar-showcase" @click="goToUserHome">
           <el-avatar :size="80" :src="userInfo.userPic || defaultAvatar" class="large-avatar" />
         </div>
 
@@ -163,6 +163,12 @@ const goToEditProfile = () => {
   })
 }
 
+// 跳转到用户首页
+const goToUserHome = () => {
+  visible.value = false // 关闭弹窗
+  router.push('/user-home')
+}
+
 getUserInfo()
 </script>
 
@@ -215,6 +221,7 @@ getUserInfo()
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   z-index: 1001;
   animation: avatar-pop-in 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
 }
 
 .large-avatar {
