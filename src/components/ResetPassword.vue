@@ -46,11 +46,13 @@
             />
             <el-button 
               type="primary" 
-              :disabled="isCountdown" 
+              :disabled="isCountdown || isLoading"
               @click="sendEmailCode"
               class="send-code-btn"
+              :loading="isLoading"
             >
-              {{ countdownText }}
+              <span v-if="!isLoading">{{ countdownText }}</span>
+              <span v-else>发送中</span>
             </el-button>
           </div>
         </el-form-item>
@@ -135,11 +137,31 @@ const resetRules = {
   ],
   code: [
     { required: true, message: '请输入验证码', trigger: 'blur' },
-    { len: 6, message: '验证码长度为6位', trigger: 'blur' }
+    { len: 6, message: '验证码长度为6位', trigger: 'blur' },
+    { 
+      validator: (rule, value, callback) => {
+        if (!/^\d+$/.test(value)) {
+          callback(new Error('验证码只能包含数字'))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur'
+    }
   ],
   password: [
     { required: true, message: '请输入新密码', trigger: 'blur' },
-    { min: 6, max: 16, message: '密码长度在 6 到 16 个字符', trigger: 'blur' }
+    { min: 6, max: 16, message: '密码长度在 6 到 16 个字符', trigger: 'blur' },
+    {
+      validator: (rule, value, callback) => {
+        if (!/^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{6,16}$/.test(value)) {
+          callback(new Error('密码必须包含字母和数字'))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur'
+    }
   ],
   confirmPassword: [
     { required: true, message: '请确认新密码', trigger: 'blur' },
@@ -147,6 +169,8 @@ const resetRules = {
       validator: (rule, value, callback) => {
         if (value !== resetForm.value.password) {
           callback(new Error('两次输入密码不一致'))
+        } else if (!value) {
+          callback(new Error('请确认密码'))
         } else {
           callback()
         }
@@ -163,31 +187,53 @@ const countdownText = computed(() => isCountdown.value ? `${countdown.value}秒�
 
 // 发送验证码
 const sendEmailCode = async () => {
-  // TODO: 实现发送验证码逻辑
-  //调用接口
-  await sendResetEmailCodeService(resetForm.value.email)
-  await ElMessage.success('验证码已发送，请注意查收')
-  //开始倒计时
-  countdown.value = 60
-  const timer = setInterval(() => {
-    countdown.value--
-    if (countdown.value <= 0) {
-      clearInterval(timer)
+  // 验证邮箱格式
+  const emailRef = resetFormRef.value?.validateField('email')
+  if (emailRef) {
+    try {
+      await emailRef
+    } catch (error) {
+      return
     }
-  }, 1000)
+  }
+
+  try {
+    isLoading.value = true
+    await sendResetEmailCodeService(resetForm.value.email)
+    ElMessage.success('验证码已发送，请注意查收')
+    
+    countdown.value = 60
+    const timer = setInterval(() => {
+      countdown.value--
+      if (countdown.value <= 0) {
+        clearInterval(timer)
+      }
+    }, 1000)
+  } finally {
+    isLoading.value = false
+  }
 }
 
 // 重置密码
 const handleReset = async () => {
-  // TODO: 实现重置密码逻辑
-  await resetPasswordService(resetForm.value)
-  await ElMessage.success('密码重置成功，请返回登录页')
-  //清除表单
-  resetForm.value = {}
-  closeDialog()
+  if (!resetFormRef.value) return
+  
+  try {
+    await resetFormRef.value.validate()
+    await resetPasswordService(resetForm.value)
+    ElMessage.success('密码重置成功，请返回登录页')
+    resetForm.value = {}
+    closeDialog()
+  } catch (error) {
+    // 表单验证失败的错误会在表单中显示，不需要额外处理
+    return
+  }
 }
 
 const resetFormRef = ref(null)
+
+// 添加加载状态
+const isLoading = ref(false)
 </script>
 
 <style scoped>
@@ -313,5 +359,20 @@ const resetFormRef = ref(null)
 
 .back-link:hover {
   color: #fb7299;
+}
+
+/* 加载动画样式 */
+.send-code-btn :deep(.el-loading-spinner) {
+  transform: scale(0.8);
+}
+
+.send-code-btn :deep(.el-loading-spinner .circular) {
+  width: 20px;
+  height: 20px;
+}
+
+.send-code-btn :deep(.el-loading-spinner .path) {
+  stroke: #fff;
+  stroke-width: 3;
 }
 </style> 

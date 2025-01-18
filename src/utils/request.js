@@ -4,9 +4,7 @@
 import axios from 'axios';
 import {ElMessage} from "element-plus";
 import {useTokenStore} from "@/stores/token.js";
-import router from "@/router/index.js";
 import eventBus from './eventBus'
-import {ref} from "vue";
 //定义一个变量,记录公共的前缀  ,  baseURL
 const baseURL = '/api';
 const instance = axios.create({baseURL})

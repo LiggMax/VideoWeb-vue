@@ -121,11 +121,13 @@
                 />
                 <el-button
                     type="primary"
-                    :disabled="isCountdown"
+                    :disabled="isCountdown || isLoading"
                     @click="sendEmailCode"
                     class="send-code-btn"
+                    :loading="isLoading"
                 >
-                  {{ countdownText }}
+                  <span v-if="!isLoading">{{ countdownText }}</span>
+                  <span v-else>发送中</span>
                 </el-button>
               </div>
             </el-form-item>
@@ -295,11 +297,6 @@ const closeDialog = () => {
   currentView.value = 'login'
 }
 
-
-// 处理短信登录
-const handleSmsLogin = () => {
-  console.log('短信登录:', smsForm.value)
-}
 // 处理账号登录
 const handleLogin = async () => {
   if (!loginForm.value.account || !loginForm.value.password)
@@ -349,26 +346,34 @@ const sendCode = () => {
   }, 1000)
 }
 
-// 发送邮箱验证码
+// 添加加载状态
+const isLoading = ref(false)
+
+// 修改发送邮箱验证码方法
 const sendEmailCode = async () => {
   // 验证邮箱格式
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(registerForm.value.email)) {
-    return ElMessagee.rror('请输入正确的邮箱格式')
+    return ElMessage.error('请输入正确的邮箱格式')
   }
 
-  // TODO: 调用发送验证码接口
-  await sendEmailCodeService(registerForm.value.email)
-  ElMessage.success('验证码已发送，请注意查收')
+  try {
+    isLoading.value = true
+    // 调用发送验证码接口
+    await sendEmailCodeService(registerForm.value.email)
+    ElMessage.success('验证码已发送，请注意查收')
 
-  // 开始倒计时
-  countdown.value = 60
-  const timer = setInterval(() => {
-    countdown.value--
-    if (countdown.value <= 0) {
-      clearInterval(timer)
-    }
-  }, 1000)
+    // 开始倒计时
+    countdown.value = 60
+    const timer = setInterval(() => {
+      countdown.value--
+      if (countdown.value <= 0) {
+        clearInterval(timer)
+      }
+    }, 1000)
+  } finally {
+    isLoading.value = false
+  }
 }
 
 // 添加状态控制
@@ -689,52 +694,183 @@ onUnmounted(() => {
 
 /* 调整验证码按钮样式 */
 .send-code-btn {
-  width: 110px; /* 减小按钮宽度 */
-  font-size: 13px; /* 减小按钮字体 */
-  height: 40px; /* 匹配输入框高度 */
-  padding: 0 10px; /* 减小按钮内边距 */
-}
-
-/* 调整注册按钮样式 */
-.register-form .submit-btn {
-  height: 40px; /* 减小按钮高度 */
-  font-size: 15px; /* 减小按钮字体 */
-  margin-top: 8px; /* 调整顶部间距 */
-}
-
-/* 调整图标大小 */
-.register-form :deep(.el-input__prefix-inner svg) {
-  width: 16px; /* 减小图标大小 */
-  height: 16px;
-  color: #909399;
-}
-
-/* 调整输入框占位符文字大小 */
-.register-form :deep(.el-input__wrapper input::placeholder) {
+  width: 120px;
   font-size: 14px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-/* 调整输入框文字大小 */
-.register-form :deep(.el-input__wrapper input) {
-  font-size: 14px;
-  font-weight: normal;
+.send-code-btn:not(:disabled) {
+  background-color: #fb7299;
+  border-color: #fb7299;
 }
 
-.login-tip {
-  text-align: center;
-  margin-top: 16px;
-  font-size: 15px;
-  color: #666;
-  font-weight: 500;
+.send-code-btn:not(:disabled):hover {
+  background-color: #fc8bab;
+  border-color: #fc8bab;
 }
 
-.login-link {
+/* 加载动画样式 */
+.send-code-btn :deep(.el-loading-spinner) {
+  transform: scale(0.8);
+}
+
+.send-code-btn :deep(.el-loading-spinner .circular) {
+  width: 20px;
+  height: 20px;
+}
+
+.send-code-btn :deep(.el-loading-spinner .path) {
+  stroke: #fff;
+  stroke-width: 3;
+}
+
+/* 暗色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .login-dialog {
+    background: #1a1a1a;
+  }
+
+  .dialog-header {
+    border-bottom-color: #2c2c2c;
+  }
+
+  .tab-item {
+    color: #e5e7eb;
+  }
+
+  .right-section {
+    background: #1a1a1a;
+  }
+
+  :deep(.el-input__wrapper) {
+    background: #2c2c2c;
+    border-color: #3c3c3c;
+  }
+
+  :deep(.el-input__inner) {
+    color: #e5e7eb;
+  }
+
+  :deep(.el-checkbox__label) {
+    color: #e5e7eb;
+  }
+
+  .divider span {
+    background: #1a1a1a;
+    color: #e5e7eb;
+  }
+
+  .login-icons .icon {
+    color: #e5e7eb;
+  }
+
+  .send-code-btn:not(:disabled) {
+    background-color: #fb7299;
+    border-color: #fb7299;
+  }
+
+  .send-code-btn :deep(.el-loading-spinner .path) {
+    stroke: #fff;
+  }
+}
+
+/* 添加移动端适配样式 */
+@media screen and (max-width: 768px) {
+  .dialog-content {
+    height: auto;
+    min-height: 400px;
+  }
+
+  .right-section {
+    padding: 20px;
+    width: 100%;
+  }
+
+  .tabs {
+    padding-right: 16px;
+    gap: 12px;
+  }
+
+  .tab-item {
+    font-size: 14px;
+  }
+
+  .login-form :deep(.el-input__wrapper),
+  .register-form :deep(.el-input__wrapper) {
+    height: 40px;
+  }
+
+  .login-form :deep(.el-input__inner),
+  .register-form :deep(.el-input__inner) {
+    font-size: 14px;
+  }
+
+  .form-options {
+    margin: 16px 0 24px;
+  }
+
+  .submit-btn {
+    height: 40px;
+    font-size: 14px;
+  }
+
+  .other-login {
+    padding-top: 24px;
+  }
+
+  .login-icons {
+    gap: 24px;
+  }
+
+  .login-icons .icon {
+    font-size: 20px;
+  }
+
+  .register-tip,
+  .login-tip {
+    margin-top: 12px;
+    padding-bottom: 12px;
+    font-size: 13px;
+  }
+
+  .code-input-group {
+    gap: 6px;
+  }
+
+  .send-code-btn {
+    width: 100px;
+    font-size: 12px;
+  }
+
+  :deep(.el-dialog) {
+    margin: 10vh auto !important;
+  }
+
+  :deep(.el-dialog__body) {
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  .forget-pwd {
+    font-size: 12px;
+  }
+
+  :deep(.el-checkbox__label) {
+    font-size: 13px;
+  }
+}
+
+.forget-pwd {
   color: #00aeec;
+  font-size: 14px;
   cursor: pointer;
-  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.3s;
 }
 
-.login-link:hover {
+.forget-pwd:hover {
   color: #fb7299;
 }
 
