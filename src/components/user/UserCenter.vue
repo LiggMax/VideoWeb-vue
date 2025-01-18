@@ -58,29 +58,30 @@
         <div class="main-content">
           <!-- 视频列表相关内容 -->
           <template v-if="currentNav === 'videos'">
-            <user-video-content />
+            <user-video-content/>
           </template>
 
           <!-- 编辑资料内容 -->
           <template v-if="currentNav === 'edit-profile'">
-            <edit-profile-content />
+            <edit-profile-content/>
           </template>
 
           <!-- 番剧管理内容 -->
           <template v-if="currentNav === 'anime'">
             <div v-if="!currentAnimeId">
-              <anime-manage-content @select-anime="handleAnimeSelect" />
+              <anime-manage-content @select-anime="handleAnimeSelect"/>
             </div>
             <div v-else>
-              <anime-episode-manager 
-                :anime-id="currentAnimeId" 
-                @update="handleBackToAnimeList"
+              <anime-episode-manager
+                  :anime-id="currentAnimeId"
+                  @update="handleBackToAnimeList"
               />
             </div>
           </template>
 
           <!-- 其他导航内容的空状态 -->
-          <div class="empty-state" v-if="currentNav !== 'videos' && currentNav !== 'edit-profile' && currentNav !== 'anime'">
+          <div class="empty-state"
+               v-if="currentNav !== 'videos' && currentNav !== 'edit-profile' && currentNav !== 'anime'">
             <el-empty :description="getEmptyText">
               <template #description>
                 <p class="empty-text">{{ getEmptyText }}</p>
@@ -94,27 +95,13 @@
 </template>
 
 <script setup>
-import {ref, computed, reactive} from 'vue'
+import {ref, computed} from 'vue'
 import {useRouter} from 'vue-router'
-import {
-  VideoCamera,
-  Collection,
-  Star,
-  Edit,
-  Document,
-  ChatDotRound,
-  MoreFilled,
-  Delete,
-  Plus,
-  CircleCheckFilled,
-  Film,
-  Back
-} from '@element-plus/icons-vue'
+import {Edit,} from '@element-plus/icons-vue'
 import useUserInfoStore from '@/stores/userInfo'
 import {ElMessage, ElMessageBox} from "element-plus";
 import {useTokenStore} from "@/stores/token";
 import {deleteVideoService, editVideoService, getUserVideoService, publishVideoService} from "@/api/userVideo";
-import {getUserInfoService} from "@/api/user/user";
 import EditProfileContent from '@/components/user/EditUserInformation.vue'
 import UserVideoContent from '@/components/user/UserVideoContent.vue'
 import AnimeManageContent from '@/components/AnimeManageContent.vue'
@@ -656,7 +643,7 @@ const handleEpisodeUpdate = () => {
   transition: all 0.3s;
   background: #fff;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  
+
   .el-icon {
     font-size: 18px; /* 增大图标尺寸 */
   }
@@ -672,10 +659,6 @@ const handleEpisodeUpdate = () => {
     color: #fb7299;
     font-weight: 500;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    
-    .el-icon {
-      color: #fb7299; /* 激活状态下图标颜色 */
-    }
   }
 }
 
@@ -702,11 +685,6 @@ const handleEpisodeUpdate = () => {
   justify-content: center;
   height: 100%;
   min-height: 300px;
-}
-
-.empty-img {
-  width: 200px;
-  margin-bottom: 20px;
 }
 
 .empty-text {
@@ -776,272 +754,49 @@ const handleEpisodeUpdate = () => {
     min-height: 300px;
     padding: 16px;
   }
-
-  .empty-img {
-    width: 150px;
-  }
-}
-
-.video-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 10px;
-}
-
-.video-card {
-  display: flex;
-  background: #fff;
-  border-radius: 4px;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  border: 1px solid #e3e5e7;
-  height: 120px; /* 固定高度 */
-}
-
-.video-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.video-cover-wrap {
-  width: 200px; /* 固定宽度 */
-  height: 120px; /* 固定高度 */
-  flex-shrink: 0; /* 防止图片被压缩 */
-}
-
-.video-cover {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.video-info {
-  flex: 1;
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative; /* 添加相对定位 */
-}
-
-.video-title {
-  font-size: 16px;
-  font-weight: bold;
-  margin: 0;
-  color: #18191c;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  display: -moz-box;
-  display: box;
-  -webkit-line-clamp: 2;
-  -moz-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  -moz-box-orient: vertical;
-  box-orient: vertical;
-  line-height: 1.4;
-}
-
-.video-description {
-  font-size: 14px;
-  color: #61666d;
-  margin: 8px 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  display: -moz-box;
-  display: box;
-  -webkit-line-clamp: 2;
-  -moz-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  -moz-box-orient: vertical;
-  box-orient: vertical;
-  line-height: 1.4;
-  max-height: 2.8em;
-}
-
-.video-meta {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  font-size: 12px;
-  color: #9499a0;
-}
-
-.update-time, .view-count {
-  display: flex;
-  align-items: center;
-  gap: 4px;
 }
 
 /* 响应式布局 */
 @media (max-width: 768px) {
-  .video-card {
-    height: 100px;
-  }
 
-  .video-cover-wrap {
-    width: 160px;
-    height: 100px;
-  }
-
-  .video-info {
-    padding: 8px 12px;
-  }
-
-  .video-title {
+  :deep(.el-dropdown-menu__item) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     font-size: 14px;
   }
 
-  .video-description {
-    font-size: 12px;
-    margin: 4px 0;
-    line-height: 1.3;
-    max-height: 2.6em;
+  :deep(.el-dropdown-menu__item:hover) {
+    color: #fb7299;
+    background-color: #fff1f5;
+  }
+
+  :deep(.el-dropdown-menu__item .el-icon) {
+    margin-right: 4px;
+  }
+
+  :deep(.el-pagination.is-background .el-pager li:not(.is-disabled).is-active) {
+    background-color: #fb7299;
+  }
+
+  :deep(.el-pagination.is-background .el-pager li:not(.is-disabled):hover) {
+    color: #fb7299;
+  }
+
+  .cover-uploader :deep(.el-upload) {
+    width: 178px;
+    height: 178px;
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+
+  .cover-uploader :deep(.el-upload:hover) {
+    border-color: #fb7299;
   }
 }
 
-.button-container {
-  display: flex;
-  justify-content: flex-end; /* 右对齐 */
-  margin-bottom: 20px; /* 添加底部间距 */
-}
-
-.video-actions {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 1;
-}
-
-.action-icon {
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  color: #666;
-  transition: all 0.3s;
-}
-
-.action-icon:hover {
-  background-color: #f5f5f5;
-  color: #fb7299;
-}
-
-:deep(.el-dropdown-menu__item) {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-}
-
-:deep(.el-dropdown-menu__item:hover) {
-  color: #fb7299;
-  background-color: #fff1f5;
-}
-
-:deep(.el-dropdown-menu__item .el-icon) {
-  margin-right: 4px;
-}
-
-.pagination-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-  padding: 10px 0;
-}
-
-:deep(.el-pagination.is-background .el-pager li:not(.is-disabled).is-active) {
-  background-color: #fb7299;
-}
-
-:deep(.el-pagination.is-background .el-pager li:not(.is-disabled):hover) {
-  color: #fb7299;
-}
-
-/* 添加新的样式 */
-.video-uploader {
-  width: 100%;
-}
-
-.video-upload-box {
-  width: 100%;
-  height: 150px;
-  border: 1px dashed #d9d9d9;
-  border-radius: 6px;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  transition: border-color 0.3s;
-}
-
-.video-upload-box:hover {
-  border-color: #fb7299;
-}
-
-.upload-icon {
-  font-size: 28px;
-  color: #8c939d;
-  margin-bottom: 8px;
-}
-
-.upload-text {
-  font-size: 14px;
-  color: #606266;
-  margin-bottom: 4px;
-}
-
-.upload-tip {
-  font-size: 12px;
-  color: #909399;
-}
-
-.video-preview {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 16px;
-}
-
-.success-icon {
-  color: #67c23a;
-  font-size: 20px;
-}
-
-.file-name {
-  color: #606266;
-  font-size: 14px;
-}
-
-.remove-btn {
-  margin-left: auto;
-}
-
-.cover-uploader :deep(.el-upload) {
-  width: 178px;
-  height: 178px;
-  border: 1px dashed #d9d9d9;
-  border-radius: 6px;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  transition: border-color 0.3s;
-}
-
-.cover-uploader :deep(.el-upload:hover) {
-  border-color: #fb7299;
-}
-
-.cover-preview {
-  width: 178px;
-  height: 178px;
-  object-fit: cover;
-  display: block;
-}
 </style>

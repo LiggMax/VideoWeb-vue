@@ -181,13 +181,11 @@
 <script setup>
 import {ref, watch, computed, nextTick, onMounted, onUnmounted} from 'vue'
 import {
-  Close,
   Position,
   ChatDotRound,
   Apple,
   User,
   Lock,
-  Iphone,
   Message,
   Key
 } from '@element-plus/icons-vue'
@@ -570,7 +568,7 @@ onUnmounted(() => {
 }
 
 
-.close-btn:hover .close-line {
+.close-btn:hover {
   background-color: #fb7299;
 }
 
@@ -872,7 +870,7 @@ onUnmounted(() => {
     background: #1a1a1a;
   }
 
-  .close-btn:hover .close-line {
+  .close-btn:hover  {
     background-color: #fb7299;
   }
 

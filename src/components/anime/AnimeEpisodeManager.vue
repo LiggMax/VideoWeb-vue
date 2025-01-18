@@ -449,8 +449,6 @@ watch(() => props.animeId, (newId) => {
   }
 }, { immediate: true })
 
-// 格式化时长
-
 
 // 返回列表
 const emit = defineEmits(['update'])

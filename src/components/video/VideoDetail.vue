@@ -15,47 +15,102 @@
 
         <!-- 视频信息 -->
         <div class="video-info">
-          <!-- 添加互动按钮组 -->
-          <div class="video-actions">
-            <div class="action-item">
-              <el-button class="action-btn" :class="{ 'is-active': isLiked }">
-                <img :src="LikeIcon" class="action-icon" alt="点赞" />
-                <span>{{ videoInfo.likeCount || 0 }}</span>
-              </el-button>
-            </div>
-            <div class="action-item">
-              <el-button class="action-btn" :class="{ 'is-active': isCollected }">
-                <img :src="StarIcon" class="action-icon" alt="收藏" />
-                <span>收藏</span>
-              </el-button>
-            </div>
-            <div class="action-item">
-              <el-button class="action-btn">
-                <img :src="CoinIcon" class="action-icon" alt="投币" />
-                <span>投币</span>
-              </el-button>
-            </div>
-          </div>
+          <!-- 视频信息和UP主信息的布局容器 -->
+          <div class="info-wrapper" :class="{ 'wide-screen': isCollapsed || isAutoCollapsed }">
+            <!-- 左侧视频信息 -->
+            <div class="video-content">
+              <!-- 视频标题和统计信息 -->
+              <h1 class="video-title">{{ videoInfo.title }}</h1>
+              <div class="video-stats">
+                <span class="view-count">100W 播放</span>
+                <span class="bullet">·</span>
+                <span class="date">发布于 {{ formatDate(videoInfo.createTime) }}</span>
+              </div>
+              
+              <!-- 添加互动按钮组 -->
+              <div class="video-actions">
+                <div class="action-item">
+                  <el-button class="action-btn" :class="{ 'is-active': isLiked }">
+                    <img :src="LikeIcon" class="action-icon" alt="点赞"/>
+                    <span>{{ videoInfo.likeCount || 0 }}</span>
+                  </el-button>
+                </div>
+                <div class="action-item">
+                  <el-button class="action-btn" :class="{ 'is-active': isCollected }">
+                    <img :src="StarIcon" class="action-icon" alt="收藏"/>
+                    <span>收藏</span>
+                  </el-button>
+                </div>
+                <div class="action-item">
+                  <el-button class="action-btn">
+                    <img :src="CoinIcon" class="action-icon" alt="投币"/>
+                    <span>投币</span>
+                  </el-button>
+                </div>
+              </div>
 
-          <h1 class="video-title">{{ videoInfo.title }}</h1>
-          <!-- 添加视频简介区域 -->
-          <div class="video-description">
-            <div class="description-header">
-              <span>视频简介</span>
+              <!-- 添加视频简介区域 -->
+              <div class="video-description">
+                <div class="description-header">
+                  <span>视频简介</span>
+                </div>
+                <div class="description-content">
+                  {{ videoInfo.content || '暂无简介' }}
+                </div>
+              </div>
             </div>
-            <div class="description-content">
-              {{ videoInfo.content || '暂无简介' }}
-            </div>
-          </div>
-          <br>
-          <div class="video-stats">
-            <span class="view-count">{{ videoInfo.viewCount }}播放</span>
-            <span class="bullet">·</span>
-            <span class="date">发布于 {{ formatDate(videoInfo.createTime) }}</span>
-          </div>
 
+            <!-- 右侧UP主信息 - 宽屏模式下显示 -->
+            <div class="uploader-info-section" v-if="isCollapsed || isAutoCollapsed">
+              <div class="uploader-card">
+                <div class="uploader-header">
+                  <el-avatar
+                      :size="48"
+                      :src="videoInfo.userPic"
+                      class="clickable"
+                      @click="goToUserHome"
+                  />
+                  <div class="uploader-info" @click="goToUserHome">
+                    <div class="nickname">{{ videoInfo.nickname }}</div>
+                    <div class="fans-count">{{ videoInfo.fansCount || 0 }}粉丝</div>
+                  </div>
+                </div>
+                <div class="uploader-desc">{{ videoInfo.introduction || '这个UP主很懒，还没有添加简介~' }}</div>
+                <div v-if="isLogin && !isSelfVideo" class="button-group">
+                  <div class="follow-btn-wrapper"
+                       @mouseenter="handleMouseEnter"
+                       @mouseleave="handleMouseLeave"
+                  >
+                    <el-button
+                        type="primary"
+                        class="follow-btn"
+                        :class="{ 'is-followed': isFollowed }"
+                        @click="!isFollowed && handleFollow()"
+                    >
+                      <img :src="isFollowed ? Unfollow : concernIcon" class="follow-icon" alt="关注"/>
+                      {{ isFollowed ? '已关注' : '关注' }}
+                    </el-button>
+                    <div class="unfollow-dropdown"
+                         v-show="showUnfollow"
+                         @click="handleFollow"
+                    >
+                      <el-icon>
+                        <Close/>
+                      </el-icon>
+                      取消关注
+                    </div>
+                  </div>
+                  <el-button class="message-btn" @click="goToChat">
+                    <el-icon>
+                      <ChatDotRound/>
+                    </el-icon>
+                    私信
+                  </el-button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-
 
         <!-- 评论区 -->
         <div class="comment-section">
@@ -103,7 +158,7 @@
               <div class="comment-content">
                 <div class="comment-user">
                   {{ comment.nickname }}
-                  <UploaderIcon v-if="comment.userId === videoInfo.userId"/>
+                  <UploaderIcon v-if="comment.userId === videoInfo.id"/>
                 </div>
                 <div class="comment-text">{{ comment.content }}</div>
                 <div class="comment-info">
@@ -128,13 +183,13 @@
       <!-- 右侧推荐区域 -->
       <div class="recommend-section" :class="{ 'is-collapsed': isCollapsed || isAutoCollapsed }">
         <!-- UP主信息卡片 -->
-        <div class="uploader-card">
+        <div class="uploader-card" v-if="!(isCollapsed || isAutoCollapsed)">
           <div class="uploader-header">
-            <el-avatar 
-              :size="48" 
-              :src="videoInfo.userPic"
-              class="clickable"
-              @click="goToUserHome"
+            <el-avatar
+                :size="48"
+                :src="videoInfo.userPic"
+                class="clickable"
+                @click="goToUserHome"
             />
             <div class="uploader-info" @click="goToUserHome">
               <div class="nickname">{{ videoInfo.nickname }}</div>
@@ -143,9 +198,9 @@
           </div>
           <H5>UP主简介：</H5>
           <div class="uploader-desc">{{ videoInfo.introduction || '这个UP主很懒，还没有添加简介~' }}</div>
-          <div v-if="!isSelfVideo" class="button-group">
-            <div class="follow-btn-wrapper" 
-                 @mouseenter="handleMouseEnter" 
+          <div v-if="isLogin && !isSelfVideo" class="button-group">
+            <div class="follow-btn-wrapper"
+                 @mouseenter="handleMouseEnter"
                  @mouseleave="handleMouseLeave"
             >
               <el-button
@@ -157,11 +212,13 @@
                 <img :src="isFollowed ? Unfollow : concernIcon" class="follow-icon" alt="关注"/>
                 {{ isFollowed ? '已关注' : '关注' }}
               </el-button>
-              <div class="unfollow-dropdown" 
-                   v-show="showUnfollow" 
+              <div class="unfollow-dropdown"
+                   v-show="showUnfollow"
                    @click="handleFollow"
               >
-                <el-icon><Close /></el-icon>
+                <el-icon>
+                  <Close/>
+                </el-icon>
                 取消关注
               </div>
             </div>
@@ -221,7 +278,7 @@ import eventBus from '@/utils/eventBus'
 import DanmakuList from '@/components/video/DanmakuList.vue'
 import {formatDate} from "@/utils/format";
 import {followUserService, getUserFollowService} from '@/api/user/userfollow'
-import { useTitle } from '@vueuse/core' // 如果没有安装这个库，也可以直接操作 document.title
+import {useTitle} from '@vueuse/core' // 如果没有安装这个库，也可以直接操作 document.title
 import LikeIcon from '@/assets/iconsvg/like.svg'
 import StarIcon from '@/assets/iconsvg/star.svg'
 import CoinIcon from '@/assets/iconsvg/投币.svg'
@@ -259,7 +316,7 @@ watch(() => videoInfo.value, (newVideo) => {
   } else {
     title.value = '哔哩哔哩' // 如果没有视频信息则显示默认标题
   }
-}, { immediate: true })
+}, {immediate: true})
 
 // 组件卸载时恢复默认标题
 onUnmounted(() => {
@@ -453,15 +510,9 @@ const handleFollow = async () => {
     eventBus.emit('showLogin')
     return
   }
-
-  try {
-    await followUserService(videoInfo.value.userId, !isFollowed.value)
-    isFollowed.value = !isFollowed.value
-    ElMessage.success(isFollowed.value ? '关注成功' : '已取消关注')
-  } catch (error) {
-    console.error('关注操作失败:', error)
-    ElMessage.error('操作失败，请稍后重试')
-  }
+  await followUserService(videoInfo.value.userId, !isFollowed.value)
+  isFollowed.value = !isFollowed.value
+  ElMessage.success(isFollowed.value ? '关注成功' : '已取消关注')
 }
 
 // 监听登录状态变化
@@ -507,7 +558,7 @@ const goToUserHome = () => {
   if (videoInfo.value && videoInfo.value.username) {
     router.push({
       path: '/user',
-      query: { username: videoInfo.value.username }
+      query: {username: videoInfo.value.username}
     })
   }
 }
@@ -536,6 +587,8 @@ const goToUserHome = () => {
 
 .main-content.collapsed {
   grid-template-columns: 1fr 0;
+  max-width: none;
+  padding: 0;
 }
 
 /* 视频区域样式 */
@@ -555,6 +608,8 @@ const goToUserHome = () => {
   transition: all 0.3s ease-in-out;
   width: 380px;
   padding-top: 20px;
+  height: calc(100vh - 80px);
+  overflow-y: auto;
 }
 
 .recommend-section.is-collapsed {
@@ -563,6 +618,27 @@ const goToUserHome = () => {
   width: 0;
   padding: 0;
   margin: 0;
+}
+
+/* 宽屏模式下的右侧区域样式 */
+.collapsed .video-section {
+  max-width: none;
+  margin: 0;
+}
+
+.collapsed .recommend-section:not(.is-collapsed) {
+  position: fixed;
+  right: 0;
+  top: 60px;
+  width: 400px;
+  height: calc(100vh - 60px);
+  background: #fff;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+  z-index: 1999;
+  padding: 20px;
+  margin: 0;
+  transform: none;
+  opacity: 1;
 }
 
 /* 响应式布局调整 */
@@ -621,6 +697,11 @@ const goToUserHome = () => {
   .recommend-section {
     width: 100%;
     padding-top: 0;
+  }
+  
+  /* 移动端宽屏模式下隐藏右侧区域 */
+  .collapsed .recommend-section:not(.is-collapsed) {
+    display: none;
   }
 }
 
@@ -1124,9 +1205,10 @@ const goToUserHome = () => {
   font-size: 20px;
   font-weight: 600;
   color: #18191c;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   line-height: 1.4;
   padding: 0 16px;
+  margin-top: -4px;
 }
 
 .video-stats {
@@ -1135,12 +1217,13 @@ const goToUserHome = () => {
   gap: 8px;
   color: #9499a0;
   font-size: 14px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   padding: 0 16px;
 }
 
 .bullet {
   color: #9499a0;
+  margin: 0 4px;
 }
 
 /* 视频简介样式 */
@@ -1205,6 +1288,7 @@ const goToUserHome = () => {
 
   .video-title {
     font-size: 18px;
+    margin-top: 0;
   }
 
   .video-description {
@@ -1217,6 +1301,7 @@ const goToUserHome = () => {
   display: flex;
   gap: 16px;
   padding: 16px;
+  margin-top: 12px;
   border-bottom: 1px solid #f1f2f3;
 }
 
@@ -1356,5 +1441,88 @@ const goToUserHome = () => {
 
 .clickable:hover {
   opacity: 0.8;
+}
+
+/* 优化滚动条样式 */
+.recommend-section::-webkit-scrollbar {
+  width: 6px;
+}
+
+.recommend-section::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.recommend-section::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* 视频信息和UP主信息的布局容器 */
+.info-wrapper {
+  display: block;
+  margin-top: 16px;
+}
+
+.info-wrapper.wide-screen {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  padding: 0 24px;
+}
+
+/* 视频内容区域样式 */
+.video-content {
+  flex: 1;
+  min-width: 0;
+  max-width: calc(100% - 392px); /* 360px + 32px gap */
+}
+
+/* UP主信息区域样式 */
+.uploader-info-section {
+  width: 360px;
+  flex-shrink: 0;
+}
+
+/* 宽屏模式下的UP主卡片样式 */
+.wide-screen .uploader-card {
+  position: sticky;
+  top: 20px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+/* 移动端适配 */
+@media screen and (max-width: 768px) {
+  .info-wrapper.wide-screen {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .uploader-info-section {
+    width: 100%;
+  }
+
+  .video-content {
+    max-width: none;
+  }
+
+  .wide-screen .uploader-card {
+    position: static;
+    border-radius: 0;
+    box-shadow: none;
+    border-top: 1px solid #f1f2f3;
+    border-bottom: 1px solid #f1f2f3;
+  }
+}
+
+/* 暗色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .wide-screen .uploader-card {
+    background: #18191c;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
 }
 </style> 

@@ -18,7 +18,7 @@
                class="danmaku-item"
           >
             <div class="danmaku-info">
-              <span class="time">{{ formatTime(item.time) }}</span>
+              <span class="time">{{ formatTime(item.time || 0) }}</span>
               <span class="content" :style="{ color: isWhiteColor(item.color) ? '#18191c' : item.color }">
                 {{ item.text }}
               </span>
@@ -35,14 +35,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { ArrowDown, ChatDotRound, ChatLineSquare } from '@element-plus/icons-vue'
 import { getBarrageService } from '@/api/barrage'
 import { ElMessage } from 'element-plus'
 
 const props = defineProps({
   videoId: {
-    type: String,
+    type: [String, Number],
     required: true
   }
 })
@@ -63,11 +63,8 @@ const loadDanmakuList = async () => {
   loading.value = true
   try {
     const res = await getBarrageService(props.videoId)
-    if (res.code === 0) {
-      danmakuList.value = res.data.map(item => ({
-        ...item,
-        timePoint: item.timePoint || 0
-      }))
+    if (res.code === 200) {
+      danmakuList.value = res.data || []
       isDataLoaded.value = true
     }
   } catch (error) {
@@ -101,8 +98,25 @@ const isWhiteColor = (color) => {
 }
 
 onMounted(() => {
-  // loadDanmakuList()
+  // 初始加载弹幕列表
+  loadDanmakuList()
 })
+
+// 监听视频ID变化
+watch(() => props.videoId, (newId) => {
+  if (newId) {
+    isDataLoaded.value = false
+    danmakuList.value = []
+    if (isExpanded.value) {
+      loadDanmakuList()
+    }
+  }
+})
+
+// 添加数据加载状态监听
+watch(() => danmakuList.value, (newList) => {
+  console.log('弹幕列表数据:', newList)
+}, { immediate: true })
 </script>
 
 <style lang="scss" scoped>

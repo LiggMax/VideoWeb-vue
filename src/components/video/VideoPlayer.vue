@@ -1,19 +1,19 @@
 <template>
   <div class="video-player" ref="playerContainer" @mousemove="handleMouseMove" @mouseleave="handleMouseLeave">
     <div class="back-button" @click="router.back()" :class="{ 'show-control': isControlVisible }">
-     <img :src="ReturnIcon"  alt="返回" />
+      <img :src="ReturnIcon" alt="返回"/>
     </div>
     <div class="artplayer-app"></div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import {ref, onMounted, onUnmounted, watch, nextTick} from 'vue'
 import Artplayer from 'artplayer'
 import artplayerPluginDanmuku from 'artplayer-plugin-danmuku'
-import { useRouter } from 'vue-router'
-import { sendBarrageService, getBarrageService } from '@/api/barrage'
-import { ElMessage } from 'element-plus'
+import {useRouter} from 'vue-router'
+import {sendBarrageService, getBarrageService} from '@/api/barrage'
+import {ElMessage} from 'element-plus'
 import ReturnIcon from '@/assets/iconsvg/coin.svg'
 
 const props = defineProps({
@@ -162,7 +162,7 @@ const initPlayer = () => {
         danmuku: async () => {
           try {
             const response = await getBarrageService(props.videoId)
-            if (response.code === 0) {
+            if (response.code === 200) {
               return response.data.map(item => ({
                 text: item.text,
                 time: item.time,
@@ -205,27 +205,21 @@ const initPlayer = () => {
         },
         // 发送弹幕前的处理
         beforeEmit: async (danmu) => {
-          try {
-            const barrageData = {
-              videoId: props.videoId,
-              text: danmu.text,
-              time: art.value.currentTime,
-              color: danmu.color,
-              type: danmu.type
-            }
-            
-            const response = await sendBarrageService(barrageData)
-            if (response.code === 0) {
-              ElMessage.success('发送弹幕成功')
-              return true
-            }
-            ElMessage.error(response.message || '发送弹幕失败')
-            return false
-          } catch (error) {
-            console.error('发送弹幕失败:', error)
-            ElMessage.error('发送弹幕失败')
-            return false
+          const barrageData = {
+            videoId: props.videoId,
+            text: danmu.text,
+            time: art.value.currentTime,
+            color: danmu.color,
+            type: danmu.type
           }
+          const response = await sendBarrageService(barrageData)
+          if (response.code === 200) {
+            ElMessage.success('发送弹幕成功')
+            // 发送成功后立即将新弹幕添加到播放器
+            return true
+          }
+          ElMessage.error(response.message || '发送弹幕失败')
+          return false
         }
       })
     ]
@@ -288,7 +282,7 @@ watch(() => props.videoUrl, (newUrl, oldUrl) => {
       initPlayer()
     }
   }
-}, { immediate: true })
+}, {immediate: true})
 
 // 组件挂载时初始化播放器
 onMounted(() => {
@@ -335,7 +329,7 @@ onUnmounted(() => {
   width: 100% !important;
   height: 100% !important;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    'Helvetica Neue', Arial, sans-serif;
+  'Helvetica Neue', Arial, sans-serif;
   --theme: #00a1d6 !important; /* 设置主题色为蓝色 */
 }
 
@@ -376,7 +370,7 @@ onUnmounted(() => {
   .video-player {
     border-radius: 0;
   }
-  
+
   :deep(.art-subtitle) {
     font-size: 14px;
   }
@@ -385,17 +379,17 @@ onUnmounted(() => {
 /* 自定义播放状态图标样式 */
 :deep(.art-video-player .art-state) {
   position: absolute;
-  right: 30px;  /* 距离右边距离 */
+  right: 30px; /* 距离右边距离 */
   bottom: 70px; /* 距离底部距离，避免与控制栏重叠 */
-  left: auto;   /* 取消默认的左侧定位 */
-  top: auto;    /* 取消默认的顶部定位 */
+  left: auto; /* 取消默认的左侧定位 */
+  top: auto; /* 取消默认的顶部定位 */
   transform: none; /* 取消默认的居中变换 */
   background: none;
-  padding: 0;   /* 移除内边距 */
+  padding: 0; /* 移除内边距 */
 }
 
 :deep(.art-state-icon) {
-  width: 80px;  /* 增加图标尺寸 */
+  width: 80px; /* 增加图标尺寸 */
   height: 80px; /* 增加图标尺寸 */
   filter: brightness(0) invert(1); /* 将图标转为白色 */
   opacity: 0.9;

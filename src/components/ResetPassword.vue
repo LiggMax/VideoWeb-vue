@@ -226,7 +226,6 @@ const handleReset = async () => {
     closeDialog()
   } catch (error) {
     // 表单验证失败的错误会在表单中显示，不需要额外处理
-    return
   }
 }
 
