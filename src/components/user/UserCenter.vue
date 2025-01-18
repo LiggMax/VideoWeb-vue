@@ -155,8 +155,8 @@ const navItems = computed(() => {
 })
 
 const userStats = [
-  {num: 301, label: '关注'},
-  {num: 4, label: '粉丝'},
+  {num: userInfo.value.followCount, label: '关注'},
+  {num: userInfo.value.fansCount, label: '粉丝'},
   {num: 1, label: '获赞'},
   {num: 0, label: '播放量'}
 ]

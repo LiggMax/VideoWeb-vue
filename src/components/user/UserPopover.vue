@@ -37,11 +37,11 @@
           </div>
           <div class="user-stats">
             <div class="stat-item">
-              <span class="num">301</span>
+              <span class="num">{{ userInfo.followCount }}</span>
               <span class="label">关注</span>
             </div>
             <div class="stat-item">
-              <span class="num">4</span>
+              <span class="num">{{ userInfo.fansCount }}</span>
               <span class="label">粉丝</span>
             </div>
             <div class="stat-item">
