@@ -1,12 +1,14 @@
 <template>
   <el-dialog
       v-model="dialogVisible"
-      :width="isMobile ? '90%' : '800px'"
+      :width="isMobile ? '100%' : '800px'"
       :show-close="false"
       class="login-dialog"
+      :class="{ 'mobile-dialog': isMobile, 'dialog-enter': dialogVisible && isMobile }"
       @close="handleDialogClose"
+      :modal-class="isMobile ? 'mobile-modal' : ''"
   >
-    <div class="dialog-header">
+    <div class="dialog-header right-header">
       <div class="header-content">
         <div class="tabs">
             <span
@@ -23,9 +25,9 @@
             </span>
         </div>
         <div class="close-btn" @click="closeDialog">
-          <el-icon>
-            <Close/>
-          </el-icon>
+          <div class="custom-close">
+            <img :src="CloseIcon" alt="">
+          </div>
         </div>
       </div>
     </div>
@@ -33,7 +35,7 @@
     <div class="dialog-content">
       <!-- 左侧图片 -->
       <div class="left-section" v-if="!isMobile">
-        <img src="https://lain.bgm.tv/r/400/pic/cover/l/ba/69/277954_s8qHA.jpg" alt="login-banner"/>
+        <img src="../assets/imge/loginimge.png" alt="login-banner"/>
       </div>
 
       <!-- 右侧登录表单 -->
@@ -191,10 +193,11 @@ import {
 } from '@element-plus/icons-vue'
 import {sendEmailCodeService, userLoginService, userRegisterService} from "@/api/user/user";
 import {ElMessage} from "element-plus";
-import router from "@/router";
 import {useTokenStore} from "@/stores/token";
 import ResetPassword from './ResetPassword.vue'
 import WebSocketClient from '@/utils/websocket'
+//叉号图标
+import CloseIcon from '@/assets/iconsvg/关闭.svg'
 
 const props = defineProps({
   visible: {
@@ -293,8 +296,17 @@ const switchView = (view) => {
 
 // 关闭对话框
 const closeDialog = () => {
-  dialogVisible.value = false
-  currentView.value = 'login'
+  if (isMobile.value) {
+    // 先触发动画
+    dialogVisible.value = false;
+    // 等待动画结束后再重置视图
+    setTimeout(() => {
+      currentView.value = 'login';
+    }, 300);
+  } else {
+    dialogVisible.value = false;
+    currentView.value = 'login';
+  }
 }
 
 // 处理账号登录
@@ -303,8 +315,8 @@ const handleLogin = async () => {
     return ElMessage.warning('请输入账号和密码')
 
   //判断是否符合5~15字符
-  if (loginForm.value.account.length < 5 || loginForm.value.account.length > 20 ||
-      loginForm.value.password.length < 5 || loginForm.value.password.length > 20) {
+  if (loginForm.value.account.length < 6 || loginForm.value.account.length > 20 ||
+      loginForm.value.password.length < 6 || loginForm.value.password.length > 20) {
     return ElMessage.error('账号或密码长度在5-20个字符')
   }
   let result = await userLoginService(loginForm.value)
@@ -421,6 +433,22 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('resize', checkMobile)
 })
+
+// 监听对话框状态，控制body滚动
+watch(dialogVisible, (newVal) => {
+  if (isMobile.value) {
+    if (newVal) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+  }
+})
+
+// 组件卸载时恢复body滚动
+onUnmounted(() => {
+  document.body.style.overflow = ''
+})
 </script>
 
 <style scoped>
@@ -432,10 +460,27 @@ onUnmounted(() => {
   padding: 0;
 }
 
+.login-dialog :deep(.el-dialog) {
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 0 !important;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
 .dialog-header {
   padding: 0 24px;
   border-bottom: 1px solid #f0f0f0;
   height: 40px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 1;
+  width: calc(50% + 1px);
+  background: #fff;
+  border-top-right-radius: 8px;
 }
 
 .header-content {
@@ -486,39 +531,86 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   padding: 0 4px;
+  width: 40px;
+  justify-content: center;
+  transition: all 0.3s ease;
 }
 
-.close-btn:hover {
-  color: #fb7299;
+.custom-close {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.custom-close img {
+  width: 20px;
+  height: 20px;
+  opacity: 0.6;
+  transition: all 0.3s ease;
+}
+
+.close-btn:hover .custom-close {
+  transform: rotate(90deg);
+}
+
+.close-btn:hover .custom-close img {
+  opacity: 1;
+}
+
+.close-line {
+  position: absolute;
+  width: 20px;
+  height: 2px;
+  background-color: #909399;
+  transition: all 0.3s ease;
+}
+
+
+.close-btn:hover .close-line {
+  background-color: #fb7299;
 }
 
 .dialog-content {
   display: flex;
-  height: 520px;
-  overflow: hidden;
+  height: 370px;
+  position: relative;
+  margin: 0;
+  padding: 0;
 }
 
 .left-section {
   flex: 1;
-  background-color: #f6f7f8;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  padding: 0;
 }
 
 .left-section img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
+  display: block;
 }
 
 .right-section {
   flex: 1;
-  padding: 32px;
+  padding: 25px;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  justify-content: center;
+  padding-top: 40px;
+  position: relative;
+  z-index: 1;
 }
 
 .login-form,
@@ -530,12 +622,12 @@ onUnmounted(() => {
 
 .other-login {
   margin-top: auto;
-  padding-top: 32px;
+  padding-top: 0;
 }
 
 .divider {
   position: relative;
-  margin: 24px 0;
+  margin: 0;
   text-align: center;
 }
 
@@ -562,7 +654,7 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   gap: 32px;
-  margin-top: 24px;
+  margin-top: 4px;
 }
 
 .login-icons .icon {
@@ -578,8 +670,8 @@ onUnmounted(() => {
 .register-tip,
 .login-tip {
   text-align: center;
-  margin-top: 16px;
-  padding-bottom: 16px;
+  margin-top: 8px;
+  padding-bottom: 8px;
 }
 
 .register-link,
@@ -619,12 +711,12 @@ onUnmounted(() => {
 
 .login-form :deep(.el-form-item),
 .register-form :deep(.el-form-item) {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .login-form :deep(.el-input__wrapper) {
   padding: 4px 12px;
-  height: 48px;
+  height: 42px;
   box-shadow: 0 0 0 1px #dcdfe6;
 }
 
@@ -651,12 +743,12 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 24px 0 32px;
+  margin: 8px 0 16px;
 }
 
 .submit-btn {
   width: 100%;
-  height: 48px;
+  height: 42px;
   font-size: 16px;
   font-weight: 600;
 }
@@ -678,18 +770,18 @@ onUnmounted(() => {
 
 /* 修改注册表单样式 */
 .register-form :deep(.el-input__wrapper) {
-  padding: 1px 12px; /* 减小内边距 */
-  height: 40px; /* 减小高度 */
+  padding: 1px 12px;
+  height: 40px;
   box-shadow: 0 0 0 1px #dcdfe6;
 }
 
 .register-form :deep(.el-input__inner) {
-  font-size: 14px; /* 减小字体大小 */
+  font-size: 14px;
   height: 100%;
 }
 
 .register-form :deep(.el-form-item) {
-  margin-bottom: 16px; /* 减小表单项间距 */
+  margin-bottom: 16px;
 }
 
 /* 调整验证码按钮样式 */
@@ -733,6 +825,7 @@ onUnmounted(() => {
   }
 
   .dialog-header {
+    background: #1a1a1a;
     border-bottom-color: #2c2c2c;
   }
 
@@ -774,18 +867,39 @@ onUnmounted(() => {
   .send-code-btn :deep(.el-loading-spinner .path) {
     stroke: #fff;
   }
+
+  .login-dialog :deep(.el-dialog) {
+    background: #1a1a1a;
+  }
+
+  .close-btn:hover .close-line {
+    background-color: #fb7299;
+  }
+
+  .custom-close img {
+    filter: invert(100%);
+    opacity: 0.8;
+  }
+
+  .close-btn:hover .custom-close img {
+    opacity: 1;
+    filter: invert(100%);
+  }
 }
 
 /* 添加移动端适配样式 */
 @media screen and (max-width: 768px) {
   .dialog-content {
     height: auto;
-    min-height: 400px;
+  }
+
+  .left-section {
+    display: none;
   }
 
   .right-section {
-    padding: 20px;
     width: 100%;
+    padding: 20px;
   }
 
   .tabs {
@@ -817,7 +931,7 @@ onUnmounted(() => {
   }
 
   .other-login {
-    padding-top: 24px;
+    padding-top: 0;
   }
 
   .login-icons {
@@ -830,8 +944,8 @@ onUnmounted(() => {
 
   .register-tip,
   .login-tip {
-    margin-top: 12px;
-    padding-bottom: 12px;
+    margin-top: 8px;
+    padding-bottom: 8px;
     font-size: 13px;
   }
 
@@ -859,6 +973,44 @@ onUnmounted(() => {
 
   :deep(.el-checkbox__label) {
     font-size: 13px;
+  }
+
+  .dialog-header {
+    width: 100%;
+    position: relative;
+    border-radius: 24px 24px 0 0;
+  }
+
+  .login-dialog :deep(.el-dialog) {
+    border-radius: 24px 24px 0 0;
+    width: 100% !important;
+    height: 85vh !important;
+    max-width: none;
+    margin: 0 !important;
+    position: fixed;
+    bottom: 0;
+    top: auto;
+    transform: none;
+  }
+
+  .right-section {
+    padding-top: 40px;
+    height: calc(85vh - 40px);
+    overflow-y: auto;
+  }
+
+  /* 添加滚动条样式 */
+  .right-section::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .right-section::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+  }
+
+  .right-section::-webkit-scrollbar-track {
+    background-color: transparent;
   }
 }
 
@@ -915,12 +1067,15 @@ onUnmounted(() => {
 @media screen and (max-width: 768px) {
   .dialog-content {
     height: auto;
-    min-height: 400px;
+  }
+
+  .left-section {
+    display: none;
   }
 
   .right-section {
-    padding: 20px;
     width: 100%;
+    padding: 20px;
   }
 
   .tabs {
@@ -952,7 +1107,7 @@ onUnmounted(() => {
   }
 
   .other-login {
-    padding-top: 24px;
+    padding-top: 0;
   }
 
   .login-icons {
@@ -965,8 +1120,8 @@ onUnmounted(() => {
 
   .register-tip,
   .login-tip {
-    margin-top: 12px;
-    padding-bottom: 12px;
+    margin-top: 8px;
+    padding-bottom: 8px;
     font-size: 13px;
   }
 
@@ -1036,5 +1191,86 @@ onUnmounted(() => {
   .login-icons .icon {
     color: #e5e7eb;
   }
+}
+
+/* 移动端抽屉效果 */
+.mobile-dialog {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0 !important;
+  overflow: hidden !important;
+}
+
+.mobile-dialog :deep(.el-dialog) {
+  position: fixed !important;
+  left: 0 !important;
+  bottom: 0 !important;
+  top: auto !important;
+  transform: translateY(100%) !important;
+  margin: 0 !important;
+  width: 100% !important;
+  height: 70vh !important;
+  border-radius: 24px 24px 0 0 !important;
+  overflow: hidden;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 入场动画 */
+.dialog-enter :deep(.el-dialog) {
+  transform: translateY(0) !important;
+}
+
+@media screen and (max-width: 768px) {
+  .login-dialog :deep(.el-dialog) {
+    position: fixed !important;
+    border-radius: 30px 30px 0 0;
+    width: 100% !important;
+    height: 70vh !important;
+    max-width: none;
+    margin: 0 !important;
+    bottom: 0 !important;
+    top: auto !important;
+    transform: translateY(0) !important;
+  }
+
+  .right-section {
+    padding-top: 48px;
+    height: calc(70vh - 48px);
+    overflow-y: auto;
+    padding-left: 24px;
+    padding-right: 24px;
+    padding-bottom: 24px;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+    border-radius: 30px 30px 0 0;
+    background-color: #fff;
+  }
+}
+
+/* 移动端遮罩层样式 */
+:deep(.mobile-modal) {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  overflow: hidden !important;
+  touch-action: none;
+  z-index: 2000;
+}
+
+/* 当对话框打开时禁止body滚动 */
+:deep(.el-overlay) {
+  position: fixed !important;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
+  z-index: 2000;
 }
 </style>
