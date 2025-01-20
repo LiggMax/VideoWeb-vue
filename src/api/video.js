@@ -8,3 +8,7 @@ export const getVideoListService = () => {
 export const getVideoDetailService = (videoId) => {
     return request.get('/video/videoInfo?id='+videoId)
 }
+//获取视频点赞
+export const getVideoLikeService = (videoId) => {
+    return request.get(`/video/videoLike/${videoId}`)
+}

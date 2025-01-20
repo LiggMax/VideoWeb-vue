@@ -559,15 +559,6 @@ onUnmounted(() => {
   opacity: 1;
 }
 
-.close-line {
-  position: absolute;
-  width: 20px;
-  height: 2px;
-  background-color: #909399;
-  transition: all 0.3s ease;
-}
-
-
 .close-btn:hover {
   background-color: #fb7299;
 }

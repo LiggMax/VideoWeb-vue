@@ -310,9 +310,7 @@ const handleCommand = async ({type, id}) => {
     }
   }
 }
-const handleExceed = (files) => {
-  ElMessage.warning('只能上传一张封面图片')
-}
+
 // 更新视频信息
 const updateVideo = async () => {
   await editVideoService({
@@ -563,21 +561,6 @@ const handleEpisodeUpdate = () => {
   line-height: 1;
 }
 
-.content-area {
-  background-color: #fff;
-  border-radius: 8px;
-  margin: 0 auto;
-  max-width: 1100px;
-  padding: 20px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.nav-tabs {
-  background: #fff;
-  border-radius: 4px;
-  margin-bottom: 20px;
-}
-
 .nav-tabs :deep(.el-tabs__header) {
   margin-bottom: 0;
   border-bottom: 1px solid #e3e5e7;
@@ -644,9 +627,6 @@ const handleEpisodeUpdate = () => {
   background: #fff;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 
-  .el-icon {
-    font-size: 18px; /* 增大图标尺寸 */
-  }
 
   &:hover {
     background: #f6f7f8;

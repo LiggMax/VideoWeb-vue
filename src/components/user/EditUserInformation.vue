@@ -109,14 +109,14 @@ const handleAvatarSuccess = (response) => {
 // 头像上传前的验证
 const beforeAvatarUpload = (image) => {
   const isJPGOrPNG = ['image/jpeg', 'image/png'].includes(image.type)
-  const isLt2M = image.size / 1024 / 1024 < 2
+  const isLt2M = image.size / 1024 / 1024 < 10
 
   if (!isJPGOrPNG) {
     ElMessage.error('头像只能是 JPG 或 PNG 格式!')
     return false
   }
   if (!isLt2M) {
-    ElMessage.error('头像大小不能超过 2MB!')
+    ElMessage.error('头像大小不能超过 10MB!')
     return false
   }
   return true

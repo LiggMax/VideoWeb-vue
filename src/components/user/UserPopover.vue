@@ -132,15 +132,16 @@ const userInfo = computed(() => {
   }
   return info
 })
-const handleLogout = () => {
+const handleLogout = async () => {
+  await logoutService()
   // 清除用户信息
   userInfoStore.removeInfo()
   // 清除token
   tokenStore.removeToken()
   // 关闭弹窗
-   visible.value = false
+  visible.value = false
   // 跳转回首页
-   router.push('/')
+  await router.push('/')
   // 提示退出成功
   ElMessage.success('退出成功')
 }
