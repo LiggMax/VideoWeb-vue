@@ -260,12 +260,12 @@
 </template>
 
 <script setup>
-import {ref, onMounted, computed, onUnmounted, watch} from 'vue'
+import {computed, onMounted, onUnmounted, ref, watch} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
-import {getVideoDetailService} from '@/api/video' // 假设你会创建这个API服务
-import {Plus, ChatDotRound, ChatRound, Document, Close, Check} from '@element-plus/icons-vue'
+import {getVideoDetailService, getVideoLikeService} from '@/api/video' // 假设你会创建这个API服务
+import {ChatDotRound, ChatRound, Close} from '@element-plus/icons-vue'
 import VideoPlayer from '@/components/video/VideoPlayer.vue'
-import {ElMessage, ElMessageBox} from "element-plus";
+import {ElMessage} from "element-plus";
 import useUserInfoStore from '@/stores/userInfo'
 import UploaderIcon from '@/components/icons/UploaderIcon.vue'
 import {addCommentService, getCommentsService} from "@/api/comments";
@@ -302,6 +302,8 @@ const videoInfo = ref({
   viewCount: '',// 播放量
   createTime: '',//创建时间
   content: '',//视频简介
+  // 视频点赞数
+  likeCount: 0,
   commentCount: 0,//评论数
   nickname: '',//作者昵称
   userPic: '',//作者头像
@@ -346,8 +348,9 @@ const getVideoDetail = async () => {
         checkFollowStatus()
       }
     }
+    // 获取视频点赞数
+    videoInfo.value.likeCount= (await getVideoLikeService(videoId)).data
   } catch (error) {
-    console.error('获取视频详情失败:', error)
     ElMessage.error('获取视频详情失败')
   }
 }
@@ -979,10 +982,6 @@ const goToUserHome = () => {
   gap: 8px;
 }
 
-.comment-count {
-  color: #fb7299;
-  font-weight: 500;
-}
 
 /* 评论输入区域 */
 .comment-input-area {
@@ -1241,11 +1240,6 @@ const goToUserHome = () => {
   margin-bottom: 12px;
   color: #18191c;
   font-weight: 500;
-
-  .el-icon {
-    font-size: 16px;
-    color: #00a1d6;
-  }
 }
 
 .description-content {
@@ -1411,10 +1405,6 @@ const goToUserHome = () => {
     background-color: #f4f5f7;
     border-color: #e3e5e7;
     color: #18191c;
-  }
-
-  .el-icon {
-    font-size: 12px;
   }
 }
 

@@ -57,6 +57,9 @@ const handleMouseLeave = () => {
   isControlVisible.value = false
 }
 
+// 添加对网页全屏状态的管理
+const isWebFullscreen = ref(false)
+
 // 初始化播放器
 const initPlayer = () => {
   if (art.value) return
@@ -251,6 +254,9 @@ const initPlayer = () => {
 
   // 监听网页全屏事件
   art.value.on('fullscreenWeb', (state) => {
+    isWebFullscreen.value = state
+    // 控制body滚动
+    document.body.style.overflow = state ? 'hidden' : ''
     emit('toggle-collapse', state)
   })
 
@@ -299,6 +305,7 @@ onUnmounted(() => {
   if (art.value && art.value.destroy) {
     art.value.destroy()
     art.value = null
+    document.body.style.overflow = ''
   }
 })
 </script>
@@ -519,6 +526,43 @@ onUnmounted(() => {
   .back-button img {
     width: 28px;
     height: 28px;
+  }
+}
+
+/* 网页全屏时的样式 */
+:deep(.art-video-player.art-fullscreen-web) {
+  position: fixed !important;
+  z-index: 9999;
+  width: 100% !important;
+  height: 100% !important;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: #000;
+}
+
+/* 网页全屏时的返回按钮位置调整 */
+:deep(.art-fullscreen-web) .back-button {
+  top: 24px;
+  left: 24px;
+  z-index: 10000;
+}
+
+/* 网页全屏时的控制栏位置调整 */
+:deep(.art-fullscreen-web .art-controls) {
+  padding-bottom: 24px;
+}
+
+/* 移动端适配 */
+@media screen and (max-width: 768px) {
+  :deep(.art-fullscreen-web) .back-button {
+    top: 16px;
+    left: 16px;
+  }
+  
+  :deep(.art-fullscreen-web .art-controls) {
+    padding-bottom: 16px;
   }
 }
 </style> 
