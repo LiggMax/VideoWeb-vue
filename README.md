@@ -51,6 +51,7 @@
 - **数据库**：MySQL
 - **缓存**：[Redis](https://github.com/tporadowski/redis/releases)
 - **邮箱服务**：163 网易邮箱服务
+- **实时通讯**：WebSocket
 
 ------
 
