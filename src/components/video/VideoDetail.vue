@@ -26,22 +26,22 @@
                 <span class="bullet">·</span>
                 <span class="date">发布于 {{ formatDate(videoInfo.createTime) }}</span>
               </div>
-              
+
               <!-- 添加互动按钮组 -->
               <div class="video-actions">
                 <div class="action-item">
-                  <button class="action-btn" 
-                          :class="{ 'is-active': isLiked }"
-                          @click="handleLike"
+                  <button class="action-btn"
+                          :class="{ 'is-active': interactionStates.like }"
+                          @click="handleInteraction('like', 'likesCount')"
                   >
                     <img :src="LikeIcon" class="action-icon" alt="点赞"/>
                     {{ videoInfo.likesCount || 0 }}
                   </button>
                 </div>
                 <div class="action-item">
-                  <el-button class="action-btn" :class="{ 'is-active': isCollected }" @click="handleCollect">
+                  <el-button class="action-btn" :class="{ 'is-active': interactionStates.favorite }" @click="handleInteraction('favorite')">
                     <img :src="StarIcon" class="action-icon" alt="收藏"/>
-                    {{videoInfo.favoriteCount}}
+                    {{ videoInfo.favoriteCount }}
                   </el-button>
                 </div>
                 <div class="action-item">
@@ -346,12 +346,11 @@ const getVideoDetail = async () => {
     const result = await getVideoDetailService(videoId)
     if (result.data) {
       videoInfo.value = result.data
-      // 只在登录状态下获取关注和点赞状态
       if (isLogin.value) {
         await Promise.all([
           checkFollowStatus(),
-          checkLikeStatus(),
-          checkCollectStatus()
+          checkInteractionStatus('like'),
+          checkInteractionStatus('favorite')
         ])
       }
     }
@@ -532,10 +531,54 @@ watch(isLogin, (newVal) => {
   }
 })
 
-// 添加互动状态
-const isLiked = ref(false)
-const isCollected = ref(false)
+// 统一的互动状态管理
+const interactionStates = ref({
+  like: false,
+  favorite: false
+})
 
+// 统一的互动状态检查方法
+const checkInteractionStatus = async (action) => {
+  try {
+    if (!videoInfo.value.id) return
+    
+    const result = await getVideoLikeService(videoInfo.value.id, action)
+    if (result.code === 200) {
+      interactionStates.value[action] = result.data === true
+    }
+  } catch (error) {
+    console.error(`获取${action}状态失败:`, error)
+  }
+}
+
+// 统一的互动处理方法
+const handleInteraction = async (action, countField) => {
+  if (!isLogin.value) {
+    eventBus.emit('showLogin')
+    return
+  }
+  
+  try {
+    const result = await userActionService(videoInfo.value.id, action)
+    if (result.code === 200) {
+      interactionStates.value[action] = !interactionStates.value[action]
+      
+      // 如果需要更新计数
+      if (countField) {
+        videoInfo.value[countField] = interactionStates.value[action]
+          ? (videoInfo.value[countField] || 0) + 1
+          : (videoInfo.value[countField] || 1) - 1
+      }
+      
+      ElMessage.success(result.data)
+    }
+  } catch (error) {
+    console.error(`${action}操作失败:`, error)
+    ElMessage.error('操作失败，请稍后重试')
+  }
+}
+
+// 添加互动状态
 const showUnfollow = ref(false)
 
 const hideTimer = ref(null)
@@ -571,119 +614,18 @@ const goToUserHome = () => {
   }
 }
 
-// 修改检查点赞状态的方法
-const checkLikeStatus = async () => {
-  try {
-    if (!videoInfo.value.id) return
-    
-    const result = await getVideoLikeService(videoInfo.value.id, 'like')
-    console.log('点赞状态:', result) // 添加日志
-    if (result.code === 200) {
-      isLiked.value = result.data === true
-      console.log('设置点赞状态:', isLiked.value) // 添加日志
-    }
-  } catch (error) {
-    console.error('获取点赞状态失败:', error)
-  }
-}
-
-// 监听登录状态变化，重新获取点赞状态
-watch(isLogin, async (newVal) => {
-  if (newVal && videoInfo.value.id) {
-    await checkLikeStatus()
-  } else {
-    isLiked.value = false
-  }
-})
-
-// 监听视频ID变化，重新获取点赞状态
-watch(() => videoInfo.value.id, async (newId) => {
-  if (newId && isLogin.value) {
-    await checkLikeStatus()
-  } else {
-    isLiked.value = false
-  }
-})
-
-// 添加点赞处理方法
-const handleLike = async () => {
-  if (!isLogin.value) {
-    eventBus.emit('showLogin')
-    return
-  }
-  
-  try {
-    const result = await userActionService(videoInfo.value.id, 'like')
-    if (result.code === 200) {
-      isLiked.value = !isLiked.value
-      // 更新点赞数
-      videoInfo.value.likesCount = isLiked.value 
-        ? (videoInfo.value.likesCount || 0) + 1 
-        : (videoInfo.value.likesCount || 1) - 1
-      ElMessage.success(result.data)
-    }
-  } catch (error) {
-    console.error('点赞操作失败:', error)
-    ElMessage.error('操作失败，请稍后重试')
-  }
-}
-
-// 添加收藏状态检查方法
-const checkCollectStatus = async () => {
-  try {
-    if (!videoInfo.value.id) return
-    
-    const result = await getVideoLikeService(videoInfo.value.id, 'favorite')
-    if (result.code === 200) {
-      isCollected.value = result.data === true
-    }
-  } catch (error) {
-    console.error('获取收藏状态失败:', error)
-  }
-}
-
-// 添加收藏处理方法
-const handleCollect = async () => {
-  if (!isLogin.value) {
-    eventBus.emit('showLogin')
-    return
-  }
-  
-  try {
-    const result = await userActionService(videoInfo.value.id, 'favorite')
-    if (result.code === 200) {
-      isCollected.value = !isCollected.value
-      ElMessage.success(result.data)
-    }
-  } catch (error) {
-    console.error('收藏操作失败:', error)
-    ElMessage.error('操作失败，请稍后重试')
-  }
-}
-
-// 监听登录状态变化
+// 修改监听器
 watch(isLogin, async (newVal) => {
   if (newVal && videoInfo.value.id) {
     await Promise.all([
-      checkLikeStatus(),
-      checkCollectStatus()
+      checkInteractionStatus('like'),
+      checkInteractionStatus('favorite')
     ])
   } else {
-    isLiked.value = false
-    isCollected.value = false
-  }
-})
-
-// 监听视频ID变化
-watch(() => videoInfo.value.id, async (newId) => {
-  if (newId && isLogin.value) {
-    await Promise.all([
-      checkLikeStatus(),
-      checkCollectStatus()
-    ])
-  } else {
-    isLiked.value = false
-    isCollected.value = false
+    interactionStates.value = {
+      like: false,
+      favorite: false
+    }
   }
 })
 
@@ -822,7 +764,7 @@ watch(() => videoInfo.value.id, async (newId) => {
     width: 100%;
     padding-top: 0;
   }
-  
+
   /* 移动端宽屏模式下隐藏右侧区域 */
   .collapsed .recommend-section:not(.is-collapsed) {
     display: none;
