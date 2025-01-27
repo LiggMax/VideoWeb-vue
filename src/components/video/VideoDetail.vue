@@ -39,9 +39,9 @@
                   </button>
                 </div>
                 <div class="action-item">
-                  <el-button class="action-btn" :class="{ 'is-active': isCollected }">
+                  <el-button class="action-btn" :class="{ 'is-active': isCollected }" @click="handleCollect">
                     <img :src="StarIcon" class="action-icon" alt="收藏"/>
-                    <span>收藏</span>
+                    {{videoInfo.favoriteCount}}
                   </el-button>
                 </div>
                 <div class="action-item">
@@ -287,7 +287,7 @@ import StarIcon from '@/assets/iconsvg/star.svg'
 import CoinIcon from '@/assets/iconsvg/投币.svg'
 import concernIcon from '@/assets/iconsvg/关注.svg'
 import Unfollow from '@/assets/iconsvg/我的关注.svg'
-import {userLikeService, getVideoLikeService} from "@/api/user/uservideo";
+import {userActionService, getVideoLikeService} from "@/api/user/uservideo";
 
 
 // 配置 dayjs
@@ -350,7 +350,8 @@ const getVideoDetail = async () => {
       if (isLogin.value) {
         await Promise.all([
           checkFollowStatus(),
-          checkLikeStatus()
+          checkLikeStatus(),
+          checkCollectStatus()
         ])
       }
     }
@@ -575,7 +576,7 @@ const checkLikeStatus = async () => {
   try {
     if (!videoInfo.value.id) return
     
-    const result = await getVideoLikeService(videoInfo.value.id)
+    const result = await getVideoLikeService(videoInfo.value.id, 'like')
     console.log('点赞状态:', result) // 添加日志
     if (result.code === 200) {
       isLiked.value = result.data === true
@@ -612,7 +613,7 @@ const handleLike = async () => {
   }
   
   try {
-    const result = await userLikeService(videoInfo.value.id, 'like')
+    const result = await userActionService(videoInfo.value.id, 'like')
     if (result.code === 200) {
       isLiked.value = !isLiked.value
       // 更新点赞数
@@ -626,6 +627,65 @@ const handleLike = async () => {
     ElMessage.error('操作失败，请稍后重试')
   }
 }
+
+// 添加收藏状态检查方法
+const checkCollectStatus = async () => {
+  try {
+    if (!videoInfo.value.id) return
+    
+    const result = await getVideoLikeService(videoInfo.value.id, 'favorite')
+    if (result.code === 200) {
+      isCollected.value = result.data === true
+    }
+  } catch (error) {
+    console.error('获取收藏状态失败:', error)
+  }
+}
+
+// 添加收藏处理方法
+const handleCollect = async () => {
+  if (!isLogin.value) {
+    eventBus.emit('showLogin')
+    return
+  }
+  
+  try {
+    const result = await userActionService(videoInfo.value.id, 'favorite')
+    if (result.code === 200) {
+      isCollected.value = !isCollected.value
+      ElMessage.success(result.data)
+    }
+  } catch (error) {
+    console.error('收藏操作失败:', error)
+    ElMessage.error('操作失败，请稍后重试')
+  }
+}
+
+// 监听登录状态变化
+watch(isLogin, async (newVal) => {
+  if (newVal && videoInfo.value.id) {
+    await Promise.all([
+      checkLikeStatus(),
+      checkCollectStatus()
+    ])
+  } else {
+    isLiked.value = false
+    isCollected.value = false
+  }
+})
+
+// 监听视频ID变化
+watch(() => videoInfo.value.id, async (newId) => {
+  if (newId && isLogin.value) {
+    await Promise.all([
+      checkLikeStatus(),
+      checkCollectStatus()
+    ])
+  } else {
+    isLiked.value = false
+    isCollected.value = false
+  }
+})
 
 </script>
 
