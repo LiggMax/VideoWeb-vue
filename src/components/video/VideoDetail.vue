@@ -1383,8 +1383,8 @@ watch(isLogin, async (newVal) => {
 }
 
 .action-icon {
-  width: 28px;
-  height: 28px;
+  width: 38px;
+  height: 38px;
   transition: all 0.3s ease;
   margin-right: 4px;
 }
@@ -1439,8 +1439,8 @@ watch(isLogin, async (newVal) => {
   }
 
   .action-icon {
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     margin-right: 2px;
   }
 }
