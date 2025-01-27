@@ -30,10 +30,13 @@
               <!-- 添加互动按钮组 -->
               <div class="video-actions">
                 <div class="action-item">
-                  <el-button class="action-btn" :class="{ 'is-active': isLiked }">
+                  <button class="action-btn" 
+                          :class="{ 'is-active': isLiked }"
+                          @click="handleLike"
+                  >
                     <img :src="LikeIcon" class="action-icon" alt="点赞"/>
-                    <span>{{ videoInfo.likeCount || 0 }}</span>
-                  </el-button>
+                    {{ videoInfo.likesCount || 0 }}
+                  </button>
                 </div>
                 <div class="action-item">
                   <el-button class="action-btn" :class="{ 'is-active': isCollected }">
@@ -262,7 +265,7 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref, watch} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
-import {getVideoDetailService, getVideoLikeService} from '@/api/video' // 假设你会创建这个API服务
+import {getVideoDetailService} from '@/api/video' // 假设你会创建这个API服务
 import {ChatDotRound, ChatRound, Close} from '@element-plus/icons-vue'
 import VideoPlayer from '@/components/video/VideoPlayer.vue'
 import {ElMessage} from "element-plus";
@@ -284,6 +287,7 @@ import StarIcon from '@/assets/iconsvg/star.svg'
 import CoinIcon from '@/assets/iconsvg/投币.svg'
 import concernIcon from '@/assets/iconsvg/关注.svg'
 import Unfollow from '@/assets/iconsvg/我的关注.svg'
+import {userLikeService, getVideoLikeService} from "@/api/user/uservideo";
 
 
 // 配置 dayjs
@@ -302,8 +306,7 @@ const videoInfo = ref({
   viewCount: '',// 播放量
   createTime: '',//创建时间
   content: '',//视频简介
-  // 视频点赞数
-  likeCount: 0,
+  likesCount: 0,// 视频点赞数
   commentCount: 0,//评论数
   nickname: '',//作者昵称
   userPic: '',//作者头像
@@ -343,18 +346,19 @@ const getVideoDetail = async () => {
     const result = await getVideoDetailService(videoId)
     if (result.data) {
       videoInfo.value = result.data
-      // 获取视频详情后，检查是否已关注
+      // 只在登录状态下获取关注和点赞状态
       if (isLogin.value) {
-        checkFollowStatus()
+        await Promise.all([
+          checkFollowStatus(),
+          checkLikeStatus()
+        ])
       }
     }
-    // 获取视频点赞数
-    videoInfo.value.likeCount= (await getVideoLikeService(videoId)).data
   } catch (error) {
+    console.error('获取视频详情失败:', error)
     ElMessage.error('获取视频详情失败')
   }
 }
-
 // 检查关注状态
 const checkFollowStatus = async () => {
   try {
@@ -563,6 +567,63 @@ const goToUserHome = () => {
       path: '/user',
       query: {username: videoInfo.value.username}
     })
+  }
+}
+
+// 修改检查点赞状态的方法
+const checkLikeStatus = async () => {
+  try {
+    if (!videoInfo.value.id) return
+    
+    const result = await getVideoLikeService(videoInfo.value.id)
+    console.log('点赞状态:', result) // 添加日志
+    if (result.code === 200) {
+      isLiked.value = result.data === true
+      console.log('设置点赞状态:', isLiked.value) // 添加日志
+    }
+  } catch (error) {
+    console.error('获取点赞状态失败:', error)
+  }
+}
+
+// 监听登录状态变化，重新获取点赞状态
+watch(isLogin, async (newVal) => {
+  if (newVal && videoInfo.value.id) {
+    await checkLikeStatus()
+  } else {
+    isLiked.value = false
+  }
+})
+
+// 监听视频ID变化，重新获取点赞状态
+watch(() => videoInfo.value.id, async (newId) => {
+  if (newId && isLogin.value) {
+    await checkLikeStatus()
+  } else {
+    isLiked.value = false
+  }
+})
+
+// 添加点赞处理方法
+const handleLike = async () => {
+  if (!isLogin.value) {
+    eventBus.emit('showLogin')
+    return
+  }
+  
+  try {
+    const result = await userLikeService(videoInfo.value.id, 'like')
+    if (result.code === 200) {
+      isLiked.value = !isLiked.value
+      // 更新点赞数
+      videoInfo.value.likesCount = isLiked.value 
+        ? (videoInfo.value.likesCount || 0) + 1 
+        : (videoInfo.value.likesCount || 1) - 1
+      ElMessage.success(result.data)
+    }
+  } catch (error) {
+    console.error('点赞操作失败:', error)
+    ElMessage.error('操作失败，请稍后重试')
   }
 }
 
@@ -1328,20 +1389,22 @@ const goToUserHome = () => {
 
 /* 激活状态下的图标颜色 */
 .action-btn.is-active .action-icon {
-  filter: invert(53%) sepia(49%) saturate(1352%) hue-rotate(308deg) brightness(97%) contrast(96%);
+  /* 蓝色滤镜 (#00a1d6) */
+  filter: invert(47%) sepia(87%) saturate(1654%) hue-rotate(165deg) brightness(99%) contrast(96%);
 }
 
 /* 悬浮状态下的图标颜色 */
 .action-btn:hover .action-icon {
-  filter: invert(53%) sepia(49%) saturate(1352%) hue-rotate(308deg) brightness(97%) contrast(96%);
+  /* 蓝色滤镜 (#00a1d6) */
+  filter: invert(47%) sepia(87%) saturate(1654%) hue-rotate(165deg) brightness(99%) contrast(96%);
 }
 
 .action-btn:hover {
-  color: #fb7299;
+  color: #00a1d6;
 }
 
 .action-btn.is-active {
-  color: #fb7299;
+  color: #00a1d6;
 }
 
 /* 暗色模式支持 */
@@ -1352,11 +1415,11 @@ const goToUserHome = () => {
   }
 
   .action-btn:hover {
-    color: #fb7299;
+    color: #00a1d6;
   }
 
   .action-btn.is-active {
-    color: #fb7299;
+    color: #00a1d6;
   }
 }
 
