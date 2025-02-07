@@ -1529,7 +1529,12 @@ watch(isLogin, async (newVal) => {
 .video-content {
   flex: 1;
   min-width: 0;
-  max-width: calc(100% - 392px); /* 360px + 32px gap */
+  max-width: 100%;
+}
+
+/* 当没有上传者信息时 */
+.info-wrapper.wide-screen:has(.uploader-info-section:empty) .video-content {
+  max-width: 100%;
 }
 
 /* UP主信息区域样式 */
@@ -1580,4 +1585,4 @@ watch(isLogin, async (newVal) => {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
 }
-</style> 
+</style>
