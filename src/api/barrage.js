@@ -6,5 +6,5 @@ export const sendBarrageService = (data) => {
 }
 //获取弹幕
 export const getBarrageService = (videoId) => {
-  return request.get('/user/barrage/get?videoId='+videoId)
+  return request.get('/video/barrage?videoId='+videoId)
 }

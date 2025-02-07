@@ -35,7 +35,7 @@
     <div class="dialog-content">
       <!-- 左侧图片 -->
       <div class="left-section" v-if="!isMobile">
-        <img src="../assets/imge/loginimge.png" alt="login-banner"/>
+        <img src="http://sqng6krv6.hn-bkt.clouddn.com/Logologinimge.png" alt="login-banner"/>
       </div>
 
       <!-- 右侧登录表单 -->
@@ -560,7 +560,7 @@ onUnmounted(() => {
 }
 
 .close-btn:hover {
-  background-color: #fb7299;
+  background-color: transparent;
 }
 
 .dialog-content {
@@ -777,9 +777,13 @@ onUnmounted(() => {
 .send-code-btn {
   width: 120px;
   font-size: 14px;
+  height: 40px;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .send-code-btn:not(:disabled) {

@@ -301,10 +301,10 @@ const handleVideoSuccess = (response) => {
 }
 
 const beforeVideoUpload = (file) => {
-  const isLt500M = file.size / 1024 / 1024 < 1500
+  const isLt500M = file.size / 1024 / 1024 < 20
 
   if (!isLt500M) {
-    ElMessage.error('视频大小不能超过 1.5G!')
+    ElMessage.error('视频大小不能超过 20Mb!')
     return false
   }
   return true
