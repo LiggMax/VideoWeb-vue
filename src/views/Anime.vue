@@ -152,7 +152,7 @@ const updateBannerHeight = () => {
   const width = window.innerWidth
   // 根据屏幕宽度计算合适的高度，保持16:9的比例
   const height = Math.floor((width * 9) / 16)
-  // 设置最小和最大高��限制
+  // 设置最小和最大高度限制
   const finalHeight = Math.max(400, Math.min(height, 720))
   bannerHeight.value = `${finalHeight}px`
 }
@@ -317,6 +317,13 @@ const stopDrag = () => {
 </script>
 
 <style scoped>
+
+/* 添加根容器样式控制 */
+.anime {
+  width: 100%;
+  overflow-x: hidden; /* 防止横向滚动 */
+  position: relative;
+}
 
 .anime-cover {
   height: 250px;
@@ -551,25 +558,246 @@ const stopDrag = () => {
 
 @media screen and (max-width: 768px) {
   .thumbnail-item {
-    width: 160px;
+    width: 80px;
+    
+    img {
+      height: 45px;
+    }
+    
+    .thumbnail-title {
+      font-size: 12px;
+      padding: 4px;
+      -webkit-line-clamp: 1;
+    }
   }
 
-  .thumbnail-item img {
-    height: 80px;
-  }
-
-  .thumbnail-title {
-    font-size: 12px;
-    padding: 6px;
+  .banner-section {
+    margin-top: -56px;
   }
 
   .banner-content::after {
-    height: 250px;
+    height: 150px;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(245, 247, 250, 0.4) 50%,
+      rgba(245, 247, 250, 0.9) 100%
+    );
   }
-  
+
   .thumbnail-list {
-    margin-top: min(-80px, -9%);
-    gap: 10px;
+    margin-top: -50px;
+    padding: 0 12px;
+    gap: 8px;
+  }
+
+  .hot-anime-section,
+  .schedule-section {
+    padding: 16px 12px; /* 减小内边距 */
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden; /* 确保内容不会溢出 */
+  }
+
+  .section-header {
+    margin-bottom: 16px;
+    
+    .title {
+      font-size: 16px;
+      
+      .title-icon {
+        width: 24px;
+        height: 24px;
+      }
+    }
+    
+    .more {
+      font-size: 12px;
+    }
+  }
+
+  .hot-anime-list {
+    margin: 0; /* 移除可能的外边距 */
+    width: 100%;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .hot-anime-item {
+    .anime-cover {
+      aspect-ratio: 3/4;
+    }
+    
+    .anime-info {
+      padding: 8px;
+      gap: 8px;
+      
+      .rank-number {
+        font-size: 20px;
+        min-width: 24px;
+      }
+      
+      .title {
+        font-size: 14px;
+        margin-bottom: 2px;
+      }
+      
+      .desc {
+        font-size: 12px;
+        -webkit-line-clamp: 1;
+      }
+    }
+    
+    .score {
+      font-size: 18px;
+      bottom: 6px;
+      right: 6px;
+    }
+  }
+
+  .schedule-scroll-wrapper {
+    margin: 0; /* 移除负边距 */
+    padding: 16px 0; /* 只保留垂直内边距 */
+    overflow-x: auto;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+    
+    /* 隐藏滚动条但保持功能 */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+    &::-webkit-scrollbar {
+      display: none; /* Chrome/Safari/Opera */
+    }
+  }
+
+  .anime-schedule-list {
+    padding-right: 12px; /* 添加右侧内边距，防止最后一个项目贴边 */
+  }
+
+  .schedule-item {
+    width: 140px;
+    height: 260px;
+    
+    .time {
+      font-size: 12px;
+      padding: 2px 10px;
+      top: -8px;
+    }
+    
+    .schedule-cover {
+      height: 200px;
+    }
+    
+    .schedule-info {
+      padding: 8px;
+      height: 50px;
+      
+      .title {
+        font-size: 12px;
+      }
+      
+      .episode {
+        font-size: 11px;
+        margin-top: 2px;
+      }
+    }
+    
+    .score {
+      font-size: 18px;
+    }
+  }
+
+  .weekday-tabs {
+    margin: 0;
+    padding: 0 0 8px 0;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    
+    /* 隐藏滚动条 */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .weekday-tab {
+    padding: 4px 16px;
+    font-size: 14px;
+    min-width: 60px;
+    flex-shrink: 0;
+    
+    &.active::after {
+      bottom: -8px;
+      width: 20px;
+      height: 2px;
+    }
+  }
+}
+
+/* 修改全局滚动条样式 */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* 添加全局滚动条隐藏 */
+html, body {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  
+  &::-webkit-scrollbar {
+    display: none; /* Chrome/Safari/Opera */
+  }
+}
+
+/* 修改动画列表容器样式 */
+.anime-schedule-list {
+  padding-right: 12px; /* 添加右侧内边距，防止最后一个项目贴边 */
+}
+
+/* 修改网格布局容器样式 */
+.hot-anime-list {
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* 增加暗色模式支持 */
+@media (prefers-color-scheme: dark) {
+  @media screen and (max-width: 768px) {
+    .banner-content::after {
+      background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(18, 18, 18, 0.4) 50%,
+        rgba(18, 18, 18, 0.9) 100%
+      );
+    }
+
+    .hot-anime-item,
+    .schedule-item {
+      background: #1a1a1a;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .anime-info .title,
+    .schedule-info .title {
+      color: #e5e7eb;
+    }
+
+    .anime-info .desc,
+    .schedule-info .episode {
+      color: #666;
+    }
+
+    .weekday-tab {
+      color: #999;
+      
+      &:hover:not(.active) {
+        background: rgba(24, 144, 255, 0.15);
+      }
+    }
   }
 }
 
@@ -963,7 +1191,7 @@ const stopDrag = () => {
   pointer-events: none;
 }
 
-/* 允许容���本身接收鼠标事件 */
+/* 允许容器本身接收鼠标事件 */
 .schedule-scroll-wrapper,
 .anime-schedule-list,
 .schedule-item {
