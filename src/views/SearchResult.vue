@@ -28,8 +28,29 @@
     <!-- 搜索结果内容区（添加最小高度） -->
     <div class="search-content-wrapper">
       <div class="search-content">
+        <!-- 添加空状态提示 -->
+        <div v-if="!loading && searchResults.length === 0" class="empty-state">
+          <svg class="empty-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+            <path d="M855.6 427.2H168.5c-12.7 0-24.4 6.9-30.6 18L4.4 684.7C1.5 689.9 0 695.8 0 701.8v287.1c0 19.4 15.7 35.1 35.1 35.1h953.8c19.4 0 35.1-15.7 35.1-35.1V701.8c0-6-1.5-11.8-4.4-17.1L886 445.2c-6.2-11.1-17.9-18-30.4-18zM360 705.9c0 4.4-3.6 8-8 8h-80c-4.4 0-8-3.6-8-8v-80c0-4.4 3.6-8 8-8h80c4.4 0 8 3.6 8 8v80z" fill="#e6f7ff"/>
+            <path d="M760 705.9c0 4.4-3.6 8-8 8h-80c-4.4 0-8-3.6-8-8v-80c0-4.4 3.6-8 8-8h80c4.4 0 8 3.6 8 8v80z" fill="#e6f7ff"/>
+          </svg>
+          <h3>暂无搜索结果</h3>
+          <p>换个关键词试试吧~</p>
+          <div class="suggestions">
+            <span>建议您：</span>
+            <ul>
+              <li>检查是否有错别字</li>
+              <li>简化搜索词</li>
+              <li>尝试其他相关词</li>
+            </ul>
+          </div>
+          <el-button type="primary" @click="router.push('/')" class="back-btn">
+            返回首页
+          </el-button>
+        </div>
+
         <!-- 视频列表 -->
-        <div v-if="currentType === 'video'" class="video-list">
+        <div v-else-if="currentType === 'video'" class="video-list">
           <div v-for="item in searchResults"
                :key="item.id"
                class="video-item"
@@ -59,7 +80,7 @@
                     :size="24"
                     :src="item.userPic || 'https://i0.hdslb.com/bfs/face/default.jpg'"
                 />
-                <span class="uploader-name">{{ item.username || '用户未设置昵���' }}</span>
+                <span class="uploader-name">{{ item.username || '用户未设置昵称' }}</span>
                 <span class="upload-time">
                   <el-icon><Clock /></el-icon>
                   {{ formatDate(item.createTime) }}
@@ -96,7 +117,7 @@
       </div>
 
       <!-- 分页器 -->
-      <div class="pagination-wrapper">
+      <div v-if="searchResults.length > 0" class="pagination-wrapper">
         <el-pagination
             v-model:current-page="currentPage"
             v-model:page-size="pageSize"
@@ -511,5 +532,83 @@ onMounted(() => {
   justify-content: center;
   background: #f5f5f5;
   color: #999;
+}
+
+/* 添加空状态样式 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  background: #fff;
+  border-radius: 8px;
+  margin: 20px 0;
+
+  .empty-icon {
+    width: 160px;
+    height: 160px;
+    color: #1890ff;
+    margin-bottom: 24px;
+  }
+
+  h3 {
+    font-size: 20px;
+    color: #1f2937;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  p {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 24px;
+  }
+
+  .suggestions {
+    text-align: left;
+    margin-bottom: 32px;
+    
+    span {
+      color: #4b5563;
+      font-size: 14px;
+      margin-bottom: 8px;
+      display: block;
+    }
+    
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      
+      li {
+        color: #6b7280;
+        font-size: 14px;
+        margin-bottom: 8px;
+        padding-left: 20px;
+        position: relative;
+        
+        &::before {
+          content: "•";
+          position: absolute;
+          left: 8px;
+          color: #1890ff;
+        }
+      }
+    }
+  }
+
+  .back-btn {
+    padding: 10px 24px;
+    font-size: 14px;
+    background-color: #1890ff;
+    border-color: #1890ff;
+    
+    &:hover {
+      background-color: #40a9ff;
+      border-color: #40a9ff;
+    }
+  }
 }
 </style>
