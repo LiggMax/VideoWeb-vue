@@ -36,7 +36,7 @@
     <!-- 用户内容区域 -->
     <div class="user-content">
       <div class="content-tabs">
-        <div class="tab active"><img :src="videoIcon" alt="视频">发布的视频</div>
+        <div class="tab active"><img :src="videoIcon" alt="视频">Ta发布的视频</div>
         <div class="tab"><img :src="dynamicIcon" alt="动态">动态</div>
         <div class="tab"><img :src="starIcon" alt="收藏">收藏</div>
       </div>

@@ -325,7 +325,6 @@ const handleLogin = async () => {
   // 创建 WebSocket 连接
   const ws = new WebSocketClient(
       'ws://127.0.0.1:8080/ws/chat',
-      loginForm.value.username
   )
   ws.connect()
 

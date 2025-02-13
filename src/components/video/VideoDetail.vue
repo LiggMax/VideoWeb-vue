@@ -39,9 +39,11 @@
                   </button>
                 </div>
                 <div class="action-item">
-                  <el-button class="action-btn" :class="{ 'is-active': interactionStates.favorite }" @click="handleInteraction('favorite')">
+                  <el-button class="action-btn" 
+                             :class="{ 'is-active': interactionStates.favorite }" 
+                             @click="handleInteraction('favorite', 'favoriteCount')">
                     <img :src="StarIcon" class="action-icon" alt="收藏"/>
-                    {{ videoInfo.favoriteCount }}
+                    {{ videoInfo.favoriteCount || 0 }}
                   </el-button>
                 </div>
                 <div class="action-item">
@@ -573,7 +575,6 @@ const handleInteraction = async (action, countField) => {
       ElMessage.success(result.data)
     }
   } catch (error) {
-    console.error(`${action}操作失败:`, error)
     ElMessage.error('操作失败，请稍后重试')
   }
 }
